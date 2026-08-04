@@ -1,10 +1,11 @@
 {
   "target": "fyers.in",
-  "phase": "RECON",
-  "status": "IN_PROGRESS",
+  "phase": "HYPOTHESIS",
+  "status": "HIGH_POTENTIAL",
   "next_steps": [
-    "Fetch API documentation at myapi.fyers.in/docs",
-    "Enumerate additional subdomains via crt.sh",
-    "Analyze trading platform JavaScript for API routes"
+    "Design detailed PoC for IDOR on order endpoints",
+    "Test appIdHash validation on refresh flow",
+    "Enumerate WebSocket authentication mechanism",
+    "Check for token leakage in browser storage/localStorage"
   ]
 }
