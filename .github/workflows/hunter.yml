@@ -1,0 +1,313 @@
+name: AI Bug Bounty Hunter - Research Automation
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  TARGET: fyers.in
+  # No API key needed: both models are free via OpenCode Zen (opencode/ provider).
+
+jobs:
+  hunter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    # One group per model so DeepSeek and MiMo runs never cancel each other,
+    # but a stale scheduled run of the same model is cancelled by the new one.
+    concurrency:
+      group: hunter-${{ matrix.model.name }}
+      cancel-in-progress: true
+    strategy:
+      fail-fast: false
+      matrix:
+        model:
+          - { id: opencode/deepseek-v4-flash-free, name: deepseek }
+          - { id: opencode/mimo-v2.5-free, name: mimo }
+
+    env:
+      MODEL_ID: ${{ matrix.model.id }}
+      MODEL_NAME: ${{ matrix.model.name }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install OpenCode
+        run: |
+          curl -fsSL https://opencode.ai/install | bash
+
+      - name: Verify OpenCode
+        run: |
+          export PATH="$HOME/.opencode/bin:$HOME/.local/bin:$PATH"
+          opencode --version
+          opencode models opencode | grep -E "deepseek-v4-flash-free|mimo-v2.5-free" || true
+
+      - name: Initialize State Files
+        run: |
+          touch findings_${MODEL_NAME}.md research_${MODEL_NAME}.md state_${MODEL_NAME}.json run-log.md
+
+      - name: Load Current State
+        run: |
+          STATE_FILE="state_${MODEL_NAME}.json"
+          if [ -f "$STATE_FILE" ] && grep -q '"target"' "$STATE_FILE" 2>/dev/null; then
+            python3 << 'PYTHON_EOF'
+          import json, os
+          try:
+              with open(f'state_{os.environ["MODEL_NAME"]}.json') as f:
+                  st = json.load(f)
+              with open(os.environ['GITHUB_ENV'], 'a') as env:
+                  env.write(f"CURRENT_TARGET={st.get('target','NONE')}\n")
+                  env.write(f"CURRENT_PHASE={st.get('phase','RECON')}\n")
+                  env.write(f"CURRENT_STATUS={st.get('status','IN_PROGRESS')}\n")
+              print('state loaded:', st)
+          except Exception:
+              with open(os.environ['GITHUB_ENV'], 'a') as env:
+                  env.write('CURRENT_TARGET=NONE\nCURRENT_PHASE=RECON\nCURRENT_STATUS=FRESH\n')
+              print('state load failed, starting fresh')
+          PYTHON_EOF
+          else
+            echo "CURRENT_TARGET=NONE" >> $GITHUB_ENV
+            echo "CURRENT_PHASE=RECON" >> $GITHUB_ENV
+            echo "CURRENT_STATUS=FRESH" >> $GITHUB_ENV
+          fi
+
+      - name: Extract Previous Context
+        run: |
+          wc_findings=$(wc -l < findings_${MODEL_NAME}.md 2>/dev/null || echo 0)
+          wc_research=$(wc -l < research_${MODEL_NAME}.md 2>/dev/null || echo 0)
+          echo "findings=$wc_findings lines, research=$wc_research lines"
+
+          if [ "$wc_findings" -gt 100 ]; then
+            tail -n 1000 findings_${MODEL_NAME}.md > ctx-findings_${MODEL_NAME}.txt
+          else
+            echo "# No findings yet" > ctx-findings_${MODEL_NAME}.txt
+          fi
+          if [ "$wc_research" -gt 100 ]; then
+            tail -n 1000 research_${MODEL_NAME}.md > ctx-research_${MODEL_NAME}.txt
+          else
+            echo "# No research yet" > ctx-research_${MODEL_NAME}.txt
+          fi
+
+      - name: Create Research Prompt
+        run: |
+          cat > research-prompt.txt << 'PROMPT_START'
+          You are a security research analyst supporting bug bounty hunting.
+
+          Your role: Deep research, hypothesis generation, PoC design.
+          NOT: Actual exploitation or testing against live sites.
+          TARGET IS FIXED TO: ${TARGET}
+          RUNNING MODEL: ${MODEL_ID}
+
+          =====PREVIOUS CONTEXT=====
+          PROMPT_START
+
+          cat >> research-prompt.txt << 'PROMPT_START'
+          FINDINGS FROM PREVIOUS RUNS:
+          PROMPT_START
+          cat ctx-findings_${MODEL_NAME}.txt >> research-prompt.txt
+
+          cat >> research-prompt.txt << 'PROMPT_START'
+
+          RESEARCH FROM PREVIOUS RUNS:
+          PROMPT_START
+          cat ctx-research_${MODEL_NAME}.txt >> research-prompt.txt
+
+          # NOTE: this block is UNQUOTED so shell expands ${CURRENT_TARGET} etc.
+          cat >> research-prompt.txt << PROMPT_START
+
+          ===== CURRENT STATE =====
+          TARGET: ${CURRENT_TARGET}
+          PHASE: ${CURRENT_PHASE}
+          STATUS: ${CURRENT_STATUS}
+
+          ===== YOUR TASK =====
+          Research ONLY the fixed target ${TARGET}.
+
+          RULES:
+          1. Always continue research on ${TARGET} - never switch away from it.
+          2. Each run must go ONE phase deeper (RECON -> SURFACE -> HYPOTHESIS -> POC).
+          3. Read the previous context above and build on it - never repeat it.
+          4. If current phase is EXHAUSTED, restart RECON on a DIFFERENT unexplored
+             surface of ${TARGET} (new subdomain, new API version, new app).
+          5. Only document read-only research/data; do not describe live attacks.
+          6. SCOPE ENFORCEMENT (STRICT): attack surface is ONLY ${TARGET} and its
+             subdomains (*.${TARGET}). Never enumerate, fetch, or test any
+             third-party domain (no coda.io, no external doc sites, no CDNs, no
+             third-party SaaS). Third-party pages may be fetched ONLY to read the
+             target's own disclosure policy (e.g. its HackerOne program page) -
+             that is policy reading, not attack surface.
+          7. Everything must tie back to a ${TARGET} or *.${TARGET} host. If a
+             finding references a third-party host, drop it.
+
+          ===== PHASES (IN ORDER) =====
+
+          PHASE 1: RECONNAISSANCE
+          - VDP/disclosure policy URL, security contact email
+          - Subdomains/assets (DNS, crt.sh, SSL, GitHub), tech stack
+          - API endpoints, GitHub repositories
+
+          PHASE 2: SURFACE ANALYSIS
+          - API docs (endpoints, params, auth), changelog/recent features
+          - Permission/role model, auth mechanisms (OAuth, JWT, sessions)
+          - Multi-tenant architecture, data sensitivity
+
+          PHASE 3: HYPOTHESIS GENERATION
+          - IDOR, authz bypass, business logic, API manipulation, OAuth/SSO
+          - Cross-tenant leakage, session flaws, rate-limit bypass
+          For EACH hypothesis: why it might exist, impact, read-only PoC design.
+
+          PHASE 4: POC DESIGN
+          - Exact curl/request format, what would indicate the bug
+          - Safe approach, CVSS estimate, proof needed
+
+          ===== OUTPUT FORMAT =====
+          Structure your response clearly:
+
+          # Target: ${TARGET}
+          # Current Phase: [RECON/SURFACE/HYPOTHESIS/POC]
+
+          ## Key Findings
+          - Finding
+
+          ## API Endpoints
+          - /api/endpoint (method, auth, params)
+
+          ## Hypotheses
+          ### IDOR on /api/users/{id}
+          Reasoning / Impact / Test
+
+          ## CVSS Candidates
+          - [name] - Estimated CVSS x.x
+
+          ---
+
+          ## STATE UPDATE FOR NEXT RUN
+          Keep this format EXACTLY for parsing:
+
+          STATUS_TARGET: ${TARGET}
+          STATUS_PHASE: [RECON|SURFACE|HYPOTHESIS|POC]
+          STATUS_STATE: [IN_PROGRESS|EXHAUSTED|HIGH_POTENTIAL]
+
+          NEXT_STEP_1: [specific action]
+          NEXT_STEP_2: [specific action]
+          NEXT_STEP_3: [specific action]
+
+          ===== RULES FOR RESPONSE =====
+          ALWAYS: append findings, number hypotheses, show reasoning, be professional.
+          NEVER: claim to execute exploits, say "I tested and found", change target,
+          ignore auth scope, make up vulnerabilities.
+
+          Begin research now.
+          PROMPT_START
+
+      - name: Run OpenCode Research
+        run: |
+          export PATH="$HOME/.opencode/bin:$HOME/.local/bin:$PATH"
+          echo "Model=$MODEL_ID Phase=$CURRENT_PHASE Target=$CURRENT_TARGET"
+          timeout 18m opencode run --model "$MODEL_ID" "$(cat research-prompt.txt)" > raw_${MODEL_NAME}.txt 2>&1 || true
+
+          echo "=== Output Preview ==="
+          head -30 raw_${MODEL_NAME}.txt
+          echo "..."
+
+      - name: Parse Output Robustly
+        run: |
+          python3 << 'PARSE_PYTHON'
+          import re, json, os
+          name = os.environ['MODEL_NAME']
+          with open(f'raw_{name}.txt', 'r', errors='ignore') as f:
+              output = f.read()
+
+          state = {'target': 'UNKNOWN', 'phase': 'RECON', 'status': 'IN_PROGRESS', 'next_steps': []}
+          if output.strip():
+              m = re.search(r'STATUS_TARGET:\s*([^\n]+)', output, re.IGNORECASE)
+              if m: state['target'] = m.group(1).strip()
+              m = re.search(r'STATUS_PHASE:\s*(RECON|SURFACE|HYPOTHESIS|POC)', output, re.IGNORECASE)
+              if m: state['phase'] = m.group(1).upper()
+              m = re.search(r'STATUS_STATE:\s*(IN_PROGRESS|EXHAUSTED|HIGH_POTENTIAL)', output, re.IGNORECASE)
+              if m: state['status'] = m.group(1).upper()
+              state['next_steps'] = re.findall(r'NEXT_STEP_\d+:\s*([^\n]+)', output)[:5]
+
+          # Fall back to the fixed target if the model never emitted STATUS_TARGET.
+          if state['target'] in ('UNKNOWN', 'NONE', ''):
+              state['target'] = os.environ.get('TARGET', 'fyers.in')
+
+          with open(f'state_{name}.json', 'w') as f:
+              json.dump(state, f, indent=2)
+          print(json.dumps(state, indent=2))
+          PARSE_PYTHON
+
+      - name: Append Research Findings
+        run: |
+          {
+            echo ""
+            echo "===== RUN $(date -u +'%Y-%m-%d %H:%M:%S UTC') ====="
+            echo "Model: $MODEL_NAME | Phase: $CURRENT_PHASE | Target: $CURRENT_TARGET"
+            echo ""
+            cat raw_${MODEL_NAME}.txt
+          } >> research_${MODEL_NAME}.md
+          if [ "$(wc -l < research_${MODEL_NAME}.md)" -gt 3000 ]; then
+            tail -n 3000 research_${MODEL_NAME}.md > .research.tmp && mv .research.tmp research_${MODEL_NAME}.md
+          fi
+
+      - name: Update Findings Summary
+        run: |
+          python3 << 'EXTRACT_PYTHON'
+          import re, os
+          from datetime import datetime, timezone
+          name = os.environ['MODEL_NAME']
+          with open(f'raw_{name}.txt', 'r', errors='ignore') as f:
+              output = f.read()
+
+          findings = []
+          m = re.search(r'## Key Findings\n(.*?)\n##', output, re.DOTALL)
+          if m:
+              for line in m.group(1).strip().split('\n'):
+                  line = line.strip()
+                  if line.startswith('-') and len(line) > 3:
+                      findings.append(line.lstrip('- ').strip())
+
+          critical_keywords = ['IDOR', 'Auth.*Bypass', 'RCE', 'SQLi', 'Data.*Leak', 'SSRF', 'XSS']
+          hypotheses = []
+          for kw in critical_keywords:
+              hypotheses += re.findall(rf'### ({kw}[^\n]*)', output, re.IGNORECASE)
+
+          if findings or hypotheses:
+              now = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')
+              with open(f'findings_{name}.md', 'a') as f:
+                  f.write(f"\n# {len(findings)+len(hypotheses)} items on {now}\n")
+                  for finding in findings:
+                      f.write(f"- {finding}\n")
+                  if hypotheses:
+                      f.write("\n## High-Value Hypotheses\n")
+                      for h in hypotheses:
+                          f.write(f"- {h}\n")
+          EXTRACT_PYTHON
+
+      - name: Check for High-Impact Research
+        run: |
+          if grep -q "CVSS.*[789]" raw_${MODEL_NAME}.txt 2>/dev/null || grep -qE "CRITICAL|MUST_TEST" raw_${MODEL_NAME}.txt 2>/dev/null; then
+            {
+              echo ""
+              echo "HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: $MODEL_NAME)"
+              echo "Review research_${MODEL_NAME}.md for details"
+              grep -E "CVSS|CRITICAL|MUST_TEST" raw_${MODEL_NAME}.txt | head -3
+            } | tee -a findings_${MODEL_NAME}.md
+          fi
+
+      - name: Save State for Next Run
+        run: |
+          python3 -m json.tool state_${MODEL_NAME}.json > /dev/null && echo "State valid"
+
+      - name: Commit All Changes
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add findings_${MODEL_NAME}.md research_${MODEL_NAME}.md state_${MODEL_NAME}.json run-log.md || true
+          git diff --cached --quiet || git commit -m "research $MODEL_NAME $(date -u +'%Y-%m-%d-%H-%M')"
+          git pull --rebase || true
+          git push || true
