@@ -1,6 +1,10 @@
 {
   "target": "fyers.in",
-  "phase": "RECON",
+  "phase": "SURFACE",
   "status": "IN_PROGRESS",
-  "next_steps": []
+  "next_steps": [
+    "Verify `redirect_uri` binding by requesting `generate-authcode` with a non-documented redirect_uri and comparing redirect behavior vs documented `trade.fyers.in` URI (read-only oracle only).",
+    "Enumerate v3 spec details for `flows/tc/se`, `validate-refresh-token`, and `smart-order` schemas in `v3.yaml` (params, required fields, examples) to tighten H2/H3/H4 designs.",
+    "Probe `trade.fyers.in` (login + redirect-uri host) and `socket.fyers.in`/`rtsocket-api.fyers.in` handshake endpoints for auth gating and handshake response shapes; check `assets.fyers.in/mcp/` directory listing for artifact enumeration."
+  ]
 }
