@@ -980,3 +980,139 @@ zyla.sana.insure
 TOTAL 876
 [0m
 [91m[1mError: [0m"Streaming response failed: [503] The request queue is full."
+
+===== RUN 2026-08-04 22:34:10 UTC =====
+Model: deepseek | Phase: RECON | Target: fyers.in
+
+[0m
+> build · deepseek-v4-flash-free
+[0m
+[0m$ [0mcurl -s -m 25 -D - "https://api-docs.fyers.in/" -o /tmp/opencode/apidocs.html 2>&1 | head -40; echo "--BODY SIZE--"; wc -c /tmp/opencode/apidocs.html
+HTTP/2 307 
+date: Tue, 04 Aug 2026 22:33:07 GMT
+content-type: text/html; charset=UTF-8
+location: https://myapi.fyers.in/
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+x-content-type-options: nosniff
+server: cloudflare
+cf-ray: a261059dec5ff493-IAD
+
+--BODY SIZE--
+1107 /tmp/opencode/apidocs.html
+[0m
+I'll continue phase progression. Previous run completed rich RECON (DNS, CT logs, subdomain discovery). Now I'll advance to SURFACE analysis on the in-scope `*.fyers.in` API hosts, staying strictly read-only
+[0m$ [0mfor h in api-docs.fyers.in marketdata-api-instaoptions.fyers.in api.fyers.in instantpayout.fyers.in workdrive.fyers.in; do echo "=== $h ==="; curl -s -o /dev/null -w "HTTP %{http_code} | server=%{header_server} | scheme=%{scheme}\n" -m 20 "https://$h/" 2>&1; done
+=== api-docs.fyers.in ===
+curl: unknown --write-out variable: 'header_server'
+HTTP 307 | server= | scheme=HTTPS
+=== marketdata-api-instaoptions.fyers.in ===
+curl: unknown --write-out variable: 'header_server'
+HTTP 404 | server= | scheme=HTTPS
+=== api.fyers.in ===
+curl: unknown --write-out variable: 'header_server'
+HTTP 500 | server= | scheme=HTTPS
+=== instantpayout.fyers.in ===
+curl: unknown --write-out variable: 'header_server'
+HTTP 000 | server= | scheme=
+=== workdrive.fyers.in ===
+curl: unknown --write-out variable: 'header_server'
+HTTP 302 | server= | scheme=HTTPS
+[0m
+[0m$ [0mfor h in myapi.fyers.in api.fyers.in marketdata-api-instaoptions.fyers.in status.fyers.in; do echo "=== $h ROOT ==="; curl -s -m 20 -D - "https://$h/" -o /dev/null 2>&1 | grep -iE "HTTP/|server:|content-type:|location:|x-powered|x-fyers|x-frame|strict-transport"; done
+=== myapi.fyers.in ROOT ===
+HTTP/2 200 
+content-type: text/html
+server: cloudflare
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+=== api.fyers.in ROOT ===
+HTTP/2 500 
+server: awselb/2.0
+content-type: application/json; charset=utf-8
+=== marketdata-api-instaoptions.fyers.in ROOT ===
+HTTP/2 404 
+content-type: application/json; charset=utf-8
+x-powered-by: Express
+strict-transport-security: max-age=31536000; includeSubDomains
+=== status.fyers.in ROOT ===
+HTTP/2 200 
+content-type: text/html; charset=utf-8
+strict-transport-security: max-age=259200
+server: AtlassianEdge
+[0m
+[0m$ [0mecho "=== api-docs content ==="; sed 's/></>\n</g' /tmp/opencode/apidocs.html | grep -iE "href|http|location" | head; echo "=== api.fyers.in common API probe (read-only, unauthenticated) ==="; for p in v3 auth oauth data symbols login; do curl -s -o /dev/null -w "/$p -> %{http_code}\n" -m 15 "https://api.fyers.in/$p" 2>&1; done
+=== api-docs content ===
+=== api.fyers.in common API probe (read-only, unauthenticated) ===
+/v3 -> 500
+/auth -> 500
+/oauth -> 500
+/data -> 500
+/symbols -> 500
+/login -> 500
+[0m
+[0m$ [0mfor h in api-t1.fyers.in api-t2.fyers.in auth.fyers.in accounts.fyers.in; do echo "=== $h ==="; dig +short $h A | head -3; curl -s -o /dev/null -w "  / -> %{http_code}\n" -m 15 "https://$h/" 2>&1; done
+=== api-t1.fyers.in ===
+104.18.4.135
+104.18.5.135
+  / -> 404
+=== api-t2.fyers.in ===
+104.18.4.135
+104.18.5.135
+  / -> 503
+=== auth.fyers.in ===
+  / -> 000
+=== accounts.fyers.in ===
+  / -> 000
+[0m
+[0m$ [0mecho "=== api.fyers.in / v3 JSON body ==="; curl -s -m 20 "https://api.fyers.in/" 2>&1 | head -c 400; echo; echo "=== probe versioned paths ==="; for p in api/v2/validate-refresh-token api/v3/quote api/v3/history api/v3/orders api/v3/order api/v3/positions api/v3/funds api/v3/trades api/v3/gattrade api/v3/rms; do curl -s -o /dev/null -w "/$p -> %{http_code}\n" -m 15 -X GET "https://api.fyers.in/$p" 2>&1; done
+=== api.fyers.in / v3 JSON body ===
+{"s": "error", "code": 500, "message": "Invalid Request, please provide valid method"}
+=== probe versioned paths ===
+/api/v2/validate-refresh-token -> 500
+/api/v3/quote -> 500
+/api/v3/history -> 500
+/api/v3/orders -> 500
+/api/v3/order -> 500
+/api/v3/positions -> 500
+/api/v3/funds -> 500
+/api/v3/trades -> 500
+/api/v3/gattrade -> 500
+/api/v3/rms -> 500
+[0m
+api.fyers.in (AWS ALB origin) is exposed directly without Cloudflare, while OAuth endpoints sit behind Cloudflare. The API validates HTTP method. Let me confirm method-based routing and map the OAuth surface (api-t1/t2) read-only.
+[0m$ [0mecho "=== api-t1.fyers.in validate-authcode (no creds -> reveals API shape) ==="; curl -s -m 20 -D - "https://api-t1.fyers.in/api/v3/validate-authcode" -o /dev/null 2>&1 | grep -iE "HTTP/|server|content-type|allow"; echo "=== body ==="; curl -s -m 20 "https://api-t1.fyers.in/api/v3/validate-authcode" 2>&1 | head -c 300; echo; echo "=== api-t2 ==="; curl -s -m 20 -D - "https://api-t2.fyers.in/api/v3/validate-authcode" -o /dev/null 2>&1 | grep -iE "HTTP/|server"
+=== api-t1.fyers.in validate-authcode (no creds -> reveals API shape) ===
+HTTP/2 403 
+content-type: text/html; charset=UTF-8
+x-content-type-options: nosniff
+server: cloudflare
+=== body ===
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en-US"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en-US"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en-US"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en-US"> <!
+=== api-t2 ===
+HTTP/2 403 
+server: cloudflare
+[0m
+[0m$ [0mecho "=== method differential on api.fyers.in ==="; for m in GET POST PUT DELETE OPTIONS; do printf "%-8s " "$m"; curl -s -m 15 -X $m -o /dev/null -w "%{http_code} " "https://api.fyers.in/api/v3/order" 2>&1; curl -s -m 15 -X $m -o /dev/null -w "%{http_code}\n" -H "Content-Type: application/json" -d '{}' "https://api.fyers.in/api/v3/order" 2>&1; done
+=== method differential on api.fyers.in ===
+GET      500 500
+POST     500 500
+PUT      500 500
+DELETE   500 500
+OPTIONS  200 200
+[0m
+[0m$ [0mecho "=== OPTIONS Allow headers (method map, read-only) ==="; for p in order orders funds positions history quote trades holdings; do printf "%-10s " "$p"; curl -s -m 15 -X OPTIONS -D - -o /dev/null "https://api.fyers.in/api/v3/$p" 2>&1 | grep -i "^allow:" | tr -d '\r'; done
+=== OPTIONS Allow headers (method map, read-only) ===
+order      orders     funds      positions  history    quote      trades     holdings
+[0m
+[0m$ [0mecho "=== OPTIONS api/v3/order full body ==="; curl -s -m 15 -X OPTIONS "https://api.fyers.in/api/v3/order" 2>&1 | head -c 300; echo; echo "=== POST with bad auth to v3/order (shows error shape) ==="; curl -s -m 15 -X POST -H "Content-Type: application/json" -H "Authorization: Bearer badauth_test" -d '{}' "https://api.fyers.in/api/v3/order" 2>&1 | head -c 300; echo; echo "=== GET /api/v2/validate-refresh-token POST ==="; curl -s -m 15 -X POST -H "Content-Type: application/json" -d '{}' "https://api.fyers.in/api/v2/validate-refresh-token" 2>&1 | head -c 300
+=== OPTIONS api/v3/order full body ===
+OK
+=== POST with bad auth to v3/order (shows error shape) ===
+{"s": "error", "code": 500, "message": "Invalid Request, please provide valid method"}
+=== GET /api/v2/validate-refresh-token POST ===
+{"s": "error", "code": -442, "message": "Please provide valid grant_type"}
+[0m
+[91m[1mError: [0m"Streaming response failed: [503] The request queue is full."
