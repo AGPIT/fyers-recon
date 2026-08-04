@@ -1,0 +1,10 @@
+{
+  "target": "fyers.in",
+  "phase": "RECON",
+  "status": "IN_PROGRESS",
+  "next_steps": [
+    "Fetch API documentation at myapi.fyers.in/docs",
+    "Enumerate additional subdomains via crt.sh",
+    "Analyze trading platform JavaScript for API routes"
+  ]
+}
