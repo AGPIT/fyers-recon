@@ -1,11 +1,6 @@
 {
   "target": "fyers.in",
-  "phase": "HYPOTHESIS",
-  "status": "HIGH_POTENTIAL",
-  "next_steps": [
-    "Design detailed PoC for IDOR on order endpoints",
-    "Test appIdHash validation on refresh flow",
-    "Enumerate WebSocket authentication mechanism",
-    "Check for token leakage in browser storage/localStorage"
-  ]
+  "phase": "RECON",
+  "status": "IN_PROGRESS",
+  "next_steps": []
 }
