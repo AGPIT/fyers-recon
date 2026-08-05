@@ -3671,3 +3671,1959 @@ STATUS_STATE: IN_PROGRESS
 NEXT_STEP_1: SURFACE analysis of `mcp.fyers.in`: walk the full JSON-RPC method set (`initialize`, `notifications/initialized`, `tools/list`, `resources/list`, `resources/templates/list`, `ping`) with no token and record the auth-gate vs protocol-gate error ordering to finalize the H8 boundary oracle; check the Windows .exe / macOS .pkg MCP installers at `assets.fyers.in/mcp/{windows,macos}/1.0.0/` for the documented OAuth token scopes (in-scope assets host, static analysis only).
 NEXT_STEP_2: SURFACE analysis of the `quantainer/v1/charts/*` `-401` domain and `automate-chn.fyers.in` vs `api-t2.fyers.in` split: build the request-template table for the H9 token-scoping test (document-only until an authorized token exists) and fingerprint remaining quantainer/osb paths from the 870-URL config dump for additional auth flavors.
 NEXT_STEP_3: Re-scan `indus/v1/config` diff (113,497→114,456 B drift) for newly added endpoints/hosts; classify any new `*.fyers.in` hosts (esp. any `*-chn`, `*-cdn`, `mcp`) by DNS + auth fingerprint to keep the RECON host map current.
+
+===== RUN 2026-08-05 20:10:21 UTC =====
+Model: deepseek | Phase: POC | Target: fyers.in
+
+[0m
+> build · deepseek-v4-flash-free
+[0m
+[0m$ [0mcat /home/runner/work/fyers-recon/fyers-recon/state_deepseek.json 2>/dev/null; echo "==="; ls -la /home/runner/work/fyers-recon/fyers-recon/ 2>/dev/null; echo "==="; cd /tmp/opencode 2>/dev/null && ls -la
+{
+  "target": "fyers.in",
+  "phase": "POC",
+  "status": "IN_PROGRESS",
+  "next_steps": [
+    "Execute the H1 step-A oracle matrix (8 redirect_uri variants per client) and diff login-page sizes/hashes to map any server-side validation branch, without submitting real credentials or exchanging codes. Then decode the `login.min.js` callback to confirm where post-auth `auth_code`/`redirectUrl` is emitted (document-only).",
+    "Map authz-domain boundary for H5: send an api-t1-issued-style Authorization token (placeholder/sample from config, not real creds) to `api-g1.settings/*` and `api-i1.fd/*` to observe whether the `-401`/`40101` gate is independent of the trade-core `-16` gate (token-scoping oracle, read-only).",
+    "Enumerate the H7 `user/v3/app/create` request schema (accepted/required fields incl. redirect_uri) and the H2 `guest_user/register` required keys via empty/partial-body error-shape diffing; assemble persisted PoC request templates for H1/H3/H5/H7 in next run.",
+    "H1 PoC deliverable (document-only, no creds/code): statically trace the `login.min.js` post-auth handler around the `_0x1b1ef9['redirect_uri']` site to determine whether `auth_code`/`approvalUrl`/`redirectUrl` is emitted from the client-side URL param; capture the callback response-format template in the report.",
+    "H3 PoC deliverable: walk the complete `validate-refresh-token` field-validation order (`grant_type\u2192appIdHash\u2192refresh_token\u2192pin`) with dummy values, spaced, and record the exact error-code/success-shape table; note any identity-confusion signal when arbitrary `appIdHash`+`pin` are supplied."
+  ]
+}===
+total 848
+drwxr-xr-x 4 runner runner   4096 Aug  5 19:52 .
+drwxr-xr-x 3 runner runner   4096 Aug  5 19:52 ..
+drwxr-xr-x 7 runner runner   4096 Aug  5 19:52 .git
+drwxr-xr-x 3 runner runner   4096 Aug  5 19:52 .github
+-rw-r--r-- 1 runner runner     18 Aug  5 19:52 ctx-findings_deepseek.txt
+-rw-r--r-- 1 runner runner 120000 Aug  5 19:52 ctx-research_deepseek.txt
+-rw-r--r-- 1 runner runner  20259 Aug  5 19:52 findings_deepseek.md
+-rw-r--r-- 1 runner runner   6120 Aug  5 19:52 findings_mimo.md
+-rw-r--r-- 1 runner runner     44 Aug  5 19:52 raw_deepseek.txt
+-rw-r--r-- 1 runner runner 127113 Aug  5 19:52 research-prompt.txt
+-rw-r--r-- 1 runner runner 419257 Aug  5 19:52 research_deepseek.md
+-rw-r--r-- 1 runner runner 124056 Aug  5 19:52 research_mimo.md
+-rw-r--r-- 1 runner runner      0 Aug  5 19:52 run-log.md
+-rw-r--r-- 1 runner runner   1628 Aug  5 19:52 state_deepseek.json
+-rw-r--r-- 1 runner runner    338 Aug  5 19:52 state_mimo.json
+-rw-r--r-- 1 runner runner   3986 Aug  5 19:52 surface-map-new-hosts.md
+===
+total 16
+drwxr-xr-x  2 runner runner  4096 Aug  5 19:52 .
+drwxrwxrwt 14 root   root   12288 Aug  5 19:52 ..
+[0m
+[0m$ [0mgrep -n "STATUS_PHASE\|STATUS_STATE\|NEXT_STEP" /home/runner/work/fyers-recon/fyers-recon/research-prompt.txt | tail -10; echo "==="; tail -60 /home/runner/work/fyers-recon/fyers-recon/findings_deepseek.md
+1536:STATUS_PHASE: SURFACE
+1537:STATUS_STATE: IN_PROGRESS
+1539:NEXT_STEP_1: SURFACE analysis of `mcp.fyers.in`: walk the full JSON-RPC method set (`initialize`, `notifications/initialized`, `tools/list`, `resources/list`, `resources/templates/list`, `ping`) with no token and record the auth-gate vs protocol-gate error ordering to finalize the H8 boundary oracle; check the Windows .exe / macOS .pkg MCP installers at `assets.fyers.in/mcp/{windows,macos}/1.0.0/` for the documented OAuth token scopes (in-scope assets host, static analysis only).
+1540:NEXT_STEP_2: SURFACE analysis of the `quantainer/v1/charts/*` `-401` domain and `automate-chn.fyers.in` vs `api-t2.fyers.in` split: build the request-template table for the H9 token-scoping test (document-only until an authorized token exists) and fingerprint remaining quantainer/osb paths from the 870-URL config dump for additional auth flavors.
+1541:NEXT_STEP_3: Re-scan `indus/v1/config` diff (113,497→114,456 B drift) for newly added endpoints/hosts; classify any new `*.fyers.in` hosts (esp. any `*-chn`, `*-cdn`, `mcp`) by DNS + auth fingerprint to keep the RECON host map current.
+1641:STATUS_PHASE: [RECON|SURFACE|HYPOTHESIS|POC]
+1642:STATUS_STATE: [IN_PROGRESS|EXHAUSTED|HIGH_POTENTIAL]
+1644:NEXT_STEP_1: [specific action]
+1645:NEXT_STEP_2: [specific action]
+1646:NEXT_STEP_3: [specific action]
+===
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: deepseek)
+Review research_deepseek.md for details
+## CVSS Candidates
+- [H1 OAuth code interception] — CVSS 8.1–9.0 (full ATO if code delivery confirmed)
+- [H1 open-redirect / non-binding redirect_uri on generate-authcode] — CVSS 6.1 (confirmed step-1)
+
+# 6 items on 2026-08-05 07:28:04 UTC
+- **H1 step-A oracle matrix confirmed across 6 `redirect_uri` variants (read-only, live client `SOFG221ZX4-101`).** Registered (`pledge.fyers.in/index.html`), foreign-subdomain (`direct.fyers.in/auth/redirect`), external host (`evil.example.com/cb`), host-dot open-redirect (`pledge.fyers.inherit.example.com/cb`), and `?query#fragment` forms **all** render the identical **60,818-byte** login page. Byte-level and structural diffing of two fetches (same vs different URI) showed the only variance is per-request nonce/turnstile noise (~4 diff lines). **Conclusion: `generate-authcode` does NOT enforce an allowlist against the client's registered redirect_uri at step-1.** Only *presence* is validated.
+- **Empty `redirect_uri` reveals the backend implementation detail.** Returns `302 → trade.fyers.in/api-login/error/index.html?error_msg=Key: 'AuthCodeRequest.RedirectURI' Error:Field validation for 'RedirectURI' failed on the 'required' tag`. This discloses: (a) the Go handler struct **`AuthCodeRequest.RedirectURI`**, (b) validation uses Go validator `required` tag (presence-only, not per-app registration). Strong PoC evidence for H1.
+- **H3 field-walk oracle on `validate-refresh-token` proven (pre-auth, live).** Endpoint reachable without credentials and does progressive plaintext field validation: any `grant_type` other than `refresh_token` → `-442 "Please provide valid grant_type"`; `grant_type=refresh_token` advances to the next gate → `-501 "Please provide valid refresh token"`. Confirms a live refresh-token exchange surface with orderable validation branches.
+- **SSO string-table cross-check** confirms backend token-family endpoints: `validate_refresh_token`, `validate_access_token`, `refresh_token_v2`, `REFRESH_TOKEN_VALIDITY`, `Bearer` header. `api/v3/validate-access-token` → 404 at that path (different route). `vagator/v2/validate_*` → 404.
+- **Correction to H4:** the IDs leaked from `indus/v1/config` (`data_socket.cl_cug`, `analytics_exceptions.exceptional_clients`, `hsm_config.cug_mob`) are **7-char internal identifiers** (e.g. `XS53027`), NOT OAuth `client_id`s (real ones carry a `-101` appType suffix). Consequently they cannot be used to initiate an OAuth flow — H4 is downgraded to operational/internal identifier + feature-limit disclosure (still a publically reachable info-leak; reproducible 113,497-byte response, 73 endpoint blocks, 35 unique `*.fyers.in` hosts).
+- **Auth-domain partitioning reconfirmed** (distinct, non-interoperable no-token fingerprints): `-16`/`-15` (api-t1/t2 trade+login core), `-401` (api-g1 settings), `40101` (api-i1 fixed-income), DRF `{"detail":...}` (verify_token_v2, guest_user/register). No token exists to bridge them → token-scoping remains design-only (a real api-t1 token is required to test api-g1 acceptance).
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: deepseek)
+Review research_deepseek.md for details
+**Impact:** Open redirect to arbitrary/external/cross-host URLs from a trusted FYERS domain (CVSS 6.1); if post-auth code delivery honors the untrusted URI client-side with no registry recheck (per the decoded `login.min.js` flow), full trading-account takeover via code interception (CVSS 8.1–9.0).
+**Impact:** If refresh tokens remain honored post-deprecation or PIN/TOTP precedence is weak, token-rotation gaps could enable session/account takeover (CVSS 7.5–9.0).
+## CVSS Candidates
+
+# 5 items on 2026-08-05 10:14:51 UTC
+- **H1 static deliverable complete: post-auth redirect destination is driven by client-side URL parameters.** Full deobfuscation of the SSO bundle (`login.min.js`, 310 KB, string-array obfuscation, 2 rotated arrays) shows the authenticated redirect handler reads `redirect_uri` **and a second alias `cb`** straight from the current page's query string and sets `location.href` to them (`if(_0x1b1ef9['redirect_uri']){location.href=…} else if(_0x1b1ef9['cb']){location.href=…}`), with only a 5-value reserved-`cb` denylist (`includes` check). The QR/WebSocket login success path pushes `_FYERS|<cookie>|_deviceId` (pipe-delimited) and then navigates to the URL-param destination. No server-side registry lookup on the destination is present anywhere in the flow. Combined with the confirmed step-1 oracle (Go `required`-tag, presence-only validation of `AuthCodeRequest.RedirectURI`), this closes the H1 PoC evidence chain for an **open-redirect-on-login primitive**; whether the code/cookie artifact is appended to the attacker URI can only be confirmed with authenticated testing (out of scope).
+- **H3 complete field-walk on `validate-refresh-token` (pre-auth, live).** Progressive, orderable validation errors establish the exact request schema: `grant_type`≠`refresh_token`→`-442`; empty `refresh_token`→`-501`; missing `appIdHash`→`-371 "Please provide sha256 hash of appId and app secret"` (discloses the hashing scheme, matching the public `SHA256(appId:appSecret)`); missing `pin`→`-502 "Please provide your valid pin"`; all-present dummy values→`-501` (token validity gate last). Order: `grant_type → refresh_token → appIdHash → pin → token validity`. This is a clean pre-auth enumeration oracle for the refresh-token exchange and confirms v3 requires `pin` at the *validate* layer.
+- **`/api/v3/token` refresh grant is fully opaque (`-16` uniform).** Unlike `validate-refresh-token`, the real token endpoint returns `-16` for every refresh grant permutation (missing/format-fine fields alike) — no field oracle. The two endpoints are separate services with divergent error behavior; any pin-requirement divergence between *validate* and *token* must be tested with a valid token (documented, not executed).
+- **api-a1 splits into two independent auth domains.** `funds/v1/api/*` (40+ bank/mandate/withdrawal endpoints) → `-21 "Authorization token required"`; `manage/account/*` (90+ endpoints) → `-16`. Distinct from api-g1 (`-401`), api-i1 (`40101`), api-t2/baskets (`401 "missing authorization header"` plain text), api-t2/indri (`-16`), and DRF (`{"detail":"Not authenticated"}`). This yields ≥6 auth fingerprints across the estate — the core input to the H5 cross-service authz hypothesis.
+- **Public config re-confirmed live** (113,497 B, 73 endpoint blocks): `api-a1.fyers.in` alone is referenced by **212 URLs** in the endpoint map, including sensitive objects (esign/initiate, selfie-validation, freeze/account, close-account/transfer-details, add_bank/penny_drop) — a stable recon artifact for further object-ID analysis.
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: deepseek)
+Review research_deepseek.md for details
+**Impact:** Confirmed open redirect from a trusted FYERS login host (CVSS 6.1). If the auth code is URL-delivered on that client-side redirect, the attacker (who controls `code_challenge`/verifier in the phished URL) can redeem it — PKCE offers no protection because the attacker controls both ends → full ATO (CVSS 8.1–9.0). Requires authenticated confirmation of the delivered artifact.
+**Impact:** If `/token` refresh exchange omits the pin check that `validate-refresh-token` enforces, a leaked refresh_token alone mints access tokens (CVSS 7.5–9.0).
+## CVSS Candidates
+
+# RECON round 2026-08-05 19:xx UTC
+- **New in-scope host `mcp.fyers.in` (FYERS MCP, Model Context Protocol).** `GET /mcp` → SSE `text/event-stream` (200, holds open, no auth error). Unauthenticated JSON-RPC `initialize` POST returns `{"serverInfo":{"name":"Fyers Trading MCP Server","version":"1.0.0"},"capabilities":{"resources":{},"tools":{"listChanged":true}}}`, `protocolVersion 2025-03-26`. `tools/list` (no session) → `Invalid session ID`; SSE sessions require `Authorization: Bearer ${FIA_TOKEN}` (per public fia.yaml spec). Root/health/mcp.json/.well-known/mcp → 404 text/plain 19B. Distinct auth domain: FIA_TOKEN bearer vs OAuth access_token. Source: `myapi.fyers.in/static/media/fia.9dcf545bc3f508df4db9.yaml`.
+- **New in-scope host `automate-chn.fyers.in`** (Cloudflare, 104.18.4.135). `/automate/backtest/status` → `-16` trade-core; `/automate/backtest/` and root → 404. Mirrors api-t2 automate backend on a second hostname — token-scoping candidate vs api-t2.
+- **New auth fingerprint #7:** `api-t2.fyers.in/quantainer/v1/charts/{futures,atm-iv,multi-strike-iv,strategy,...}` → `{"code":-401,"message":"Please provide valid token"}` — distinct message from api-g1 `-401 Unauthorized` (separate microservice/auth domain).
+- **Full `api-t2.fyers.in/automate/*` inventory recovered from public config** (correct base, not `/automate/v1/`): `backtest/{history,preflight,start}`, `copy?strategy_id=`, `details?strategy_id=`, `draft?strategy_id=`, `explore`, `export`, `get-configuration?task_variant=MultilegOptions&task_id=PlaceOrder`, `get-nodes`, `my/{activity,automation,drafts,pnl,has-automations,strategy/*}`, `schedule/{create,cancel}`, `strategy/pnl?strategy_id=`, `workflow/{stop,multi-stop}`, `workflows`, `tagpositionbook`, `osb/draft?strategy_id=`. All `-16` auth-gated (confirmed live on samples).
+- **`data.fyers.in/dev-fyers/savechart/1.2/charts`** → `500 "Invalid Request, please provide valid method"` — session-gated form-POST surface (method-enforcement pattern), object-keyed (saved charts) IDOR candidate behind auth.
+- **api-a1 auth split finalized:** `funds/v1/api/{send_otp,verify_otp,add_funds_status,transaction_download_key,...}` all `-21`; `manage/account/{send_otp,verify_otp}` and `marina/v1/mtf/{send_otp,verify_otp}` all `-16`. No public OTP oracle on api-a1.
+- **api-i1 fd/* uniformly `40101`** (`plans`, `filters`, `overview`). **screeners.fyers.in/koshi/v2/* now `-16`** (an earlier run saw `/config` 200 — surface since locked).
+- **Auth-model documentation (live):** v3.1 SEBI spec (`myapi.fyers.in/static/media/v3.1.32a8eeba1fba866d1201.yaml`) confirms refresh-token flow discontinued, daily 2FA mandatory, static-IP whitelist for order placement, single transactional App ID per user, market orders auto-converted to MPP, no AMO. Contact `api-support@fyers.in`.
+- **Config drift:** `indus/v1/config` grew 113,497 → 114,456 B; current dump references 870 `*.fyers.in` URLs.
+
+# 8 items on 2026-08-05 19:18:03 UTC
+- **New in-scope host `mcp.fyers.in` — FYERS MCP (Model Context Protocol) SSE service.** `GET /mcp` → `text/event-stream` (200, holds open). An **unauthenticated JSON-RPC `initialize` POST returns server identity and capability schema** with no token: `Fyers Trading MCP Server v1.0.0`, `protocolVersion 2025-03-26`, capabilities `resources` + `tools(listChanged)`. `tools/list` without an SSE session → `Invalid session ID`; sessions require `Authorization: Bearer ${FIA_TOKEN}` (per `myapi.fyers.in/static/media/fia.*.yaml`). Root, `/health`, `/mcp.json`, `/.well-known/mcp` → 404 (19 B text). This is a **seventh auth domain** (FIA_TOKEN bearer) vs OAuth `access_token` — a fresh token-scoping/cross-service candidate.
+- **New in-scope host `automate-chn.fyers.in`** (Cloudflare 104.18.4.135): `/automate/backtest/status` → `-16` trade-core; `/automate/backtest/` and root → 404. Second hostname serving the same automate backend as api-t2 — cross-host token-scoping candidate.
+- **New auth fingerprint #7 confirmed:** `api-t2.fyers.in/quantainer/v1/charts/*` (`futures`, `atm-iv`, `multi-strike-iv`, `strategy`, …) → `{"code":-401,"message":"Please provide valid token"}` — message distinct from api-g1 `-401 Unauthorized`, i.e. another independent microservice/authz domain.
+- **Full `api-t2/automate/*` + `osb/*` inventory recovered from public config** (correct base, not `/v1/`): `backtest/{history,preflight,start}`, `copy|details|draft?strategy_id=`, `explore`, `export`, `get-configuration?task_variant=MultilegOptions&task_id=PlaceOrder`, `get-nodes`, `my/*`, `schedule/*`, `strategy/pnl?strategy_id=`, `workflow/{stop,multi-stop}`, `workflows`, `tagpositionbook`, `osb/draft`. Sampled endpoints all `-16` auth-gated — object-ID (`strategy_id`) surfaces behind auth.
+- **api-a1 auth split finalized:** `funds/v1/api/{send_otp,verify_otp,add_funds_status?order_id=,transaction_download_key}` → `-21`; `manage/account/{send_otp,verify_otp}` and `marina/v1/mtf/{send,verify}_otp` → `-16`. **No public OTP oracle exists on api-a1.**
+- **api-i1 `fd/{plans,filters,overview}` uniformly `40101`; screeners.fyers.in/koshi/v2/* now `-16`** (an earlier run observed `/config` 200 — that surface has since been locked).
+- **Auth-model intel (live docs, `myapi.fyers.in`):** v3.1 SEBI spec confirms refresh-token discontinuation, mandatory daily 2FA, static-IP whitelisting for order placement, single transactional App ID per user, MPP-forced market orders, no AMO; official API contact **`api-support@fyers.in`** (usable as disclosure contact). `fyers.in/{security,privacy,responsible-disclosure}` all 404.
+- **Config drift:** `indus/v1/config` grew 113,497 → 114,456 B; current dump enumerates **870 `*.fyers.in` URLs**.
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: deepseek)
+Review research_deepseek.md for details
+## CVSS Candidates
+- [H8 MCP unauthenticated identity/capability disclosure] — CVSS 5.3
+- [H8 MCP FIA_TOKEN cross-domain scoping / tool ATO] — CVSS 6.5–8.0 (conditional)
+[0m
+[0m# [0mTodos
+[•] SURFACE: mcp.fyers.in full JSON-RPC method walk (no token) - auth-gate vs protocol-gate error ordering
+[ ] SURFACE: check assets.fyers.in/mcp/{windows,macos} MCP installer references for token scopes (static)
+[ ] SURFACE: quantainer/v1 -401 domain + automate-chn vs api-t2 split, H9 request template
+[ ] SURFACE: re-scan indus/v1/config drift for new hosts/endpoints
+[ ] Compile SURFACE report + state update
+[0m
+Continuing SURFACE phase on `mcp.fyers.in` — walking the JSON-RPC method set without a session to map the auth-gate vs protocol-gate ordering.
+[0m$ [0mcd /tmp/opencode && mcp_probe(){ desc=$1; body=$2; printf "%-34s " "$desc"; timeout 6 curl -s -m 5 -X POST "https://mcp.fyers.in/mcp" -H "Content-Type: application/json" -H "Accept: application/json" -d "$body" | head -c 400; echo; sleep 4; }
+mcp_probe "initialize (no session)" '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"r","version":"0"}}}'
+mcp_probe "notifications/initialized" '{"jsonrpc":"2.0","method":"notifications/initialized","params":{}}'
+mcp_probe "tools/list (no session)" '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}'
+mcp_probe "tools/call (no session)" '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"x","arguments":{}}}'
+mcp_probe "resources/list (no session)" '{"jsonrpc":"2.0","id":4,"method":"resources/list","params":{}}'
+mcp_probe "resources/templates/list" '{"jsonrpc":"2.0","id":5,"method":"resources/templates/list","params":{}}'
+mcp_probe "prompts/list" '{"jsonrpc":"2.0","id":6,"method":"prompts/list","params":{}}'
+mcp_probe "ping (no session)" '{"jsonrpc":"2.0","id":7,"method":"ping","params":{}}'
+initialize (no session)            {"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-03-26","capabilities":{"resources":{},"tools":{"listChanged":true}},"serverInfo":{"name":"Fyers Trading MCP Server","version":"1.0.0"}}}
+
+notifications/initialized          Invalid session ID
+
+tools/list (no session)            Invalid session ID
+
+tools/call (no session)            Invalid session ID
+
+resources/list (no session)        Invalid session ID
+
+resources/templates/list           Invalid session ID
+
+prompts/list                       Invalid session ID
+
+ping (no session)                  Invalid session ID
+[0m
+[0m$ [0mcd /tmp/opencode && echo "=== SSE GET stream: capture all event frames (10s) ==="; timeout 10 curl -s -m 9 -N "https://mcp.fyers.in/mcp" 2>/dev/null | head -c 800; echo "[EOF]"; echo; echo "=== assets.fyers.in/mcp installer paths ==="; for p in "mcp/windows/1.0.0/" "mcp/macos/1.0.0/" "mcp/windows/" "mcp/" ; do printf "%-24s " "$p"; curl -s -m 8 -o /dev/null -w "HTTP %{http_code} ct=%{content_type} sz=%{size_download}\n" "https://assets.fyers.in/$p"; sleep 2; done
+=== SSE GET stream: capture all event frames (10s) ===
+[EOF]
+
+=== assets.fyers.in/mcp installer paths ===
+mcp/windows/1.0.0/       HTTP 404 ct=text/html sz=1008
+mcp/macos/1.0.0/         HTTP 404 ct=text/html sz=1008
+mcp/windows/             HTTP 404 ct=text/html sz=1008
+mcp/                     HTTP 404 ct=text/html sz=1008
+[0m
+[0m✗ [0mRead /tmp/opencode/spec_fia.yaml failed
+[91m[1mError: [0mFile not found: /tmp/opencode/spec_fia.yaml
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -m 30 -o spec_fia.yaml "https://myapi.fyers.in/static/media/fia.9dcf545bc3f508df4db9.yaml" -w "HTTP %{http_code} sz=%{size_download}\n" && cat spec_fia.yaml
+HTTP 200 sz=6194
+openapi: 3.0.0
+servers:
+  - url: //petstore.swagger.io/v2
+    description: Default server
+  - url: //petstore.swagger.io/sandbox
+    description: Sandbox server
+
+info:
+  description: |
+
+    # Introduction
+
+    FYERS MCP (Model Context Protocol) is the easiest way to sync your FYERS account with your AI platform of choice like Claude, Cursor, Windsurf and more.
+    With one-tap installation.
+
+    Your assistant instantly understands your trading context stocks, mutual funds, positions, orders, GTTs, option chains, alerts, live and historic data.
+
+    No generic answers. No setup hassle. Just context-aware insights, built on your FYERS data. Tailor-made for expert traders and investors. 
+
+    # What is FYERS MCP?
+
+    Every AI tool is only as good as the context it has. FYERS MCP injects your portfolio, trades, and market data directly into your assistant, so it can respond with answers personalised to you.
+    
+    For traders and investors, this means natural-language queries like “What’s my P&L this week?” or “Show me my exposure in banking stocks.”
+
+    For developers, this means direct access to a raw MCP server schema—so you can integrate, extend, and build custom workflows on top of FYERS.
+    
+    MCPs are your way to sync FYERS context into your AI, making every response sharper, faster, and more useful.
+
+    # Why FYERS MCP is Better
+
+    Most MCPs are clunky, limited, and built only for developers. **FYERS MCP** is built for *everyone*—giving you all the power others offer, plus more.
+
+    | Feature / Experience | FYERS MCP 🚀 | Others ❌ |
+    |-----------------------|--------------|-----------|
+    | **Installation**      | One-tap (.exe / .pkg) | Multi-step, config heavy |
+    | **Ease of Use**       | Simple, no coding needed | Geared towards devs only |
+    | **Market Data**       | Live + Historic prices | Often live only |
+    | **Portfolio Coverage** | Stocks, MFs, trades, orders, GTT, alerts | Limited holdings/trades |
+    | **Options & F&O**     | Full option chain | Partial or missing |
+    | **Developer Value**   | Raw MCP schema + server specs to build custom tools | MCP Server Schema and Specs |
+    | **Audience**          | Investors + Developers | Mostly developers |
+    | **Coverage**          | Equities, Derivatives, MFs | Equities, Derivatives, MFs |
+
+    ---
+
+    With **FYERS MCP**, you’re not choosing between ease and depth—you get both.
+
+    # How to Install
+
+    FYERS MCP is packaged for **Mac (.pkg)** and **Windows (.exe)**. Just download, run, log in, and authorise. Your AI platform instantly syncs with your FYERS context—no command line, no code edits.
+
+    For everyday users, that means you’re ready in minutes.  
+    For developers, it means the installation doubles up as a foundation: the raw server spec is there if you want to extend MCP into your own custom setup.
+
+    Getting started with FYERS MCP is effortless
+
+
+    # For Mac & Windows
+
+    1. Download the installer for **Mac (.pkg)** or **Windows (.exe)**.  
+    2. Run the installer, it will install Node.js and Claude Desktop.  
+    3. Restart Claude Desktop and log in to your FYERS account.  
+    4. Authorise once, and your AI platform is synced with your FYERS context.  
+
+    👉 No coding. No command line. Just click, connect, and go.  
+
+    MacOS installer <a href="https://assets.fyers.in/mcp/macos/1.0.0/FYERS-Claude-MCP-Installer-v1.0.0.pkg">Click here</a>
+    
+    Windows installer AMD <a href="https://assets.fyers.in/mcp/windows/1.0.0/FYERS-Claude-MCP-Installer-v1.0.0.exe">Click here</a>
+    
+    _(Note:Supported versions: Windows 10, Windows 11 & above and MacOS Big Sur & above)_
+
+    ## For Cursor
+
+    1. Open **Cursor**.  
+    2. Go to **Settings → MCP & Integrations**.  
+    3. Click **Add New MCP Server**.  
+    4. Paste the following JSON and save
+    
+    ```json
+    {
+        "mcpServers": {
+            "FIA-MCP": {
+                "url": "https://mcp.fyers.in/mcp",
+                "type": "sse",
+                "headers": {
+                    "Authorization": "${FIA_TOKEN}"
+                }
+            }
+        }
+    }
+    ```
+
+    5. Config done! Cursor is now connected to FYERS MCP, just restart cursor. 
+    6. Installer is supported only in macOS Version 14 & above and Windows 11 & above.
+
+    # Use Cases That Add Value
+
+    FYERS MCP turns your AI into a true **market co-pilot**:
+
+    - **Portfolio Review** – Ask for today’s P&L, your best performers, or a sector-wise breakdown.  
+    - **Market Monitoring** – Summarise index moves, track sector rotation, or flag unusual volume.  
+    - **Options & Derivatives** – Get the full option chain, analyse strategies, or calculate payoffs.  
+    - **Orders & GTT** – Check all your orders and trades.  
+    - **Historic Insights** – Pull price history, compare performance to benchmarks, or backtest strategies.  
+    - **Alerts** – Create alerts that notify you when markets move.  
+    - **Developer Edge** – Plug MCP into your own tools, automate reports, or build strategy testers on top of the raw server schema.
+
+    Every use case translates into added value: less friction, more clarity, and better decisions in less time.
+
+    # Security & Privacy
+
+    Your account data is secure, always.
+
+    - **On Your Terms** – MCP only works with permissions you allow.  
+    - **No Shared Credentials** – Authentication stays with FYERS' secure login flow, never through the AI.  
+    - **Encrypted by Default** – Every request is end-to-end encrypted; keys and tokens stay on your device.  
+    - **Transparent History** – All MCP actions—data pulls, alerts, trades—are logged, so you’re always in control.  
+
+    Security isn’t an add-on. It’s part of the design.
+
+    # The FYERS Advantage
+
+    Other MCPs unlock access. **FYERS MCP unlocks context.**  
+    It brings your portfolio and market context into your AI, so insights aren’t just accurate they’re actionable.  
+
+    And whether you’re a retail investor who wants simplicity or a developer who wants raw control, FYERS MCP is built for you.  
+
+    👉 **Download FYERS MCP today and make your AI truly market-smart.**
+[0m
+[0m$ [0mcd /tmp/opencode && echo "=== MCP installer existence (HEAD) ==="; for f in "mcp/windows/1.0.0/FYERS-Claude-MCP-Installer-v1.0.0.exe" "mcp/macos/1.0.0/FYERS-Claude-MCP-Installer-v1.0.0.pkg"; do printf "%-58s " "$f"; curl -s -m 12 -I "https://assets.fyers.in/$f" | grep -iE "^(HTTP|content-length|content-type|last-modified)" | tr '\n' ' '; echo; sleep 2; done
+=== MCP installer existence (HEAD) ===
+mcp/windows/1.0.0/FYERS-Claude-MCP-Installer-v1.0.0.exe    HTTP/2 200  content-type: application/octet-stream content-length: 77235112 last-modified: Fri, 26 Sep 2025 13:24:27 GMT 
+mcp/macos/1.0.0/FYERS-Claude-MCP-Installer-v1.0.0.pkg      HTTP/2 200  content-type: application/x-www-form-urlencoded content-length: 22175 last-modified: Mon, 29 Sep 2025 07:12:35 GMT
+[0m
+Both installers are live on the in-scope assets host. The `.pkg` is only 22 KB — small enough to statically inspect (never executed).
+[0m$ [0mcd /tmp/opencode && curl -s -m 30 -o mcp.pkg "https://assets.fyers.in/mcp/macos/1.0.0/FYERS-Claude-MCP-Installer-v1.0.0.pkg" -w "HTTP %{http_code} sz=%{size_download}\n" && file mcp.pkg 2>/dev/null; strings mcp.pkg | head -40
+HTTP 200 sz=22175
+mcp.pkg: xar archive compressed TOC: 4747, SHA-1 checksum
+xar!
+[oxq
+8_p?*
+w1"27+
+=+I	s
+3?_U.
+yl7z4
+i3jnsc
+u*#|<F
+{"PZ
+uY!^
+;i*2
+yaoC
+TY#Uyt
+!NvPSnF6
+$If3
+oj/l
+L~Bq
+lVF6r
+A=NJ
+OvK\
+`H|L
+$Hqj
+$		#k
+1_g{[
+GV6h3\
+#JEN
+u>Qn\
+^g'N)
+e@9{
+tp0#
+CTQX]
+G,a0
+14gb$,
+`vN<
+;VwPam
+[*er
+OU@p#rE
+W.KX
+Ig]U
+[0m
+[0m$ [0mcd /tmp/opencode && which xar; python3 << 'EOF'
+import zlib
+data=open('mcp.pkg','rb').read()
+# xar: header 'xar!' then 28-byte header; find compressed TOC (usually deflate)
+print("magic:", data[:4])
+# TOC offset/size in header
+import struct
+if data[:4]==b'xar!':
+    header_size=struct.unpack('>H',data[4:6])[0]
+    toc_len=struct.unpack('>Q',data[8:16])[0]
+    toc_c_len=struct.unpack('>Q',data[16:24])[0]
+    print("header_size",header_size,"toc_len",toc_len,"toc_comp_len",toc_c_len)
+    toc_comp=data[header_size:header_size+toc_c_len]
+    try:
+        toc=zlib.decompress(toc_comp)
+        print("TOC decompressed",len(toc))
+        open('toc.xml','wb').write(toc)
+    except Exception as e:
+        print("decomp err",e)
+EOF
+echo "==="; grep -oE 'name="[^"]+"' toc.xml 2>/dev/null | head -40
+magic: b'xar!'
+header_size 28 toc_len 4747 toc_comp_len 16245
+TOC decompressed 16245
+===
+[0m
+[0m→ [0mRead /tmp/opencode/toc.xml
+The pkg is a wrapper bundling a `ClaudeInstaller.pkg`. Extracting the `Distribution` and `PackageInfo` metadata (static, no execution).
+[0m
+[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
+import zlib, struct
+data=open('mcp.pkg','rb').read()
+header_size=struct.unpack('>H',data[4:6])[0]
+# parse TOC (deflate)
+toc_c_len=struct.unpack('>Q',data[16:24])[0]
+toc=zlib.decompress(data[header_size:header_size+toc_c_len])
+import re
+# extract file entries: <file id="9"> ... <offset>15246</offset><size>1122</size> <encoding ...>
+entries=re.findall(r'<file id="(\d+)">.*?<length>(\d+)</length>\s*<offset>(\d+)</offset>\s*<size>(\d+)</size>\s*(?:<encoding style="([^"]+)"/>\s*)?<extracted-checksum[^>]*>([0-9a-f]+)</extracted-checksum>.*?<name>([^<]+)</name>', toc, re.S)
+for eid,length,offset,size,enc,sha,name in entries:
+    start=int(offset); ln=int(length)
+    blob=data[start:start+ln]
+    out=f"xar_{name}"
+    with open(out,'wb') as f: f.write(blob)
+    print(eid, name, "comp", ln, "enc", enc or "none", "->", out)
+EOF
+echo "=== Distribution ==="; zcat xar_Distribution 2>/dev/null || python3 -c "import zlib,sys;print(zlib.decompress(open('xar_Distribution','rb').read()).decode(errors='replace'))"
+Traceback (most recent call last):
+  File "<stdin>", line 9, in <module>
+  File "/usr/lib/python3.12/re/__init__.py", line 217, in findall
+    return _compile(pattern, flags).findall(string)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: cannot use a string pattern on a bytes-like object
+=== Distribution ===
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+FileNotFoundError: [Errno 2] No such file or directory: 'xar_Distribution'
+[0m
+[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
+import zlib, struct, re
+data=open('mcp.pkg','rb').read()
+header_size=struct.unpack('>H',data[4:6])[0]
+toc_c_len=struct.unpack('>Q',data[16:24])[0]
+toc=zlib.decompress(data[header_size:header_size+toc_c_len]).decode()
+entries=re.findall(r'<file id="(\d+)">.*?<length>(\d+)</length>\s*<offset>(\d+)</offset>\s*<size>(\d+)</size>\s*(?:<encoding style="([^"]+)"/>\s*)?<extracted-checksum[^>]*>([0-9a-f]+)</extracted-checksum>.*?<name>([^<]+)</name>', toc, re.S)
+for eid,length,offset,size,enc,sha,name in entries:
+    start=int(offset); ln=int(length)
+    blob=data[start:start+ln]
+    out="xar_"+re.sub(r'\W','_',name)
+    open(out,'wb').write(blob)
+    print(eid, name, "comp", ln, "enc", enc or "none", "->", out)
+EOF
+echo "=== Distribution ==="; for f in xar_Distribution xar_PackageInfo; do echo "--- $f ---"; python3 -c "import zlib,sys;d=open('$f','rb').read()
+try: print(zlib.decompress(d).decode(errors='replace'))
+except Exception as e: print('raw:', d[:300])"; done
+9 Distribution comp 468 enc application/x-gzip -> xar_Distribution
+6 welcome.html comp 574 enc application/x-gzip -> xar_welcome_html
+8 license.html comp 752 enc application/x-gzip -> xar_license_html
+1 Bom comp 395 enc application/x-gzip -> xar_Bom
+3 PackageInfo comp 297 enc application/x-gzip -> xar_PackageInfo
+=== Distribution ===
+--- xar_Distribution ---
+raw: b'\x11\xf8\x08\x8e9\x1a\x00_\x92I\x89[\xea\x84\xb4\xbc\x15\xe59\xf2b\xd7j\x91C\xef\xc1u<\xc3\x02\t*\x84\x85;\xd9?O\xc8\xcd\xd5)2\x8b\xd6\x9d\xf0y\xf6\x82\xbd\x83\x9fCx\xbb\xafM\xa2\xc8\x0f\xf7\xda\xed\x10\x94m\x8cik\xecyc\x87\x1a\xbe\x1d\xb6Lo\xda\xf6B?\xa0\x8f\xba%0\x86\xba\xd9\xe9\x8dv\x8c\x8e\xa5on\xed\x9a\xfa\xd6g\xbd;\xdd\xd8\xdd\xee\xe9\x9b\xb4\xb3\xb3\xdd\xdd\xed\xf5\xe8g\xbbm\x97\x86Q"%k:\xce\xd1\x94h 4f\x94Q\x96\xc0\x067\x94\xa9\x13\x82\x8f\xa6~\x15\xa4D\x0c\x0cJ\xb2\xd5\x8c\x03\x87\xe8 \xb6\xf5\x04\x88&~\x07v\x0b\xa2"\xbd\xe7\xbf\xe8\xca\x10\xcf@\xbeQ\x0e\xdc\xd9\xc5\xcd\xf9\xf5\xf0\xf2\xe2\xe4\xfc\x1a\x88y\xe99\xf1\x94&\x06p\x92\xf8\xa6&i\x8b\x81@\xd3\x06\x08\x15\xca\x99Xv\x1c\xd9\x0e1\xa2\xc80\'9J\xf5)n\xf7=\x1b\xc8\xd0\xd6%\xe4\x8b(\xef{\xfe#\x8fp\xbe\x8f\xd2\xcd\x19\xaclL\xb0\x0e\xa9\x83%\xf2\n\xb0,\xc7\x82 \xa3&\xd8\xf4\x89~\x95\xa7G\xf6\x81<\xb2\xf6\x02J\x07\x10\x8a!4\xf9\x10i@\x7f\x10'
+--- xar_PackageInfo ---
+raw: b'\x11l\xc7\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+[0m
+[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
+import zlib, re
+def dec(b):
+    # xar gzip-style: 4-byte BE length prefix + zlib stream (or raw deflate)
+    tries=[("zlib full",lambda: zlib.decompress(b)),
+           ("zlib[4:]",lambda: zlib.decompress(b[4:])),
+           ("raw[4:]",lambda: zlib.decompress(b[4:], -15)),
+           ("raw full",lambda: zlib.decompress(b, -15)),
+           ("gzip full",lambda: zlib.decompress(b, 16+zlib.MAX_WBITS))]
+    for name,fn in tries:
+        try:
+            d=fn(); return name,d
+        except Exception: pass
+    return "none", None
+for name in ["xar_Distribution","xar_PackageInfo","xar_welcome_html","xar_license_html","xar_Bom"]:
+    b=open(name,'rb').read()
+    m,d=dec(b)
+    print("====",name,"method",m)
+    if d:
+        print(d[:600].decode(errors='replace'))
+EOF
+==== xar_Distribution method none
+==== xar_PackageInfo method none
+==== xar_welcome_html method none
+==== xar_license_html method none
+==== xar_Bom method none
+[0m
+Header field misparse — the compressed TOC is 4747 B, heap starts at offset 4775. Re-extracting.
+[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
+import zlib, struct, re
+data=open('mcp.pkg','rb').read()
+toc_comp_len=struct.unpack('>Q',data[8:16])[0]   # 4747 (compressed)
+toc=zlib.decompress(data[28:28+toc_comp_len]).decode()
+heap=28+toc_comp_len
+print("heap start", heap, "file len", len(data))
+entries=re.findall(r'<file id="(\d+)">.*?<length>(\d+)</length>\s*<offset>(\d+)</offset>\s*<size>(\d+)</size>\s*(?:<encoding style="([^"]+)"/>\s*)?<extracted-checksum[^>]*>([0-9a-f]+)</extracted-checksum>.*?<name>([^<]+)</name>', toc, re.S)
+for eid,length,offset,size,enc,sha,name in entries:
+    start=heap+int(offset); ln=int(length)
+    blob=data[start:start+ln]
+    out="f_"+re.sub(r'\W','_',name)
+    open(out,'wb').write(blob)
+    print(eid, name, "at", start, "len", ln, "enc", enc or "raw", "->", out)
+EOF
+for f in f_Distribution f_PackageInfo f_welcome_html f_license_html f_Bom f_Payload f_Scripts; do echo "==== $f ===="; python3 -c "
+import zlib,sys
+b=open('$f','rb').read()
+if b[:4] in (b'xar!',) or len(b)<4: print('not deflate, len',len(b)); raise SystemExit
+# try 4-byte len prefix + zlib
+for mode in [lambda: zlib.decompress(b[4:]), lambda: zlib.decompress(b), lambda: zlib.decompress(b[4:],-15)]:
+    try:
+        d=mode(); print(d[:900].decode(errors='replace')); raise SystemExit
+    except Exception as e: pass
+print('undecodable raw len', len(b)); print(b[:200])
+"; done
+heap start 4775 file len 22175
+9 Distribution at 20021 len 468 enc application/x-gzip -> f_Distribution
+6 welcome.html at 18695 len 574 enc application/x-gzip -> f_welcome_html
+8 license.html at 19269 len 752 enc application/x-gzip -> f_license_html
+1 Bom at 14267 len 395 enc application/x-gzip -> f_Bom
+3 PackageInfo at 18398 len 297 enc application/x-gzip -> f_PackageInfo
+==== f_Distribution ====
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<installer-gui-script minSpecVersion="2">
+    <title>FYERS Claude Desktop Installer</title>
+    <background file="background.png" mime-type="image/png" alignment="topleft" scaling="tofit"/>
+    <welcome file="welcome.html" mime-type="text/html"/>
+    <license file="license.html" mime-type="text/html"/>
+    <options customize="never" require-scripts="true" hostArchitectures="x86_64,arm64"/>
+    <choices-outline>
+        <line choice="default">
+            <line choice="com.fyers.claudeinstaller"/>
+        </line>
+    </choices-outline>
+    <choice id="default"/>
+    <choice id="com.fyers.claudeinstaller" visible="false">
+        <pkg-ref id="com.fyers.claudeinstaller"/>
+    </choice>
+    <pkg-ref id="com.fyers.claudeinstaller" version="1.0" onConclusion="none" installKBytes="0">#ClaudeInstaller.pkg</pkg-ref>
+    <volume-check>
+      
+==== f_PackageInfo ====
+<?xml version="1.0" encoding="utf-8"?>
+<pkg-info overwrite-permissions="true" relocatable="false" identifier="com.fyers.claudeinstaller" postinstall-action="none" version="1.0" format-version="2" generator-version="InstallCmds-834 (23H723)" install-location="/" auth="root">
+    <payload numberOfFiles="1" installKBytes="0"/>
+    <bundle-version/>
+    <upgrade-bundle/>
+    <update-bundle/>
+    <atomic-update-bundle/>
+    <strict-identifier/>
+    <relocate/>
+    <scripts>
+        <postinstall file="./postinstall"/>
+    </scripts>
+</pkg-info>
+==== f_welcome_html ====
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Welcome</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 20px; }
+        h1 { color: #007AFF; }
+        .logo { text-align: center; font-size: 48px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>Welcome to FYERS Package Installer</h1>
+    <p>This installer will:</p>
+    <ul>
+        <li><strong>Download and install Node.js</strong> (if not already installed)</li>
+        <li><strong>Download and install Claude Desktop</strong> (if not already installed)</li>
+        <li><strong>Configure FYERS MCP Server</strong> for seamless integration</li>
+        <li><strong>Set up everything automatically</strong> - no manual configuration needed</li>
+    </ul>
+    
+    <p><strong>What's included:</strong></p>
+    <br>
+    <ul>
+        <li>✅ Node.js runtime (latest LTS)
+==== f_license_html ====
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>License</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 20px; }
+        h1 { color: #007AFF; }
+    </style>
+</head>
+<body>
+    <h1>FYERS Package Installer License</h1>
+    
+    <p><strong>Copyright © 2025 FYERS</strong></p>
+    
+    <p>This installer is provided "as is" without warranty of any kind. By using this installer, you agree to the following terms:</p>
+    
+    <h2>Permission</h2>
+    <p>You are granted permission to use this installer to set up Claude Desktop and FYERS MCP integration on your system.</p>
+    
+    <h2>Disclaimer</h2>
+    <p>This installer downloads and installs third-party software (Claude Desktop) from Anthropic. FYERS is not responsible for the Claude Desktop application itself, only for the MCP integration setup.</p>
+    
+    <h2>Privacy
+==== f_Bom ====
+BOMStore        3�  U�  #"   <                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           nfo          tree                 s                                                                                                                                                                                                                                                                                                                                          
+==== f_Payload ====
+Traceback (most recent call last):
+  File "<string>", line 3, in <module>
+FileNotFoundError: [Errno 2] No such file or directory: 'f_Payload'
+==== f_Scripts ====
+Traceback (most recent call last):
+  File "<string>", line 3, in <module>
+FileNotFoundError: [Errno 2] No such file or directory: 'f_Scripts'
+[0m
+[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
+import zlib, struct
+data=open('mcp.pkg','rb').read()
+toc_comp_len=struct.unpack('>Q',data[8:16])[0]
+heap=28+toc_comp_len
+# file 4 Scripts raw: offset 9967 len 3656 ; file 3 Payload raw: offset 9887 len 80
+for eid,off,ln in [("Scripts",9967,3656),("Payload",9887,80)]:
+    b=data[heap+off:heap+off+ln]
+    open("f_"+eid,"wb").write(b)
+    print(eid,"len",ln)
+    if eid=="Scripts":
+        try:
+            print(b.decode())
+        except: print(b[:400])
+EOF
+Scripts len 3656
+b'\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\x03\xed\x1b\xdbr\xdb\xc65\xcf\xfc\x8a\x15,\x97dG\xe0M\xb7D\x8e\xdcj(\xc9Q\xab\xdb\x88\x92;\xad\xe5\xe1@\xc0\x92D\x04\x02\x08.\x94\x95\xc4}\xebCgzy\xe8[\xa7\x9d\xf43\xfa=\xf9\x81\xe6\x13z\xce\xee\x02X\x00\x0b^l\'\x93\x07\xd3cK\x04v\xcf\xfd\xbe\xeb\xcen\x07\xff\xc8\x9f\xad\xce\xee\xf6v\xa7\xb7\xb5\xb3\xd9\xedv\xba\x9b\x9b\xdb\xec)\xff\xb7\xd3\xdd\xee\xec\xecl\xf5\xb6wv7\xd9\xf7\x9e\xb4\xb1\xf5I\xa7\x08\r (\xa1u\x95\xd0\xba;\xe21\xbc\xd8m\xb5}/\x8cl7\x8c\x0c\xc7\xf9\xe4\xc9Z\xfb\xcev\xdbwF8\xa9\xd5\x9e\x90\x174"\xd1\x84\x12\xc3\x8cb\xc3!qH\x03\xf20\xf1\x88\xed\xce\xbc{j\xb1wb+\xbci\xb8^D\x02\xcf\x8b\x9a\xb5\x83\xfe\xf5\xcd\xc1\xe9\xf0fpt\xb5\xbf\xde\x80\x05\x11\xd1GD{:\x885\xd2\xb6\xe8\xacmzn\xe894\xb7r\xf8\xc5\xc5\xd9\x11,\xa73\xc0EM\xc0\xa3\xfdq]z\xaf5k\xa7\x17/\x8eON\x8f\xf6\xb5\xf5\xe2\xbe\xf6\xe8\x91\x06\xe1\xd0t\x8c\xd8\xa2\xc3\x94\xa8\x96\xe3\x8d\xb5Z\x8dC\x1bDF\x00\xac\x8eI\x9f\xad"\x874\xbc\x8f<?a\xc1\x88l\xcf%~\xe0\x994\x0c\xc9\xc8\x0b\x18\xc3{$G\x03yN\xb4uA\x86&\xe0\xde\xa0\\&\xde\x94\x12\xcb\x0e\xa8\x19y\xc1c~\x17\xa3\x10\xb6\xe6\xf6\x82|O8br\xeeY\xb4\xf5eH\xec\x11A\x19\x1aN@\r\xeb1\x15\xad%\xf0\xf4\'\xd4\xbcG\xfa\xd3\xf5'
+Payload len 80
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import gzip
+d=gzip.decompress(open('f_Scripts','rb').read())
+open('postinstall.sh','wb').write(d)
+print(len(d),'bytes')
+" && echo "=== postinstall.sh ===" && cat postinstall.sh
+15872 bytes
+=== postinstall.sh ===
+0707070000000000000407550246311013350000050000001506642567300000200000000000. 0707070000000000011007550246311013350000010000001506642567300001600000010157./postinstall #!/bin/bash
+
+# Get the actual user who invoked the installer (not root)
+ACTUAL_USER=$(stat -f "%Su" /dev/console)
+ACTUAL_USER_HOME=$(eval echo "~$ACTUAL_USER")
+LOGFILE="$ACTUAL_USER_HOME/fyers_claude_installer.log"
+
+echo "Starting Claude Desktop installation process for user: $ACTUAL_USER" > "$LOGFILE"
+echo "User home directory: $ACTUAL_USER_HOME" >> "$LOGFILE"
+
+# Install Node.js if not already installed
+echo "Checking Node.js installation..." >> "$LOGFILE"
+SCRIPT_DIR="$(dirname "$0")"
+/bin/bash "$SCRIPT_DIR/install_nodejs.sh"
+
+# Path to check if Claude Desktop is installed
+APP_PATH="/Applications/Claude.app"
+
+if [ -d "$APP_PATH" ]; then
+    echo "Claude is already installed." >> "$LOGFILE"
+else
+    echo "Claude not found. Downloading..." >> "$LOGFILE"
+    
+    # URL to the Claude DMG
+    DMG_URL="https://storage.googleapis.com/osprey-downloads-c02f6a0d-347c-492b-a752-3e0651722e97/nest/Claude.dmg"
+    
+    # Path to save the downloaded DMG
+    DMG_PATH="/tmp/Claude.dmg"
+    
+    # Download the DMG
+    curl -o "$DMG_PATH" "$DMG_URL" >> "$LOGFILE" 2>&1
+    
+    # Mount the DMG
+    MOUNT_POINT="/Volumes/ClaudeInstaller"
+    echo "Mounting DMG..." >> "$LOGFILE"
+    hdiutil attach "$DMG_PATH" -mountpoint "$MOUNT_POINT" >> "$LOGFILE" 2>&1
+    
+    # Copy the app to /Applications
+    echo "Copying to Applications folder..." >> "$LOGFILE"
+    cp -R "$MOUNT_POINT/Claude.app" /Applications/ >> "$LOGFILE" 2>&1
+    
+    # Set proper ownership and permissions for Claude.app
+    echo "Setting proper ownership for Claude.app..." >> "$LOGFILE"
+    chown -R root:admin /Applications/Claude.app >> "$LOGFILE" 2>&1
+    chmod -R 755 /Applications/Claude.app >> "$LOGFILE" 2>&1
+    
+    # Unmount the DMG
+    echo "Unmounting DMG..." >> "$LOGFILE"
+    hdiutil detach "$MOUNT_POINT" >> "$LOGFILE" 2>&1
+    
+    # Cleanup
+    echo "Cleaning up..." >> "$LOGFILE"
+    rm "$DMG_PATH" >> "$LOGFILE" 2>&1
+    
+    echo "Installation complete: Claude Desktop." >> "$LOGFILE"
+fi
+
+# Pre-create Claude directories with proper ownership and permissions
+echo "Setting up Claude Desktop directories and permissions..." >> "$LOGFILE"
+CLAUDE_CONFIG_DIR="$ACTUAL_USER_HOME/Library/Application Support/Claude"
+CLAUDE_LOGS_DIR="$ACTUAL_USER_HOME/Library/Logs/Claude"
+CLAUDE_CACHES_DIR="$ACTUAL_USER_HOME/Library/Caches/Claude"
+
+# Create all necessary directories
+mkdir -p "$CLAUDE_CONFIG_DIR" >> "$LOGFILE" 2>&1
+mkdir -p "$CLAUDE_LOGS_DIR" >> "$LOGFILE" 2>&1  
+mkdir -p "$CLAUDE_CACHES_DIR" >> "$LOGFILE" 2>&1
+
+# Set proper ownership (user:staff is standard on macOS)
+chown -R "$ACTUAL_USER:staff" "$CLAUDE_CONFIG_DIR" >> "$LOGFILE" 2>&1
+chown -R "$ACTUAL_USER:staff" "$CLAUDE_LOGS_DIR" >> "$LOGFILE" 2>&1
+chown -R "$ACTUAL_USER:staff" "$CLAUDE_CACHES_DIR" >> "$LOGFILE" 2>&1
+
+# Set proper permissions (755 for directories, 644 for files)
+chmod -R 755 "$CLAUDE_CONFIG_DIR" >> "$LOGFILE" 2>&1
+chmod -R 755 "$CLAUDE_LOGS_DIR" >> "$LOGFILE" 2>&1
+chmod -R 755 "$CLAUDE_CACHES_DIR" >> "$LOGFILE" 2>&1
+
+echo "✅ Claude Desktop directories created with proper permissions" >> "$LOGFILE"
+
+# Configure MCP (run as the actual user, not root)
+echo "Configuring MCP..." >> "$LOGFILE"
+SCRIPT_DIR="$(dirname "$0")"
+
+# Try to run as user first, fallback to direct execution
+echo "Attempting to run MCP configuration as user $ACTUAL_USER..." >> "$LOGFILE"
+if sudo -u "$ACTUAL_USER" /bin/bash "$SCRIPT_DIR/configure_mcp.sh" >> "$LOGFILE" 2>&1; then
+    echo "✅ MCP configuration completed via sudo -u" >> "$LOGFILE"
+else
+    echo "⚠️  sudo -u failed, trying direct execution..." >> "$LOGFILE"
+    # Set environment variables for the script
+    export SUDO_USER="$ACTUAL_USER"
+    if /bin/bash "$SCRIPT_DIR/configure_mcp.sh" >> "$LOGFILE" 2>&1; then
+        echo "✅ MCP configuration completed via direct execution" >> "$LOGFILE"
+    else
+        echo "❌ MCP configuration failed" >> "$LOGFILE"
+        exit 1
+    fi
+fi
+
+# Final permission check and fix
+echo "Final permission verification..." >> "$LOGFILE"
+chown -R "$ACTUAL_USER:staff" "$CLAUDE_CONFIG_DIR" >> "$LOGFILE" 2>&1
+chown "$ACTUAL_USER:staff" "$LOGFILE" >> "$LOGFILE" 2>&1
+
+echo "✅ Installation completed successfully for user: $ACTUAL_USER" >> "$LOGFILE"
+
+exit 0
+0707070000000000021007550246311013350000010000001506642567300002400000006331./install_nodejs.sh #!/bin/bash
+
+# Install Node.js LTS if not already installed
+
+# Determine the actual user and home directory
+if [ -n "$SUDO_USER" ]; then
+    # Running via sudo, use the original user
+    ACTUAL_USER="$SUDO_USER"
+    ACTUAL_USER_HOME=$(eval echo "~$SUDO_USER")
+elif [ "$USER" != "root" ]; then
+    # Running as regular user
+    ACTUAL_USER="$USER"
+    ACTUAL_USER_HOME="$HOME"
+else
+    # Fallback: get the console user
+    ACTUAL_USER=$(stat -f "%Su" /dev/console)
+    ACTUAL_USER_HOME=$(eval echo "~$ACTUAL_USER")
+fi
+
+LOGFILE="$ACTUAL_USER_HOME/fyers_claude_installer.log"
+
+echo "Checking Node.js installation for user: $ACTUAL_USER..." >> "$LOGFILE"
+
+# Check if node is installed in various locations
+check_node_installation() {
+    # Check using command -v (checks PATH)
+    if command -v node >/dev/null 2>&1; then
+        NODE_PATH=$(command -v node)
+        NODE_VERSION=$(node --version)
+        echo "Node.js found via PATH: $NODE_PATH ($NODE_VERSION)" >> "$LOGFILE"
+        return 0
+    fi
+    
+    # Check using which
+    if which node >/dev/null 2>&1; then
+        NODE_PATH=$(which node)
+        NODE_VERSION=$($NODE_PATH --version)
+        echo "Node.js found via which: $NODE_PATH ($NODE_VERSION)" >> "$LOGFILE"
+        return 0
+    fi
+    
+    # Check common installation locations
+    COMMON_PATHS=(
+        "/usr/local/bin/node"
+        "/opt/homebrew/bin/node"
+        "/usr/bin/node"
+    )
+    
+    for NODE_PATH in "${COMMON_PATHS[@]}"; do
+        if [ -x "$NODE_PATH" ]; then
+            NODE_VERSION=$($NODE_PATH --version 2>/dev/null)
+            if [ $? -eq 0 ]; then
+                echo "Node.js found at: $NODE_PATH ($NODE_VERSION)" >> "$LOGFILE"
+                return 0
+            fi
+        fi
+    done
+    
+    # Check NVM installations
+    if [ -d "$HOME/.nvm/versions/node" ]; then
+        for NVM_NODE_PATH in "$HOME/.nvm/versions/node"/*/bin/node; do
+            if [ -x "$NVM_NODE_PATH" ]; then
+                NODE_VERSION=$($NVM_NODE_PATH --version 2>/dev/null)
+                if [ $? -eq 0 ]; then
+                    echo "Node.js found via NVM: $NVM_NODE_PATH ($NODE_VERSION)" >> "$LOGFILE"
+                    return 0
+                fi
+            fi
+        done
+    fi
+    
+    return 1
+}
+
+if check_node_installation; then
+    echo "Node.js is already installed, skipping installation." >> "$LOGFILE"
+    exit 0
+fi
+
+echo "Node.js not found. Installing LTS version..." >> "$LOGFILE"
+
+# Download and install Node.js LTS
+NODE_PKG_URL="https://nodejs.org/dist/v20.18.0/node-v20.18.0.pkg"
+NODE_PKG_PATH="/tmp/node-installer.pkg"
+
+echo "Downloading Node.js LTS..." >> "$LOGFILE"
+curl -o "$NODE_PKG_PATH" "$NODE_PKG_URL" >> "$LOGFILE" 2>&1
+
+if [ $? -ne 0 ]; then
+    echo "❌ Failed to download Node.js" >> "$LOGFILE"
+    exit 1
+fi
+
+echo "Installing Node.js..." >> "$LOGFILE"
+installer -pkg "$NODE_PKG_PATH" -target / >> "$LOGFILE" 2>&1
+
+if [ $? -eq 0 ]; then
+    echo "✅ Node.js installation completed" >> "$LOGFILE"
+    # Cleanup
+    rm "$NODE_PKG_PATH" >> "$LOGFILE" 2>&1
+    
+    # Verify installation
+    if command -v node >/dev/null 2>&1; then
+        NODE_VERSION=$(node --version)
+        echo "✅ Node.js verified: $NODE_VERSION" >> "$LOGFILE"
+    fi
+else
+    echo "❌ Node.js installation failed" >> "$LOGFILE"
+    exit 1
+fi
+
+exit 0
+0707070000000000031007550246311013350000010000001506642567300002300000016742./configure_mcp.sh #!/bin/bash
+
+# Configure Claude Desktop MCP Server for FYERS
+
+# Determine the actual user and home directory
+if [ -n "$SUDO_USER" ]; then
+    # Running via sudo, use the original user
+    ACTUAL_USER="$SUDO_USER"
+    ACTUAL_USER_HOME=$(eval echo "~$SUDO_USER")
+elif [ "$USER" != "root" ]; then
+    # Running as regular user
+    ACTUAL_USER="$USER"
+    ACTUAL_USER_HOME="$HOME"
+else
+    # Fallback: get the console user
+    ACTUAL_USER=$(stat -f "%Su" /dev/console)
+    ACTUAL_USER_HOME=$(eval echo "~$ACTUAL_USER")
+fi
+
+LOGFILE="$ACTUAL_USER_HOME/fyers_claude_installer.log"
+
+echo "Configuring Claude Desktop MCP server for user: $ACTUAL_USER..." >> "$LOGFILE"
+echo "Using home directory: $ACTUAL_USER_HOME" >> "$LOGFILE"
+
+# Find Node.js installation
+find_node_path() {
+    # Check using command -v (checks PATH)
+    if command -v node >/dev/null 2>&1; then
+        command -v node
+        return 0
+    fi
+    
+    # Check using which
+    if which node >/dev/null 2>&1; then
+        which node
+        return 0
+    fi
+    
+    # Check common installation locations
+    COMMON_PATHS=(
+        "/usr/local/bin/node"
+        "/opt/homebrew/bin/node"
+        "/usr/bin/node"
+    )
+    
+    for NODE_PATH in "${COMMON_PATHS[@]}"; do
+        if [ -x "$NODE_PATH" ]; then
+            echo "$NODE_PATH"
+            return 0
+        fi
+    done
+    
+    # Check NVM installations
+    if [ -d "$ACTUAL_USER_HOME/.nvm/versions/node" ]; then
+        for NVM_NODE_PATH in "$ACTUAL_USER_HOME/.nvm/versions/node"/*/bin/node; do
+            if [ -x "$NVM_NODE_PATH" ]; then
+                echo "$NVM_NODE_PATH"
+                return 0
+            fi
+        done
+    fi
+    
+    return 1
+}
+
+NODE_CMD=$(find_node_path)
+if [ -z "$NODE_CMD" ]; then
+    echo "❌ Node.js not found, cannot configure MCP" >> "$LOGFILE"
+    exit 1
+fi
+
+echo "Using Node.js at: $NODE_CMD" >> "$LOGFILE"
+
+# Claude config directory and file paths
+CLAUDE_CONFIG_DIR="$ACTUAL_USER_HOME/Library/Application Support/Claude"
+CLAUDE_CONFIG_PATH="$CLAUDE_CONFIG_DIR/claude_desktop_config.json"
+
+echo "Target config directory: $CLAUDE_CONFIG_DIR" >> "$LOGFILE"
+echo "Target config file: $CLAUDE_CONFIG_PATH" >> "$LOGFILE"
+
+# Create Claude config directory with proper ownership and permissions
+echo "Creating Claude config directory..." >> "$LOGFILE"
+sudo -u "$ACTUAL_USER" mkdir -p "$CLAUDE_CONFIG_DIR" >> "$LOGFILE" 2>&1
+
+# Verify directory was created
+if [ ! -d "$CLAUDE_CONFIG_DIR" ]; then
+    echo "❌ Failed to create Claude config directory" >> "$LOGFILE"
+    exit 1
+fi
+
+# Set proper ownership and permissions
+chown -R "$ACTUAL_USER:staff" "$CLAUDE_CONFIG_DIR" >> "$LOGFILE" 2>&1
+chmod 755 "$CLAUDE_CONFIG_DIR" >> "$LOGFILE" 2>&1
+
+echo "✅ Claude config directory created and configured" >> "$LOGFILE"
+
+# MCP configuration to add
+MCP_CONFIG='{
+  "mcpServers": {
+    "FYERS-MCP": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://mcp.fyers.in/mcp"
+      ]
+    }
+  }
+}'
+
+# Check if Claude config already exists
+if [ -f "$CLAUDE_CONFIG_PATH" ]; then
+    echo "-> Found existing Claude Desktop config, merging..." >> "$LOGFILE"
+    
+    # Read existing config and merge with MCP config using Node.js
+    if sudo -u "$ACTUAL_USER" "$NODE_CMD" -e "
+const fs = require('fs');
+
+try {
+    // Read existing config
+    let claudeConfig = {};
+    try {
+        const data = fs.readFileSync('$CLAUDE_CONFIG_PATH', 'utf8');
+        claudeConfig = JSON.parse(data);
+        console.error('Existing config loaded successfully');
+    } catch (error) {
+        console.error('Existing config corrupted or not found, creating new one...');
+        claudeConfig = {};
+    }
+
+    // Add or update MCP servers
+    if (!claudeConfig.mcpServers) {
+        claudeConfig.mcpServers = {};
+    }
+
+    // Add FYERS-MCP server
+    claudeConfig.mcpServers['FYERS-MCP'] = {
+        command: 'npx',
+        args: ['mcp-remote', 'https://mcp.fyers.in/mcp']
+    };
+
+    // Write updated config
+    fs.writeFileSync('$CLAUDE_CONFIG_PATH', JSON.stringify(claudeConfig, null, 2));
+    console.error('MCP configuration merged successfully');
+} catch (error) {
+    console.error('Error:', error.message);
+    process.exit(1);
+}
+" 2>> "$LOGFILE"; then
+        echo "✅ MCP configuration merged with existing Claude Desktop config" >> "$LOGFILE"
+    else
+        echo "❌ Failed to merge MCP configuration" >> "$LOGFILE"
+        exit 1
+    fi
+else
+    echo "-> Creating new Claude Desktop config..." >> "$LOGFILE"
+    echo "   Directory: $CLAUDE_CONFIG_DIR" >> "$LOGFILE"
+    echo "   Config file: $CLAUDE_CONFIG_PATH" >> "$LOGFILE"
+    
+    # Create new config with MCP server using sudo -u to run as the actual user
+    echo "   Writing MCP configuration as user $ACTUAL_USER..." >> "$LOGFILE"
+    if sudo -u "$ACTUAL_USER" bash -c "cat > '$CLAUDE_CONFIG_PATH' << 'EOFCONFIG'
+{
+  \"mcpServers\": {
+    \"FYERS-MCP\": {
+      \"command\": \"npx\",
+      \"args\": [
+        \"mcp-remote\",
+        \"https://mcp.fyers.in/mcp\"
+      ]
+    }
+  }
+}
+EOFCONFIG" >> "$LOGFILE" 2>&1; then
+        echo "✅ New Claude Desktop config created with MCP server" >> "$LOGFILE"
+    else
+        echo "❌ Failed to create Claude Desktop config file" >> "$LOGFILE"
+        echo "   Attempting alternative method..." >> "$LOGFILE"
+        
+        # Alternative method: create as root then change ownership
+        if cat > "$CLAUDE_CONFIG_PATH" << 'EOFCONFIG'
+{
+  "mcpServers": {
+    "FYERS-MCP": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://mcp.fyers.in/mcp"
+      ]
+    }
+  }
+}
+EOFCONFIG
+        then
+            chown "$ACTUAL_USER:staff" "$CLAUDE_CONFIG_PATH" >> "$LOGFILE" 2>&1
+            echo "✅ Claude Desktop config created using alternative method" >> "$LOGFILE"
+        else
+            echo "❌ Failed to create config file with alternative method" >> "$LOGFILE"
+            exit 1
+        fi
+    fi
+fi
+
+# Final ownership and permissions check
+echo "Setting final permissions on config file..." >> "$LOGFILE"
+chown "$ACTUAL_USER:staff" "$CLAUDE_CONFIG_PATH" >> "$LOGFILE" 2>&1
+chmod 644 "$CLAUDE_CONFIG_PATH" >> "$LOGFILE" 2>&1
+
+# Verify the file was created and has content
+if [ -f "$CLAUDE_CONFIG_PATH" ]; then
+    FILE_SIZE=$(stat -f%z "$CLAUDE_CONFIG_PATH" 2>/dev/null || echo "0")
+    if [ "$FILE_SIZE" -gt 0 ]; then
+        echo "✅ MCP configuration successfully added to Claude Desktop" >> "$LOGFILE"
+        echo "   Config file: $CLAUDE_CONFIG_PATH" >> "$LOGFILE"
+        echo "   File size: $FILE_SIZE bytes" >> "$LOGFILE"
+        echo "   File owner: $(stat -f '%Su:%Sg' "$CLAUDE_CONFIG_PATH" 2>/dev/null || echo 'unknown')" >> "$LOGFILE"
+        echo "   File permissions: $(stat -f '%Mp%Lp' "$CLAUDE_CONFIG_PATH" 2>/dev/null || echo 'unknown')" >> "$LOGFILE"
+        echo "   File contents preview:" >> "$LOGFILE"
+        head -10 "$CLAUDE_CONFIG_PATH" >> "$LOGFILE" 2>&1 || echo "   Could not read file contents" >> "$LOGFILE"
+        echo "" >> "$LOGFILE"
+        echo "🎉 CONFIGURATION COMPLETE!" >> "$LOGFILE"
+        echo "   ✅ Claude Desktop will now connect to FYERS MCP server" >> "$LOGFILE"
+        echo "   ✅ Restart Claude Desktop to activate the FYERS integration" >> "$LOGFILE"
+        echo "   📍 Config location: $CLAUDE_CONFIG_PATH" >> "$LOGFILE"
+    else
+        echo "❌ Config file created but is empty (size: $FILE_SIZE)" >> "$LOGFILE"
+        exit 1
+    fi
+else
+    echo "❌ Config file was not created at: $CLAUDE_CONFIG_PATH" >> "$LOGFILE"
+    echo "   Directory contents:" >> "$LOGFILE"
+    ls -la "$CLAUDE_CONFIG_DIR" >> "$LOGFILE" 2>&1 || echo "   Could not list directory" >> "$LOGFILE"
+    exit 1
+fi
+
+exit 00707070000000000040000000000000000000000010000000000000000000001300000000000TRAILER!!!                                                                                                                                                                                                                                                                                         
+[0m
+The pkg is a wrapper running `npx mcp-remote https://mcp.fyers.in/mcp` (MCP native OAuth flow). Probing the standard OAuth discovery endpoints the client would use — read-only metadata.
+[0m$ [0mcd /tmp/opencode && for p in "/.well-known/oauth-authorization-server" "/.well-known/oauth-protection-metadata" "/.well-known/openid-configuration" "/.well-known/mcp.json" "/oauth" "/mcp/oauth"; do printf "%-42s " "$p"; timeout 6 curl -s -m 5 -w " [HTTP %{http_code} ct=%{content_type}]" "https://mcp.fyers.in$p" | head -c 300; echo; sleep 2; done
+/.well-known/oauth-authorization-server    404 page not found
+ [HTTP 404 ct=text/plain; charset=utf-8]
+/.well-known/oauth-protection-metadata     404 page not found
+ [HTTP 404 ct=text/plain; charset=utf-8]
+/.well-known/openid-configuration          404 page not found
+ [HTTP 404 ct=text/plain; charset=utf-8]
+/.well-known/mcp.json                      404 page not found
+ [HTTP 404 ct=text/plain; charset=utf-8]
+/oauth                                     404 page not found
+ [HTTP 404 ct=text/plain; charset=utf-8]
+/mcp/oauth                                 404 page not found
+ [HTTP 404 ct=text/plain; charset=utf-8]
+[0m
+[0m$ [0mcd /tmp/opencode && echo "=== SSE GET with bogus Bearer token (auth boundary) ==="; timeout 8 curl -s -m 7 -D /tmp/mcp_headers.txt -N "https://mcp.fyers.in/mcp" -H "Authorization: Bearer bogus_token_123" -o /tmp/mcp_body.txt; echo "--- headers ---"; grep -iE "^(HTTP|access-control|content-type|set-cookie)" /tmp/mcp_headers.txt; echo "--- body (first 300) ---"; head -c 300 /tmp/mcp_body.txt; echo; echo "=== SSE GET with FIA_TOKEN env-style header ==="; timeout 8 curl -s -m 7 -D - -N "https://mcp.fyers.in/mcp" -H "X-FIA-Token: bogus" -H "Origin: https://trade.fyers.in" 2>/dev/null | head -c 400
+=== SSE GET with bogus Bearer token (auth boundary) ===
+--- headers ---
+HTTP/2 200 
+content-type: text/event-stream
+set-cookie: __cf_bm=jV5L4mOjXojtfZVd4laNr8nS1n9fLJTav.Lj7x0iOs8-1785959749.497361-1.0.1.1-Y5ky1wvLLTTN.sTqzV4n3JlkbQx9sU8cvJ6mkKSUOXPa0DpEDUP2TVgZagH7p.q3_eCxljxXmo.Q2fFpGzlygpjv6RTKrLW15knkjYIPeqxuoqiNBQkdvpDP1s28hCT4; HttpOnly; SameSite=None; Secure; Path=/; Domain=fyers.in; Expires=Wed, 05 Aug 2026 20:25:50 GMT
+set-cookie: _cfuvid=jjGJSeueJxYdZpuw4vl7XEb7AwshLC3aePRU.oII_Jw-1785959749.497361-1.0.1.1-At70wo5mT4guNX1C8Ty5ckxZ.XEJbizt3lADk_pBiRs; HttpOnly; SameSite=None; Secure; Path=/; Domain=fyers.in
+--- body (first 300) ---
+
+=== SSE GET with FIA_TOKEN env-style header ===
+head: cannot open '/tmp/mcp_body.txt' for reading: No such file or directory
+HTTP/2 200 
+date: Wed, 05 Aug 2026 19:55:56 GMT
+content-type: text/event-stream
+x-content-type-options: nosniff
+cache-control: no-cache
+set-cookie: __cf_bm=G3QFWrorqGDCzNuCQ18VN38mIcdRinUHVXiY9r86x1U-1785959756.5120463-1.0.1.1-g7JtMXEgoNoTG6F4Gt0blGW_EBANeHAeNqW0_MvR6cgL9OfKNp1mL1jTRs9kzcWilpIKxgWFfY.LehTfNnUQ8nOHJyQzvGPzhUdWJHogbdNIYobCTBgQiz5h2cZYleDn; HttpOnly; SameSite=None; Secure; Path=
+[0m
+SSE boundary mapped: `GET /mcp` opens the stream regardless of bearer token (no sessionId event, no error); auth is enforced only at POST JSON-RPC dispatch keyed on `sessionId`. `initialize` alone leaks server identity unauthenticated. Now the config-drift scan for new hosts.
+[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
+import json,re
+d=json.load(open('cfg.json'))
+cur=d['endpoints']['current']
+hosts=set(); urls=set()
+def walk(o):
+    if isinstance(o,dict):
+        for v in o.values(): walk(v)
+    elif isinstance(o,list):
+        for i in o: walk(i)
+    elif isinstance(o,str):
+        for u in re.findall(r'https?://([a-z0-9.-]*fyers\.in)[a-zA-Z0-9/_.?=&%-]*', o):
+            hosts.add(u)
+        for u in re.findall(r'https?://[a-z0-9.-]*\.fyers\.in[a-zA-Z0-9/_.?=&%-]*', o):
+            urls.add(u)
+walk(cur)
+print("hosts:", len(hosts))
+for h in sorted(hosts): print("  ",h)
+print("total urls:", len(urls))
+# count urls per host
+from collections import Counter
+c=Counter()
+for u in urls:
+    m=re.match(r'https?://([a-z0-9.-]+fyers\.in)', u)
+    if m: c[m.group(1)]+=1
+print("\nurls per host:")
+for h,n in c.most_common(): print(f"  {n:5d}  {h}")
+EOF
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+FileNotFoundError: [Errno 2] No such file or directory: 'cfg.json'
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -m 20 -o cfg.json "https://api-d1-cdn.fyers.in/indus/v1/config" -w "cfg HTTP %{http_code} sz=%{size_download}\n" && python3 << 'EOF'
+import json,re
+from collections import Counter
+d=json.load(open('cfg.json'))
+cur=d['endpoints']['current']
+hosts=set(); urls=set()
+def walk(o):
+    if isinstance(o,dict):
+        for v in o.values(): walk(v)
+    elif isinstance(o,list):
+        for i in o: walk(i)
+    elif isinstance(o,str):
+        for u in re.findall(r'https?://([a-z0-9.-]*fyers\.in)[a-zA-Z0-9/_.?=&%-]*', o): hosts.add(u)
+        for u in re.findall(r'https?://[a-z0-9.-]*\.fyers\.in[a-zA-Z0-9/_.?=&%-]*', o): urls.add(u)
+walk(cur)
+print("hosts:", len(hosts))
+for h in sorted(hosts): print("  ",h)
+c=Counter()
+for u in urls:
+    m=re.match(r'https?://([a-z0-9.-]+fyers\.in)', u)
+    if m: c[m.group(1)]+=1
+print("\nurls per host:")
+for h,n in c.most_common(): print(f"  {n:5d}  {h}")
+EOF
+cfg HTTP 200 sz=114456
+hosts: 36
+   alerts.fyers.in
+   api-a1-prod.fyers.in
+   api-a1.fyers.in
+   api-d1.fyers.in
+   api-g1.fyers.in
+   api-i1.fyers.in
+   api-t1-cdn.fyers.in
+   api-t1.fyers.in
+   api-t2.fyers.in
+   api-y1.fyers.in
+   api.fyers.in
+   app.fyers.in
+   assets.fyers.in
+   automate-chn.fyers.in
+   betatrade.fyers.in
+   config.fyers.in
+   data.fyers.in
+   datapub.fyers.in
+   debt.fyers.in
+   dev.fyers.in
+   forms.fyers.in
+   fundtransfer.fyers.in
+   fyers.in
+   insights.fyers.in
+   instaoptions.fyers.in
+   login.fyers.in
+   marketsmith.fyers.in
+   mtfddpi.fyers.in
+   myaccount.fyers.in
+   open-account.fyers.in
+   public.fyers.in
+   savedcharts.fyers.in
+   screeners.fyers.in
+   signup.fyers.in
+   support.fyers.in
+   trade.fyers.in
+
+urls per host:
+    223  api-a1.fyers.in
+    162  api-t1.fyers.in
+    112  api-t2.fyers.in
+     71  screeners.fyers.in
+     54  api-i1.fyers.in
+     47  support.fyers.in
+     46  api-g1.fyers.in
+     32  api.fyers.in
+     30  api-t1-cdn.fyers.in
+     29  public.fyers.in
+     10  api-a1-prod.fyers.in
+      8  trade.fyers.in
+      7  data.fyers.in
+      6  automate-chn.fyers.in
+      5  insights.fyers.in
+      4  assets.fyers.in
+      3  app.fyers.in
+      2  api-y1.fyers.in
+      2  config.fyers.in
+      2  myaccount.fyers.in
+      1  datapub.fyers.in
+      1  mtfddpi.fyers.in
+      1  open-account.fyers.in
+      1  login.fyers.in
+      1  marketsmith.fyers.in
+      1  betatrade.fyers.in
+      1  debt.fyers.in
+      1  dev.fyers.in
+      1  signup.fyers.in
+      1  savedcharts.fyers.in
+      1  forms.fyers.in
+      1  alerts.fyers.in
+      1  instaoptions.fyers.in
+      1  api-d1.fyers.in
+      1  fundtransfer.fyers.in
+[0m
+[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
+import json,re
+d=json.load(open('cfg.json'))
+cur=d['endpoints']['current']
+urls=set()
+def walk(o):
+    if isinstance(o,dict):
+        for v in o.values(): walk(v)
+    elif isinstance(o,list):
+        for i in o: walk(i)
+    elif isinstance(o,str):
+        for u in re.findall(r'https?://[a-z0-9.-]*\.fyers\.in[a-zA-Z0-9/_.?=&%-]*', o): urls.add(u)
+walk(cur)
+for u in sorted(urls):
+    if 'api-t2.fyers.in' in u or 'automate-chn' in u:
+        print(" ",u)
+EOF
+https://api-t2.fyers.in/alpha/v1/client
+  https://api-t2.fyers.in/automate/backtest/history
+  https://api-t2.fyers.in/automate/backtest/preflight
+  https://api-t2.fyers.in/automate/backtest/start
+  https://api-t2.fyers.in/automate/copy?strategy_id=
+  https://api-t2.fyers.in/automate/details?strategy_id=
+  https://api-t2.fyers.in/automate/draft?strategy_id=
+  https://api-t2.fyers.in/automate/explore
+  https://api-t2.fyers.in/automate/export
+  https://api-t2.fyers.in/automate/get-configuration?task_variant=
+  https://api-t2.fyers.in/automate/get-configuration?task_variant=MultilegOptions&task_id=PlaceOrder
+  https://api-t2.fyers.in/automate/get-nodes
+  https://api-t2.fyers.in/automate/my
+  https://api-t2.fyers.in/automate/my/activity
+  https://api-t2.fyers.in/automate/my/activity?strategy_id=
+  https://api-t2.fyers.in/automate/my/automation
+  https://api-t2.fyers.in/automate/my/automation/execute
+  https://api-t2.fyers.in/automate/my/automation/publish
+  https://api-t2.fyers.in/automate/my/automation/restore?strategy_id=
+  https://api-t2.fyers.in/automate/my/automation/unpublish
+  https://api-t2.fyers.in/automate/my/automation?strategy_id=
+  https://api-t2.fyers.in/automate/my/draft/purge?strategy_id=
+  https://api-t2.fyers.in/automate/my/drafts
+  https://api-t2.fyers.in/automate/my/has-automations
+  https://api-t2.fyers.in/automate/my/pnl
+  https://api-t2.fyers.in/automate/my/strategy/activity-timeline?strategy_id=
+  https://api-t2.fyers.in/automate/my/strategy/changelog?strategy_id=
+  https://api-t2.fyers.in/automate/my/strategy/timeline?strategy_id=
+  https://api-t2.fyers.in/automate/schedule/cancel
+  https://api-t2.fyers.in/automate/schedule/create
+  https://api-t2.fyers.in/automate/strategy/pnl?strategy_id=
+  https://api-t2.fyers.in/automate/tagpositionbook
+  https://api-t2.fyers.in/automate/workflow/multi-stop
+  https://api-t2.fyers.in/automate/workflow/stop
+  https://api-t2.fyers.in/automate/workflows
+  https://api-t2.fyers.in/automate/workflows?strategy_id=
+  https://api-t2.fyers.in/baskets/v1
+  https://api-t2.fyers.in/baskets/v1/allitems
+  https://api-t2.fyers.in/baskets/v1/items
+  https://api-t2.fyers.in/baskets/v1/reset
+  https://api-t2.fyers.in/baskets/v2
+  https://api-t2.fyers.in/baskets/v2/items
+  https://api-t2.fyers.in/indri/v1/strategies
+  https://api-t2.fyers.in/indri/v1/strategies/my
+  https://api-t2.fyers.in/indri/v1/strategies/publish
+  https://api-t2.fyers.in/indri/v1/strategies/symbols
+  https://api-t2.fyers.in/indus/history/greeks/real-time
+  https://api-t2.fyers.in/osb/draft?strategy_id=
+  https://api-t2.fyers.in/osb/my
+  https://api-t2.fyers.in/osb/my/automation/publish
+  https://api-t2.fyers.in/osb/my/drafts
+  https://api-t2.fyers.in/quantainer/v1/charts/atm-iv?
+  https://api-t2.fyers.in/quantainer/v1/charts/auto_atm_straddle
+  https://api-t2.fyers.in/quantainer/v1/charts/futures
+  https://api-t2.fyers.in/quantainer/v1/charts/multi-strike-iv
+  https://api-t2.fyers.in/quantainer/v1/charts/multi_straddle_strangle
+  https://api-t2.fyers.in/quantainer/v1/charts/strategy
+  https://api-t2.fyers.in/quantainer/v1/charts/strategy/candles
+  https://api-t2.fyers.in/quantainer/v1/oi_stats/change
+  https://api-t2.fyers.in/quantainer/v1/oi_stats/drops
+  https://api-t2.fyers.in/quantainer/v1/oi_stats/historical_pcr_max_pain
+  https://api-t2.fyers.in/quantainer/v1/oi_stats/interpretation
+  https://api-t2.fyers.in/quantainer/v1/oi_stats/max_pain
+  https://api-t2.fyers.in/quantainer/v1/oi_stats/multi_strike
+  https://api-t2.fyers.in/quantainer/v1/oi_stats/spurts
+  https://api-t2.fyers.in/quantainer/v1/oi_stats/time_vs_oi
+  https://api-t2.fyers.in/quantainer/v1/oi_stats/trending
+  https://api-t2.fyers.in/trade/v3/baskets/execute/v3
+  https://api-t2.fyers.in/vagator/v2/change_account_status
+  https://api-t2.fyers.in/vagator/v2/change_password
+  https://api-t2.fyers.in/vagator/v2/change_pin
+  https://api-t2.fyers.in/vagator/v2/change_pin_v2
+  https://api-t2.fyers.in/vagator/v2/check_pwd
+  https://api-t2.fyers.in/vagator/v2/check_user_status
+  https://api-t2.fyers.in/vagator/v2/create_password
+  https://api-t2.fyers.in/vagator/v2/create_pin
+  https://api-t2.fyers.in/vagator/v2/create_pin_v2
+  https://api-t2.fyers.in/vagator/v2/forgot_pin
+  https://api-t2.fyers.in/vagator/v2/forgot_pin_v2
+  https://api-t2.fyers.in/vagator/v2/generate_qr
+  https://api-t2.fyers.in/vagator/v2/get_oms_data_v2
+  https://api-t2.fyers.in/vagator/v2/get_session_devices?source=qr
+  https://api-t2.fyers.in/vagator/v2/get_tradecast_token
+  https://api-t2.fyers.in/vagator/v2/get_user_id
+  https://api-t2.fyers.in/vagator/v2/get_user_id_v2
+  https://api-t2.fyers.in/vagator/v2/get_user_id_v3
+  https://api-t2.fyers.in/vagator/v2/guest_user/login_v2
+  https://api-t2.fyers.in/vagator/v2/guest_user/register
+  https://api-t2.fyers.in/vagator/v2/internal_reset_pwd
+  https://api-t2.fyers.in/vagator/v2/login
+  https://api-t2.fyers.in/vagator/v2/logout
+  https://api-t2.fyers.in/vagator/v2/put_new_user_data
+  https://api-t2.fyers.in/vagator/v2/refresh_token
+  https://api-t2.fyers.in/vagator/v2/refresh_token_v2
+  https://api-t2.fyers.in/vagator/v2/resend_otp
+  https://api-t2.fyers.in/vagator/v2/send_login_otp
+  https://api-t2.fyers.in/vagator/v2/send_login_otp_v2
+  https://api-t2.fyers.in/vagator/v2/send_login_otp_v3
+  https://api-t2.fyers.in/vagator/v2/send_otp
+  https://api-t2.fyers.in/vagator/v2/send_otp_v2
+  https://api-t2.fyers.in/vagator/v2/set_biometric
+  https://api-t2.fyers.in/vagator/v2/totp
+  https://api-t2.fyers.in/vagator/v2/update_fcm_data
+  https://api-t2.fyers.in/vagator/v2/validate_qr
+  https://api-t2.fyers.in/vagator/v2/validate_qrcode
+  https://api-t2.fyers.in/vagator/v2/verify_otp
+  https://api-t2.fyers.in/vagator/v2/verify_otp_v2
+  https://api-t2.fyers.in/vagator/v2/verify_pin
+  https://api-t2.fyers.in/vagator/v2/verify_pin_v2
+  https://api-t2.fyers.in/vagator/v2/verify_token
+  https://api-t2.fyers.in/vagator/v2/verify_token_v2
+  https://api-t2.fyers.in/watson-obs/v1/telemetry
+  https://automate-chn.fyers.in/automate/backtest/
+  https://automate-chn.fyers.in/automate/backtest/cancel
+  https://automate-chn.fyers.in/automate/backtest/result
+  https://automate-chn.fyers.in/automate/backtest/status
+  https://automate-chn.fyers.in/automate/backtest/trade-book-export
+  https://automate-chn.fyers.in/automate/backtest/trade-book/
+[0m
+New inventory found: `quantainer/v1/oi_stats/*`, `alpha/v1/client`, `watson-obs/v1/telemetry`, `osb/my`, and new `vagator/v2/*` endpoints. Probing the highest-signal ones read-only.
+[0m$ [0mcd /tmp/opencode && probe(){ printf "%-52s " "$1"; timeout 8 curl -s -m 6 "$2" | head -c 140; echo; sleep 12; }
+probe "t2/quantainer/v1/oi_stats/trending" "https://api-t2.fyers.in/quantainer/v1/oi_stats/trending"
+probe "t2/quantainer/v1/oi_stats/max_pain" "https://api-t2.fyers.in/quantainer/v1/oi_stats/max_pain"
+probe "t2/alpha/v1/client" "https://api-t2.fyers.in/alpha/v1/client"
+probe "t2/osb/my" "https://api-t2.fyers.in/osb/my"
+probe "t2/indus/history/greeks/real-time" "https://api-t2.fyers.in/indus/history/greeks/real-time"
+probe "t2/watson-obs/v1/telemetry" "https://api-t2.fyers.in/watson-obs/v1/telemetry"
+t2/quantainer/v1/oi_stats/trending                   {"code":-401,"message":"Please provide valid token","s":"error"}
+t2/quantainer/v1/oi_stats/max_pain                   {"code":-401,"message":"Please provide valid token","s":"error"}
+t2/alpha/v1/client                                   404 page not found
+t2/osb/my                                            {"code":-16,"message":"Could not authenticate the user","s":"error","data":null}
+t2/indus/history/greeks/real-time                    {"code":-16,"message":"Could not authenticate the user","s":"error"}
+t2/watson-obs/v1/telemetry
+[0m
+`watson-obs/v1/telemetry` returned an empty body — a telemetry ingestion endpoint. Checking its method/handler behavior (read-only).
+[0m$ [0mcd /tmp/opencode && echo "=== watson-obs/v1/telemetry GET full ==="; timeout 8 curl -s -m 6 -D - "https://api-t2.fyers.in/watson-obs/v1/telemetry" | head -30; echo; sleep 4; echo "=== POST empty body ==="; timeout 8 curl -s -m 6 -D - -X POST "https://api-t2.fyers.in/watson-obs/v1/telemetry" -H "Content-Type: application/json" -d '{}' | head -25
+=== watson-obs/v1/telemetry GET full ===
+HTTP/2 404 
+date: Wed, 05 Aug 2026 19:57:50 GMT
+content-length: 0
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+access-control-allow-credentials: true
+access-control-allow-headers: Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With
+access-control-allow-methods: POST, OPTIONS, GET, PUT, DELETE
+content-security-policy: default-src 'none'
+vary: Accept-Encoding
+x-content-type-options: nosniff
+set-cookie: __cf_bm=wZK7mYkLG7sSyvhTOMiOYoOeLMNXH5kkmXdwpTsvXx8-1785959869.9275792-1.0.1.1-c5P9H7SPPZHSrNQ6YLjqEAlvO7.7zMbV57S3_hgCqo_SA0JIpDRQIjjazuKsAJFElNVgPdqyt02CL43VM4RepXzWsMnqeOtgLtyhZT0uZaHbHyDvsgmLchiBgUbJ6fOk; HttpOnly; SameSite=None; Secure; Path=/; Domain=fyers.in; Expires=Wed, 05 Aug 2026 20:27:50 GMT
+set-cookie: _cfuvid=gdQKf2t70TOotNhpZllE1hFnjApRSDWveX_L_nuoiXM-1785959869.9275792-1.0.1.1-Gz6dCHYOegkqip0PIISfFcNr4SJrWu3EKcTFDFO0N6Q; HttpOnly; SameSite=None; Secure; Path=/; Domain=fyers.in
+cf-cache-status: DYNAMIC
+server: cloudflare
+cf-ray: a2685f830c0e753f-SEA
+
+
+=== POST empty body ===
+HTTP/2 401 
+date: Wed, 05 Aug 2026 19:57:54 GMT
+content-type: application/json; charset=utf-8
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+access-control-allow-credentials: true
+access-control-allow-headers: Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With
+access-control-allow-methods: POST, OPTIONS, GET, PUT, DELETE
+content-security-policy: default-src 'none'
+vary: Accept-Encoding
+x-content-type-options: nosniff
+set-cookie: __cf_bm=v2YCCf9cVDxN7b_NvOyDsRDfKzidDNjHyRGMIFpfvbU-1785959874.2167888-1.0.1.1-XKlqiVITn2ebLWDkFXqaHNgJ01uRykAkxC8sYzO6xiV9ieUoJyQvN4RUI5ICzY1clqrWxcnA_fRy7qFDGlNaxLIz0jAqUTuH1v97eS9Zlm0Siw5KezwswRITienhMjXR; HttpOnly; SameSite=None; Secure; Path=/; Domain=fyers.in; Expires=Wed, 05 Aug 2026 20:27:54 GMT
+set-cookie: _cfuvid=9cjzzVQ8ewcGz7pgynIXGsphjtkppDIqdkGClySQgEY-1785959874.2167888-1.0.1.1-YUxd2rx0NQQ8fjoJuT.UWUTcTGPPRkssKou0U1uHMhU; HttpOnly; SameSite=None; Secure; Path=/; Domain=fyers.in
+cf-cache-status: DYNAMIC
+server: cloudflare
+cf-ray: a2685f9ddeb79343-SEA
+
+{"code":-99,"message":"unauthorised access token","s":"error"}
+[0m
+Eighth auth fingerprint found: `-99 "unauthorised access token"` on `watson-obs/v1/telemetry` (POST). Mapping that surface and a couple of new vagator endpoints.
+[0m$ [0mcd /tmp/opencode && probe(){ printf "%-50s " "$1"; timeout 8 curl -s -m 6 "$2" "$3" ${4:+-d "$4"} ${4:+-H "Content-Type: application/json"} | head -c 140; echo; sleep 12; }
+probe "t2/watson-obs/v1/telemetry (POST)" "https://api-t2.fyers.in/watson-obs/v1/telemetry" "-X" "POST"
+probe "t2/watson-obs/health" "https://api-t2.fyers.in/watson-obs/health" "-X" "GET"
+probe "t2/vagator/v2/get_tradecast_token" "https://api-t2.fyers.in/vagator/v2/get_tradecast_token" "-X" "POST"
+probe "t2/vagator/v2/check_user_status" "https://api-t2.fyers.in/vagator/v2/check_user_status" "-X" "POST"
+probe "t2/vagator/v2/create_password" "https://api-t2.fyers.in/vagator/v2/create_password" "-X" "POST"
+t2/watson-obs/v1/telemetry (POST)                  <html>
+<head><title>400 Bad Request</title></head>
+<body>
+<center><h1>400 Bad Request</h1></center>
+<hr><center>cloudflare</center>
+</b
+t2/watson-obs/health                               <html>
+<head><title>400 Bad Request</title></head>
+<body>
+<center><h1>400 Bad Request</h1></center>
+<hr><center>cloudflare</center>
+</b
+t2/vagator/v2/get_tradecast_token                  <html>
+<head><title>400 Bad Request</title></head>
+<body>
+<center><h1>400 Bad Request</h1></center>
+<hr><center>cloudflare</center>
+</b
+t2/vagator/v2/check_user_status                    <html>
+<head><title>400 Bad Request</title></head>
+<body>
+<center><h1>400 Bad Request</h1></center>
+<hr><center>cloudflare</center>
+</b
+t2/vagator/v2/create_password                      <html>
+<head><title>400 Bad Request</title></head>
+<body>
+<center><h1>400 Bad Request</h1></center>
+<hr><center>cloudflare</center>
+</b
+[0m
+Cloudflare rate-limited the burst. Backing off — spacing probes wider.
+[0m$ [0msleep 45; cd /tmp/opencode && timeout 8 curl -s -m 6 -X POST "https://api-t2.fyers.in/vagator/v2/get_tradecast_token" -H "Content-Type: application/json" -d '{}' | head -c 160; echo
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+    <html>
+        <head>
+            <title>Error: 405 Method Not Allowed</title>
+            <style ty
+[0m
+[0m$ [0msleep 30; cd /tmp/opencode && echo "=== get_tradecast_token GET ==="; timeout 8 curl -s -m 6 "https://api-t2.fyers.in/vagator/v2/get_tradecast_token" | head -c 160; echo
+=== get_tradecast_token GET ===
+{"s": "error", "code": -1044, "message": "invalid input"}
+[0m
+[0m$ [0msleep 30; cd /tmp/opencode && for q in "?fy_id=x" "?client_id=x" "?source=qr" "?device_id=x"; do printf "%-18s " "$q"; timeout 8 curl -s -m 6 "https://api-t2.fyers.in/vagator/v2/get_tradecast_token$q" | head -c 140; echo; sleep 20; done
+?fy_id=x           {"s": "error", "code": -1044, "message": "invalid input"}
+?client_id=x       {"s": "error", "code": -1044, "message": "invalid input"}
+?source=qr         {"s": "error", "code": -1044, "message": "invalid input"}
+?device_id=x       {"s": "error", "code": -1044, "message": "invalid input"}
+[0m
+`get_tradecast_token` is a pre-auth-reachable GET oracle (`-1044`), param shape unknown. Re-fetching the SSO bundle to statically recover how the client calls it.
+[0m$ [0mcd /tmp/opencode && curl -s -m 30 -o sso.js "https://login.fyers.in/new-sso/17.0/api_v3_login/login.min.js?v=1.3" -w "HTTP %{http_code} sz=%{size_download}\n" && grep -ao "get_tradecast_token" sso.js | head -3; echo "---context---"; python3 -c "
+s=open('sso.js',encoding='utf-8',errors='ignore').read()
+i=s.find('get_tradecast_token')
+print(repr(s[max(0,i-1500):i+300]))"
+HTTP 200 sz=313193
+---context---
+'(function(_0x375ad7,_0x42bb10){var _0xbce834=_0x5d29,_0x3c6bff=_0x375ad7();while(!![]){try{var _0x5d866a=parseInt(_0xbce834(0x226))/0x1*(parseInt(_0xbce834(0x2cf))/0x2)+-parseInt(_0xbce834(0x338))/0x3+-parseInt(_0xbce834(0x3ea))/0x4+parseInt(_0xbce834(0x38b))/0x5+parseInt(_0xbce834(0x5d1))/0x6*(-pa'
+[0m
+[0m$ [0msleep 20; cd /tmp/opencode && echo "=== with bogus Bearer ==="; timeout 8 curl -s -m 6 "https://api-t2.fyers.in/vagator/v2/get_tradecast_token" -H "Authorization: Bearer xxx" | head -c 160; echo; sleep 20; echo "=== with empty Bearer ==="; timeout 8 curl -s -m 6 "https://api-t2.fyers.in/vagator/v2/get_tradecast_token" -H "Authorization: Bearer " | head -c 160; echo
+=== with bogus Bearer ===
+{"s": "error", "code": -1044, "message": "invalid input"}
+=== with empty Bearer ===
+{"s": "error", "code": -1044, "message": "invalid input"}
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -m 20 "https://trade.fyers.in/" -o trade_home.html -w "HTTP %{http_code} sz=%{size_download}\n" && grep -oE 'src="[^"]+\.js[^"]*"' trade_home.html | head -20
+HTTP 200 sz=12304
+src="https://trade.fyers.in/static/js/loader/2.1/loader.min.js"
+src="https://trade.fyers.in/lib/jquery/3.1.1/jquery.min.js"
+src="https://assets.fyers.in/Lib/calculators/2.14/brokrage-calc.js"
+src="https://trade.fyers.in/static/js/option-chain/assets/js/moment.min.js"
+src="https://assets.fyers.in/Lib/redux/redux.min.js"
+src="https://assets.fyers.in/Lib/redux/redux-thunk.min.js"
+src="https://assets.fyers.in/Lib/pako/pako.min.js"
+src="https://trade.fyers.in/production/v1.1/fy_common.min.js?v=2.2"
+src="https://assets.fyers.in/tv_lib/v29.5.0_unmodified/charting_library.standalone.js"
+src="https://trade.fyers.in/production/v1.1/orderWindow.min.js?v=3.1"
+src="https://trade.fyers.in/production/v1.1/widgets.min.js?v=2.1"
+src="https://trade.fyers.in/production/v1.1/datafeed.min.js"
+src="https://trade.fyers.in/production/v1.1/broker.min.js?v=1.9"
+src="https://trade.fyers.in/production/v1.1/trade.js?v=5.3"
+src="https://trade.fyers.in/lib/jquery-cookie/1.4.1/jquery.cookie.min.js"
+src="https://trade.fyers.in/production/v1.1/fyers_common_modules.js?v=4.9"
+src="https://trade.fyers.in/production/v1.1/trade-common.js?v=4.2"
+src="https://trade.fyers.in/static/js/option-chain/assets/js/2.4/optiongreeklib.js"
+src="https://trade.fyers.in/production/v1.1/option-chain.min.js?v=1.1"
+src="https://trade.fyers.in/lib/jquery-ui/1.13.2/jquery-ui.min.js"
+[0m
+[0m$ [0mcd /tmp/opencode && for f in "production/v1.1/trade.js?v=5.3" "production/v1.1/broker.min.js?v=1.9" "production/v1.1/fy_common.min.js?v=2.2" "production/v1.1/fyers_common_modules.js?v=4.9"; do name=$(basename "${f%%\?*}"); curl -s -m 30 -o "$name" "https://trade.fyers.in/$f" -w "$name HTTP %{http_code} sz=%{size_download}\n"; sleep 3; done; echo "=== grep ==="; grep -l "get_tradecast_token" *.js 2>/dev/null
+trade.js HTTP 200 sz=247853
+broker.min.js HTTP 200 sz=27743
+fy_common.min.js HTTP 200 sz=13143
+fyers_common_modules.js HTTP 200 sz=165262
+=== grep ===
+[0m
+[0m$ [0mcd /tmp/opencode && grep -aoi "tradecast[^\"']\{0,60\}" *.js 2>/dev/null | sort -u | head -20; echo "==="; grep -ao "get_tradecast_token\|tradecast_token" fyers_common_modules.js trade.js broker.min.js 2>/dev/null | sort -u
+===
+[0m
+[0m$ [0mcd /tmp/opencode && grep -ao "vagator[^\"']\{0,80\}" trade.js fyers_common_modules.js 2>/dev/null | sort -u | head -20; echo "=== search all bundles for tradecast string in source ==="; for f in trade.js fyers_common_modules.js; do echo "--- $f ---"; python3 -c "
+import re
+s=open('$f',encoding='utf-8',errors='ignore').read()
+for kw in ['tradecast','ws_token','get_tradecast','socket.fyers.in','rtsocket']:
+    idxs=[m.start() for m in re.finditer(kw,s)]
+    print(kw, len(idxs))
+"; done
+=== search all bundles for tradecast string in source ===
+--- trade.js ---
+tradecast 0
+ws_token 0
+get_tradecast 0
+socket.fyers.in 4
+rtsocket 0
+--- fyers_common_modules.js ---
+tradecast 0
+ws_token 0
+get_tradecast 0
+socket.fyers.in 0
+rtsocket 0
+[0m
+[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
+import json,re
+d=json.load(open('cfg.json'))
+cur=d['endpoints']['current']
+urls=set()
+def walk(o):
+    if isinstance(o,dict):
+        for v in o.values(): walk(v)
+    elif isinstance(o,list):
+        for i in o: walk(i)
+    elif isinstance(o,str):
+        for u in re.findall(r'https?://[a-z0-9.-]*\.fyers\.in[a-zA-Z0-9/_.?=&%-]*', o): urls.add(u)
+walk(cur)
+print("=== api-i1 ===")
+for u in sorted(urls):
+    if 'api-i1.fyers.in' in u: print(" ",u)
+EOF
+=== api-i1 ===
+  https://api-i1.fyers.in/fy/mf/v1/holdings
+  https://api-i1.fyers.in/investment/fixed_income/v1/fd/calculate-payout?
+  https://api-i1.fyers.in/investment/fixed_income/v1/fd/consolidated-with-fd
+  https://api-i1.fyers.in/investment/fixed_income/v1/fd/details?plan_id=
+  https://api-i1.fyers.in/investment/fixed_income/v1/fd/explore/tabs?
+  https://api-i1.fyers.in/investment/fixed_income/v1/fd/explore?
+  https://api-i1.fyers.in/investment/fixed_income/v1/fd/faq?id=
+  https://api-i1.fyers.in/investment/fixed_income/v1/fd/fd_holdings
+  https://api-i1.fyers.in/investment/fixed_income/v1/fd/filters
+  https://api-i1.fyers.in/investment/fixed_income/v1/fd/holdings/filters
+  https://api-i1.fyers.in/investment/fixed_income/v1/fd/order-window?
+  https://api-i1.fyers.in/investment/fixed_income/v1/fd/orders
+  https://api-i1.fyers.in/investment/fixed_income/v1/fd/orders/filters
+  https://api-i1.fyers.in/investment/fixed_income/v1/fd/overview
+  https://api-i1.fyers.in/investment/fixed_income/v1/fd/place-order
+  https://api-i1.fyers.in/investment/fixed_income/v1/fd/plans?
+  https://api-i1.fyers.in/investment/fixed_income/v1/fd/plans?id=
+  https://api-i1.fyers.in/investment/fixed_income/v1/fd/premature-withdrawal
+  https://api-i1.fyers.in/investment/fixed_income/v1/fd/resume-fd-booking
+  https://api-i1.fyers.in/investment/fixed_income/v1/fd/review-order?
+  https://api-i1.fyers.in/investment/jhelum/v1/api/offer_details_v2
+  https://api-i1.fyers.in/investment/jhelum/v1/api/offer_list_v2
+  https://api-i1.fyers.in/investment/tapi/v1/investors-details-v2
+  https://api-i1.fyers.in/investment/tapi/v1/ipo/v2/cancel-order
+  https://api-i1.fyers.in/investment/tapi/v1/ipo/v2/fetch-upi-id
+  https://api-i1.fyers.in/investment/tapi/v1/ipo/v2/modify-order
+  https://api-i1.fyers.in/investment/tapi/v1/ipo/v2/order-by-id
+  https://api-i1.fyers.in/investment/tapi/v1/ipo/v2/orders
+  https://api-i1.fyers.in/investment/tapi/v1/ipo/v2/place-order
+  https://api-i1.fyers.in/investment/tapi/v1/ipo/v2/validate-upi
+  https://api-i1.fyers.in/mf/data/v2/assortments
+  https://api-i1.fyers.in/mf/data/v2/collateral
+  https://api-i1.fyers.in/mf/data/v2/explore
+  https://api-i1.fyers.in/mf/data/v2/explore/filters
+  https://api-i1.fyers.in/mf/data/v2/get_order_window
+  https://api-i1.fyers.in/mf/data/v2/home
+  https://api-i1.fyers.in/mf/data/v2/redeem-ow
+  https://api-i1.fyers.in/mf/data/v2/scheme/details/about
+  https://api-i1.fyers.in/mf/data/v2/scheme/details/chart
+  https://api-i1.fyers.in/mf/data/v2/scheme/details/holding-allocation
+  https://api-i1.fyers.in/mf/data/v2/scheme/details/overview
+  https://api-i1.fyers.in/mf/data/v2/sip_schedule_dates
+  https://api-i1.fyers.in/mf/txn/v1/cancel-order/sip
+  https://api-i1.fyers.in/mf/txn/v1/get-banks
+  https://api-i1.fyers.in/mf/txn/v1/get-bse-payment-link
+  https://api-i1.fyers.in/mf/txn/v1/get-cancel-reasons
+  https://api-i1.fyers.in/mf/txn/v1/get-holdings
+  https://api-i1.fyers.in/mf/txn/v1/get-mandates
+  https://api-i1.fyers.in/mf/txn/v1/get-order-history
+  https://api-i1.fyers.in/mf/txn/v1/get-sip-details
+  https://api-i1.fyers.in/mf/txn/v1/manage-sip
+  https://api-i1.fyers.in/mf/txn/v1/place-order/lumpsum/pg
+  https://api-i1.fyers.in/mf/txn/v1/place-order/redeem
+  https://api-i1.fyers.in/mf/txn/v1/place-order/sip/pg
+[0m
+api-i1 has three investment surfaces (fd, jhelum offers, tapi IPO, mf data/txn). Testing whether `mf/data/*` and `jhelum` offers are public — read-only, spaced.
+[0m$ [0mcd /tmp/opencode && probe(){ printf "%-52s " "$1"; timeout 8 curl -s -m 6 "$2" | head -c 150; echo; sleep 18; }
+probe "i1 mf/data/v2/explore" "https://api-i1.fyers.in/mf/data/v2/explore"
+probe "i1 jhelum/offer_list_v2" "https://api-i1.fyers.in/investment/jhelum/v1/api/offer_list_v2"
+probe "i1 tapi ipo/orders" "https://api-i1.fyers.in/investment/tapi/v1/ipo/v2/orders"
+probe "i1 mf/data/v2/home" "https://api-i1.fyers.in/mf/data/v2/home"
+i1 mf/data/v2/explore                                404 page not found
+i1 jhelum/offer_list_v2                              {"s":"error","error_code":-11,"data":[],"message":"Something went wrong"}
+i1 tapi ipo/orders                                   {"error_code":-100,"message":"Authorisation token required.","s":"error"}
+i1 mf/data/v2/home                                   {"s":"ok","error_code":0,"data":{"top_sip":[{"plan_id":"43495","isin_code":"INF789F1AYN0","amc_logo":"https://assets.fyers.in/Fyers-Direct/uti_fyers.p
+[0m
+Breakthrough: `api-i1.fyers.in/mf/data/v2/home` is **public** — returns real mutual-fund data (plan_id, ISIN, AMC) with no auth. Also new fingerprint `-100 "Authorisation token required."` on tapi IPO. Mapping the public MF data surface.
+[0m$ [0mcd /tmp/opencode && timeout 10 curl -s -m 8 "https://api-i1.fyers.in/mf/data/v2/home" -o mf_home.json -w "HTTP %{http_code} sz=%{size_download}\n"; python3 << 'EOF'
+import json
+d=json.load(open('mf_home.json'))
+print("top-level keys:", list(d.keys()))
+data=d.get('data',{})
+print("data keys:", list(data.keys()))
+def sizes(o,depth=0):
+    if isinstance(o,dict):
+        for k,v in o.items():
+            if isinstance(v,(dict,list)): print(" "*depth, k, type(v).__name__, len(v))
+            else: print(" "*depth, k, "=", repr(v)[:60])
+sizes(data,1)
+EOF
+HTTP 200 sz=10790
+top-level keys: ['s', 'error_code', 'data', 'message']
+data keys: ['top_sip', 'top_performing', 'fund_houses', 'top_rated', 'top_index', 'top_international']
+  top_sip list 3
+  top_performing list 5
+  fund_houses list 5
+  top_rated list 3
+  top_index list 3
+  top_international list 1
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('mf_home.json'))
+print(json.dumps(d['data']['top_sip'][0], indent=1))
+print(json.dumps(d['data']['top_performing'][0], indent=1)[:400])
+"
+{
+ "plan_id": "43495",
+ "isin_code": "INF789F1AYN0",
+ "amc_logo": "https://assets.fyers.in/Fyers-Direct/uti_fyers.png",
+ "min_initial_investment": 1000,
+ "scheme_name": "UTI Nifty 500 Value 50 Index Fund Direct-Growth",
+ "basic_short_name": "UTI Nifty 500 Value 50 Index Dir",
+ "fund_rating": 5,
+ "ret_3month": -1.77464,
+ "ret_1year": 19.1249,
+ "ret_3year": 26.343,
+ "ret_5year": -1000,
+ "nav_rs": 22.6435,
+ "aum": 774.959,
+ "expense_ratio": 0.68,
+ "base_exp_ratio": 0.5,
+ "expense_ratio_date": "2026-06-30 00:00:00",
+ "status": "ACT",
+ "primary_category_name": "Equity",
+ "category_name": "Value Oriented",
+ "risk_grade": "Very high",
+ "amc_full_name": "UTI Mutual Fund",
+ "scheme_code": 47941,
+ "sip_min_invest": 500,
+ "haircut": 11.78,
+ "total_count": 281
+}
+{
+ "plan_id": "43487",
+ "isin_code": "INF789F1AYL4",
+ "amc_logo": "https://assets.fyers.in/Fyers-Direct/uti_fyers.png",
+ "min_initial_investment": 100,
+ "scheme_name": "UTI Silver ETF FoF Direct-Growth",
+ "basic_short_name": "UTI Silver ETF FoF Dir",
+ "fund_rating": -1,
+ "ret_3month": -10.0371,
+ "ret_1year": 90.2209,
+ "ret_3year": 42.6969,
+ "ret_5year": -1000,
+ "nav_rs": 27.7228,
+ "aum": 588.396,
+[0m
+[0m$ [0mcd /tmp/opencode && probe(){ printf "%-54s " "$1"; timeout 8 curl -s -m 6 "$2" | head -c 170; echo; sleep 16; }
+probe "i1 mf scheme/details/overview?plan_id=43495" "https://api-i1.fyers.in/mf/data/v2/scheme/details/overview?plan_id=43495"
+probe "i1 mf scheme/details/about?plan_id=43495" "https://api-i1.fyers.in/mf/data/v2/scheme/details/about?plan_id=43495"
+probe "i1 mf data/v2/assortments" "https://api-i1.fyers.in/mf/data/v2/assortments"
+probe "i1 mf data/v2/sip_schedule_dates" "https://api-i1.fyers.in/mf/data/v2/sip_schedule_dates"
+i1 mf scheme/details/overview?plan_id=43495            {"s":"error","error_code":-101,"data":[],"message":"Authorization token is required"}
+i1 mf scheme/details/about?plan_id=43495               "isin or plan_id or scheme_code is required"
+i1 mf data/v2/assortments                              {"s":"ok","error_code":0,"data":{"index":11.021824402711307,"debt":7.298214152426869,"hybrid":10.513188632206852,"tax_saver":13.258547234103712,"high_returns":43.60298487
+i1 mf data/v2/sip_schedule_dates                       {"s":"error","error_code":-101,"data":[],"message":"Authorization token is required"}
+[0m
+`scheme/details/about` discloses required params **before** the auth gate (`-101` gate comes after for `overview`). Auth-ordering inconsistency on api-i1 mf/data. Testing `about` with a valid plan_id — read-only.
+[0m$ [0mcd /tmp/opencode && probe(){ printf "%-54s " "$1"; timeout 8 curl -s -m 6 "$2" | head -c 220; echo; sleep 16; }
+probe "i1 mf scheme/details/about?plan_id=43495" "https://api-i1.fyers.in/mf/data/v2/scheme/details/about?plan_id=43495"
+probe "i1 mf scheme/details/about?isin=INF789F1AYN0" "https://api-i1.fyers.in/mf/data/v2/scheme/details/about?isin=INF789F1AYN0"
+probe "i1 mf data/v2/get_order_window" "https://api-i1.fyers.in/mf/data/v2/get_order_window"
+probe "i1 mf data/v2/collateral" "https://api-i1.fyers.in/mf/data/v2/collateral"
+i1 mf scheme/details/about?plan_id=43495               "isin or plan_id or scheme_code is required"
+i1 mf scheme/details/about?isin=INF789F1AYN0           {"s":"ok","error_code":0,"data":{"scheme_data":{"objective":"The Investment objective of the Scheme is to provide returns that, before expenses, corresponds to the total return of the securities as represented by the und
+i1 mf data/v2/get_order_window                         {"s":"error","error_code":-101,"data":[],"message":"Authorization token is required"}
+i1 mf data/v2/collateral                               {"s":"ok","error_code":0,"data":{"collateral":[{"plan_id":"17630","isin_code":"INF789FB1S71","min_initial_investment":500,"scheme_name":"UTI Overnight Fund Direct-Growth","basic_short_name":"UTI Overnight Dir","fund_rati
+[0m
+[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
+import json,re
+d=json.load(open('cfg.json'))
+cur=d['endpoints']['current']
+urls=set()
+def walk(o):
+    if isinstance(o,dict):
+        for v in o.values(): walk(v)
+    elif isinstance(o,list):
+        for i in o: walk(i)
+    elif isinstance(o,str):
+        for u in re.findall(r'https?://[a-z0-9.-]*\.fyers\.in[a-zA-Z0-9/_.?=&%-]*', o): urls.add(u)
+walk(cur)
+print("=== public.fyers.in ===")
+for u in sorted(urls):
+    if 'public.fyers.in' in u: print(" ",u)
+print("=== api-g1 (settings) ===")
+for u in sorted(urls):
+    if 'api-g1.fyers.in' in u: print(" ",u)
+EOF
+=== public.fyers.in ===
+  https://public.fyers.in/app/smartSearchText.json
+  https://public.fyers.in/icons/icons.gz
+  https://public.fyers.in/messages/public.json
+  https://public.fyers.in/mpp_details/mpp_config.json
+  https://public.fyers.in/sym_details
+  https://public.fyers.in/sym_details/BSE_CD.csv
+  https://public.fyers.in/sym_details/BSE_CD.zip
+  https://public.fyers.in/sym_details/BSE_CM.csv
+  https://public.fyers.in/sym_details/BSE_CM.json
+  https://public.fyers.in/sym_details/BSE_CM.zip
+  https://public.fyers.in/sym_details/BSE_FO.csv
+  https://public.fyers.in/sym_details/BSE_FO.zip
+  https://public.fyers.in/sym_details/MCX_COM.csv
+  https://public.fyers.in/sym_details/MCX_COM.zip
+  https://public.fyers.in/sym_details/NSE_CD.csv
+  https://public.fyers.in/sym_details/NSE_CD.zip
+  https://public.fyers.in/sym_details/NSE_CM.csv
+  https://public.fyers.in/sym_details/NSE_CM.zip
+  https://public.fyers.in/sym_details/NSE_FO.csv
+  https://public.fyers.in/sym_details/NSE_FO.zip
+  https://public.fyers.in/sym_details/mcx_order_window.json
+  https://public.fyers.in/sym_details/sym_master.gz
+  https://public.fyers.in/sym_details/sym_master_10_10.gz
+  https://public.fyers.in/sym_details/sym_master_10_11.gz
+  https://public.fyers.in/sym_details/sym_master_10_12.gz
+  https://public.fyers.in/sym_details/sym_master_11_20.gz
+  https://public.fyers.in/sym_details/sym_master_12_10.gz
+  https://public.fyers.in/sym_details/sym_master_12_11.gz
+  https://public.fyers.in/sym_details/sym_master_12_12.gz
+=== api-g1 (settings) ===
+  https://api-g1.fyers.in/quick-access
+  https://api-g1.fyers.in/settings
+  https://api-g1.fyers.in/settings/charts
+  https://api-g1.fyers.in/settings/fia_favourite_screeners
+  https://api-g1.fyers.in/settings/key_metrics
+  https://api-g1.fyers.in/settings/key_metrics/reset
+  https://api-g1.fyers.in/settings/key_ratio
+  https://api-g1.fyers.in/settings/key_ratio/reset
+  https://api-g1.fyers.in/settings/key_ratio_performance
+  https://api-g1.fyers.in/settings/key_ratio_performance/reset
+  https://api-g1.fyers.in/settings/news
+  https://api-g1.fyers.in/settings/news_v2
+  https://api-g1.fyers.in/settings/one-click
+  https://api-g1.fyers.in/settings/option_analytics_favourites
+  https://api-g1.fyers.in/settings/option_chain
+  https://api-g1.fyers.in/settings/order-window
+  https://api-g1.fyers.in/settings/order_window_v2
+  https://api-g1.fyers.in/settings/peers
+  https://api-g1.fyers.in/settings/peers/reset
+  https://api-g1.fyers.in/settings/preferences
+  https://api-g1.fyers.in/settings/qsgs
+  https://api-g1.fyers.in/settings/quick-trade
+  https://api-g1.fyers.in/settings/quick-trade-immutable
+  https://api-g1.fyers.in/settings/quick-trade/reset
+  https://api-g1.fyers.in/settings/scalper
+  https://api-g1.fyers.in/settings/scalper-chart
+  https://api-g1.fyers.in/settings/scalper/reset
+  https://api-g1.fyers.in/settings/screeners/custom/favourites
+  https://api-g1.fyers.in/settings/screeners/custom/favourites/v2
+  https://api-g1.fyers.in/settings/screeners/favourites
+  https://api-g1.fyers.in/settings/screeners/favourites/
+  https://api-g1.fyers.in/settings/screeners/favourites/v2
+  https://api-g1.fyers.in/settings/screeners/favourites/v2/
+  https://api-g1.fyers.in/settings/screeners/predefined
+  https://api-g1.fyers.in/settings/screeners/predefined/config
+  https://api-g1.fyers.in/settings/tablet-feedback
+  https://api-g1.fyers.in/settings/user
+  https://api-g1.fyers.in/settings?setting=news
+  https://api-g1.fyers.in/settings?setting=one_click
+  https://api-g1.fyers.in/settings?setting=option_analytics_favourites
+  https://api-g1.fyers.in/settings?setting=quick_trade
+  https://api-g1.fyers.in/settings?setting=quick_trade_immutable
+  https://api-g1.fyers.in/settings?setting=quickview_commodities
+  https://api-g1.fyers.in/settings?setting=scalper
+  https://api-g1.fyers.in/settings?setting=scalper_chart
+  https://api-g1.fyers.in/settings?setting=user
+[0m
+Confirmed: `api-i1.mf/data/v2/{home,assortments,collateral,scheme/details/about}` is a **public data tier**, while `get_order_window`/`sip_schedule_dates`/`scheme/details/overview` gate `-101`. Now checking `public.fyers.in` (29 URLs in config).
+[0m$ [0mcd /tmp/opencode && probe(){ printf "%-50s " "$1"; timeout 8 curl -s -m 6 "$2" | head -c 200; echo; sleep 10; }
+probe "public/messages/public.json" "https://public.fyers.in/messages/public.json"
+probe "public/mpp_details/mpp_config.json" "https://public.fyers.in/mpp_details/mpp_config.json"
+probe "public/app/smartSearchText.json" "https://public.fyers.in/app/smartSearchText.json"
+probe "public/sym_details (dir)" "https://public.fyers.in/sym_details/"
+public/messages/public.json                        {
+    "common": [],
+    "updated_time": 1785845933,
+    "2024-08-22": [
+        {
+            "id": "2024-08-22690a39b4-4d7c-49a2-9306-05015b490c50",
+            "title": "\ud83c\udfafOne Tap, Deal Do
+public/mpp_details/mpp_config.json                 {
+    "10_10": {
+        "d": {
+            "min": 0,
+            "max": 3,
+            "fyers_max": 1.5
+        }
+    },
+    "10_11": {
+        "11": {
+            "n": "FUTIDX",
+            "min": 0
+public/app/smartSearchText.json                    {
+    "en_IN": {
+        "title": "What to search?",
+        "desc": [
+            "Symbol/Name: tcs nse, nifty fut, indian oil",
+            "Strike price/Expiry: 16700, 27 jun",
+            "Product
+public/sym_details (dir)                           <html>
+<head><title>404 Not Found</title></head>
+<body>
+<h1>404 Not Found</h1>
+<ul>
+<li>Code: NoSuchKey</li>
+<li>Message: The specified key does not exist.</li>
+<li>Key: sym_details/index.html</li>
+<l
+[0m
+[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
+import json,re
+d=json.load(open('cfg.json'))
+cur=d['endpoints']['current']
+urls=set()
+def walk(o):
+    if isinstance(o,dict):
+        for v in o.values(): walk(v)
+    elif isinstance(o,list):
+        for i in o: walk(i)
+    elif isinstance(o,str):
+        for u in re.findall(r'https?://[a-z0-9.-]*\.fyers\.in[a-zA-Z0-9/_.?=&%-]*', o): urls.add(u)
+walk(cur)
+for u in sorted(urls):
+    if any(h in u for h in ['app.fyers.in','config.fyers.in','alerts.fyers.in','api-t1-cdn.fyers.in','api-y1.fyers.in','api.fyers.in']):
+        print(" ",u)
+EOF
+https://alerts.fyers.in/dashboard
+  https://api-t1-cdn.fyers.in/v1/screeners/SWOT
+  https://api-t1-cdn.fyers.in/v1/screeners/about
+  https://api-t1-cdn.fyers.in/v1/screeners/eod-technicals
+  https://api-t1-cdn.fyers.in/v1/screeners/fundamentals/company-financials
+  https://api-t1-cdn.fyers.in/v1/screeners/fundamentals/key-ratio/
+  https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/abandoned-baby-bottom
+  https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/abandoned-baby-top
+  https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/bearish-engulfing
+  https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/bearish-harami
+  https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/bearish-harami-cross
+  https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/black-marubozu
+  https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/bullish-engulfing-pattern
+  https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/bullish-harami
+  https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/bullish-harami-cross
+  https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/bullish-kicking
+  https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/candlestick-strength
+  https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/dark-cloud-cover
+  https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/downside-tasuki-gap
+  https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/dragonfly-doji
+  https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/hammer
+  https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/hanging-man
+  https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/identical-three-crows
+  https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/inverted-hammer
+  https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/morning-star
+  https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/piercing-line
+  https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/shooting-star
+  https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/three-white-soldiers
+  https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/upside-tasuki-gap
+  https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/white-marubozu
+  https://api-t1-cdn.fyers.in/v1/screeners/similar
+  https://api-y1.fyers.in/trade/v3/orders
+  https://api-y1.fyers.in/trade/v3/orders/slice
+  https://api.fyers.in/api/beta/activateThirdParty
+  https://api.fyers.in/api/beta/appThirdParty
+  https://api.fyers.in/api/beta/get_all_plans
+  https://api.fyers.in/api/beta/get_all_products
+  https://api.fyers.in/api/beta/get_msiuser_details
+  https://api.fyers.in/api/beta/get_product_report
+  https://api.fyers.in/api/beta/subscriptions
+  https://api.fyers.in/api/v2/direct-login
+  https://api.fyers.in/api/v2/token
+  https://api.fyers.in/fundtransfer/dev/ftStatus
+  https://api.fyers.in/fundtransfer/dev/funds
+  https://api.fyers.in/fundtransfer/dev/payment/create
+  https://api.fyers.in/fundtransfer/dev/validate-vpa
+  https://api.fyers.in/fy/cdsl/dev
+  https://api.fyers.in/fy/cdsl/dev/cdslEdis/details
+  https://api.fyers.in/fy/cdsl/dev/cdslEdis/index
+  https://api.fyers.in/fy/cdsl/dev/cdslEdis/tpin
+  https://api.fyers.in/fy/cdsl/dev/edis/details
+  https://api.fyers.in/fy/cdsl/dev/edis/index
+  https://api.fyers.in/fy/cdsl/dev/edis/tpin
+  https://api.fyers.in/fy/cdsl/dev/pledge/reqdetails
+  https://api.fyers.in/fy/cdsl/dev/pledge/setup
+  https://api.fyers.in/fy/cdsl/dev/pledge/status
+  https://api.fyers.in/fy/cdsl/dev/pledge/userdata
+  https://api.fyers.in/fy/cdsl/dev/unpledge/setup
+  https://api.fyers.in/fy/cdsl/dev/unpledge/status
+  https://api.fyers.in/fydev/v1
+  https://api.fyers.in/fydev/v1/appRating
+  https://api.fyers.in/fydev/v1/bank/info
+  https://api.fyers.in/fydev/v1/bank/user/info
+  https://api.fyers.in/fydev/v1/fundtx/v1/bankdetails
+  https://api.fyers.in/vagator/v1
+  https://app.fyers.in/ost/chart/chart.html
+  https://app.fyers.in/profile/personal/?token_id=
+  https://app.fyers.in/v2/
+  https://config.fyers.in/config/prime_banner.json
+  https://config.fyers.in/config/prime_banner_v2.json
+[0m
+High-value leads: `api-y1.fyers.in/trade/v3/*` (trade-core on the "test page" host), `api.fyers.in/api/v2/direct-login`, `api.fyers.in/fy/cdsl/dev/*` (EDIS/TPIN dev paths on prod), `config.fyers.in/config/prime_banner.json`. Probing read-only, spaced.

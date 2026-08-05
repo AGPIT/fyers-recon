@@ -90,3 +90,6 @@ Review research_deepseek.md for details
 ## CVSS Candidates
 - [H8 MCP unauthenticated identity/capability disclosure] — CVSS 5.3
 - [H8 MCP FIA_TOKEN cross-domain scoping / tool ATO] — CVSS 6.5–8.0 (conditional)
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: deepseek)
+Review research_deepseek.md for details
