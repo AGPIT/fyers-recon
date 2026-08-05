@@ -116,6 +116,13 @@ jobs:
           PROMPT_START
           cat ctx-research_${MODEL_NAME}.txt >> research-prompt.txt
 
+          # Inject verified new-host inventory (may not exist in older runs)
+          if [ -f surface-map-new-hosts.md ]; then
+            echo "" >> research-prompt.txt
+            echo "VERIFIED NEW-HOST INVENTORY (read these hosts; they are in scope):" >> research-prompt.txt
+            cat surface-map-new-hosts.md >> research-prompt.txt
+          fi
+
           # NOTE: this block is UNQUOTED so shell expands ${CURRENT_TARGET} etc.
           cat >> research-prompt.txt << PROMPT_START
 
