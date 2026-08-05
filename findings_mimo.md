@@ -78,3 +78,20 @@ Review research_mimo.md for details
 | `/verify_otp` | Very Low (prevent brute force) | Unknown | CRITICAL |
 | `/verify_pin_v2` | Low (prevent PIN brute force) | Unknown | CRITICAL |
 | # | Original Hypothesis | Refined Assessment | CVSS |
+
+# 1 Hypothesis Generated on 2026-08-05 16:45:00 UTC (Vagator API - Refined)
+24. **Multi-Factor Authentication Bypass** (CVSS 8.1) - Combined OTP+PIN brute force chain with no rate limiting
+
+# 4 Fund Transfer Hypotheses Generated on 2026-08-05 17:00:00 UTC (Fund Transfer System)
+25. **CSRF on Withdrawal Endpoint** (CVSS 8.1) - Missing CSRF token on POST withdrawal endpoint
+26. **IDOR on Bank Details** (CVSS 7.5) - Sequential bank detail IDs enable cross-account access
+27. **Race Condition on Instant Withdrawal** (CVSS 7.5) - Concurrent requests bypass withdrawal limits
+28. **Session Fixation on Fund Transfer** (CVSS 6.5) - Session not regenerated after authentication
+
+TOTAL HYPOTHESIES: 28 across 9 attack surfaces
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+| # | Hypothesis | CVSS | Likelihood | Evidence |
+### CVSS 3.1 Calculation
+| Priority | Hypothesis | CVSS | Surface |

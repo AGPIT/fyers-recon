@@ -1,11 +1,12 @@
 {
   "target": "fyers.in",
-  "phase": "HYPOTHESIS",
-  "status": "HIGH_POTENTIAL",
+  "phase": "POC",
+  "status": "IN_PROGRESS",
   "next_steps": [
-    "Formalize Hypothesis 24: Multi-Factor Authentication Bypass",
-    "Document read-only PoC design for rate limit testing",
-    "Analyze WebSocket authentication for additional bypass vectors",
-    "Investigate session management across authentication factors"
+    "Create POC_VAGATOR.md with detailed curl commands",
+    "Document safe testing methodology for rate limits",
+    "Analyze WebSocket authentication for additional vectors",
+    "Investigate fund transfer/withdrawal flow security",
+    "Create POC_VAGATOR.md with detailed curl commands"
   ]
 }
