@@ -81,13 +81,17 @@ jobs:
           wc_research=$(wc -l < research_${MODEL_NAME}.md 2>/dev/null || echo 0)
           echo "findings=$wc_findings lines, research=$wc_research lines"
 
+          # Truncate oversized single lines (e.g. base64/JS dumps) so context and
+          # the single-argument prompt can never blow ARG_MAX / MAX_ARG_STRLEN.
+          TRUNC="awk '{ print (length(\$0) > 3000 ? substr(\$0,1,3000) \"...[TRUNC]\" : \$0) }'"
+
           if [ "$wc_findings" -gt 100 ]; then
-            tail -n 1000 findings_${MODEL_NAME}.md > ctx-findings_${MODEL_NAME}.txt
+            tail -n 800 findings_${MODEL_NAME}.md | awk '{ print (length($0) > 3000 ? substr($0,1,3000) "...[TRUNC]" : $0) }' | tail -c 60000 > ctx-findings_${MODEL_NAME}.txt
           else
             echo "# No findings yet" > ctx-findings_${MODEL_NAME}.txt
           fi
           if [ "$wc_research" -gt 100 ]; then
-            tail -n 1000 research_${MODEL_NAME}.md > ctx-research_${MODEL_NAME}.txt
+            tail -n 2000 research_${MODEL_NAME}.md | awk '{ print (length($0) > 3000 ? substr($0,1,3000) "...[TRUNC]" : $0) }' | tail -c 120000 > ctx-research_${MODEL_NAME}.txt
           else
             echo "# No research yet" > ctx-research_${MODEL_NAME}.txt
           fi
@@ -215,7 +219,9 @@ jobs:
         run: |
           export PATH="$HOME/.opencode/bin:$HOME/.local/bin:$PATH"
           echo "Model=$MODEL_ID Phase=$CURRENT_PHASE Target=$CURRENT_TARGET"
-          timeout 18m opencode run --model "$MODEL_ID" "$(cat research-prompt.txt)" > raw_${MODEL_NAME}.txt 2>&1 || true
+          # Prompt is streamed via stdin (not a shell arg) so it can exceed the
+          # 128KB MAX_ARG_STRLEN limit that broke runs once research grew large.
+          timeout 18m opencode run --model "$MODEL_ID" < research-prompt.txt > raw_${MODEL_NAME}.txt 2>&1 || true
 
           echo "=== Output Preview ==="
           head -30 raw_${MODEL_NAME}.txt
@@ -257,8 +263,8 @@ jobs:
             echo ""
             cat raw_${MODEL_NAME}.txt
           } >> research_${MODEL_NAME}.md
-          if [ "$(wc -l < research_${MODEL_NAME}.md)" -gt 3000 ]; then
-            tail -n 3000 research_${MODEL_NAME}.md > .research.tmp && mv .research.tmp research_${MODEL_NAME}.md
+          if [ "$(wc -c < research_${MODEL_NAME}.md)" -gt 600000 ]; then
+            awk '{ print (length($0) > 4000 ? substr($0,1,4000) "...[TRUNC]" : $0) }' research_${MODEL_NAME}.md | tail -c 600000 > .research.tmp && mv .research.tmp research_${MODEL_NAME}.md
           fi
 
       - name: Update Findings Summary
