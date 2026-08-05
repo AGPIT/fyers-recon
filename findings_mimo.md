@@ -72,3 +72,9 @@ Review research_mimo.md for details
 +| # | Hypothesis | CVSS | Priority |
 +| Priority | Hypothesis | CVSS | Surface |
  **CVSS**: 7.5 (High) - AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+| `/verify_otp` | Very Low (prevent brute force) | Unknown | CRITICAL |
+| `/verify_pin_v2` | Low (prevent PIN brute force) | Unknown | CRITICAL |
+| # | Original Hypothesis | Refined Assessment | CVSS |

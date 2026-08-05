@@ -2637,3 +2637,187 @@ NEXT_STEP_1: Analyze Vagator API rate limiting and lockout mechanisms
 NEXT_STEP_2: Test OTP/PIN validation error handling
 NEXT_STEP_3: Investigate request_key lifecycle and expiration
 NEXT_STEP_4: Document reCAPTCHA implementation details
+
+===== RUN 2026-08-05 16:23:21 UTC =====
+Model: mimo | Phase: SURFACE | Target: fyers.in
+
+[0m
+> build · mimo-v2.5-free
+[0m
+[0m→ [0mRead state_mimo.json
+[0m✗ [0mRead RECON_SIGNUP.md failed
+[91m[1mError: [0mFile not found: /home/runner/work/fyers-recon/fyers-recon/RECON_SIGNUP.md
+Let me review the current state and existing findings to continue the SURFACE analysis.
+[0m✱ [0mGlob "**/*.md"[90m 6 matches[0m
+[0m→ [0mRead research_mimo.md[90m [offset=1, limit=100][0m
+[0m→ [0mRead research_mimo.md[90m [limit=200, offset=2400][0m
+# Target: fyers.in
+# Current Phase: SURFACE ANALYSIS (Vagator OTP Authentication API)
+
+## Key Findings - Deep Analysis
+
+### Vagator API Security Characteristics
+
+| Component | Security Assessment | Risk Level |
+|-----------|---------------------|------------|
+| **Endpoint Exposure** | No auth required on send_login_otp | HIGH |
+| **Input Encoding** | Base64 (trivially reversible) | MEDIUM |
+| **request_key Lifecycle** | Unknown expiration (needs testing) | HIGH |
+| **reCAPTCHA Integration** | Optional field, empty string accepted | HIGH |
+| **Rate Limiting** | Unknown (no visible headers/rate-limit responses) | HIGH |
+| **Error Messages** | Generic (no user enumeration prevention visible) | MEDIUM |
+
+### Authentication Flow Vulnerability Analysis
+
+```
+Step 1: POST /vagator/v2/send_login_otp_v2
+├── Input: fy_id (base64 encoded), app_id
+├── Output: request_key (UUID)
+├── Risk: User enumeration via response timing
+└──防护: None visible
+
+Step 2: POST /vagator/v2/verify_otp  
+├── Input: request_key, otp (6 digits)
+├── Output: new request_key
+├── Risk: OTP brute force (6 digits = 1M combinations)
+└──防护: Unknown rate limiting
+
+Step 3: POST /vagator/v2/verify_pin_v2
+├── Input: request_key, identifier (base64 PIN), recaptcha_token
+├── Output: access_token (bearer)
+├── Risk: PIN brute force (4 digits = 10K combinations)
+├──防护: reCAPTCHA (optional, empty accepted)
+└── Critical: If reCAPTCHA can be bypassed, full account takeover possible
+
+Step 4-5: Token Exchange (api-t1.fyers.in)
+├── Input: Bearer token → auth_code → appIdHash exchange
+├── Risk: appIdHash bypass (known vulnerability pattern)
+└──防护: PIN required for refresh operations
+```
+
+### Critical Security Gaps Identified
+
+1. **reCAPTCHA Implementation Flaw**
+   - `recaptcha_token` field is optional in request schema
+   - Empty string (`""`) accepted without validation
+   - No visible bot detection on authentication flow
+
+2. **Low Entropy Secrets**
+   - OTP: 6 digits (1,000,000 combinations)
+   - PIN: 4 digits (10,000 combinations)
+   - Both susceptible to brute force without rate limiting
+
+3. **request_key State Management**
+   - No documented expiration time
+   - No invalidation mechanism visible
+   - Potential for replay attacks if keys are reusable
+
+4. **Error Handling Patterns**
+   - Generic error messages (good for enumeration prevention)
+   - No account lockout mechanism visible
+   - No CAPTCHA challenge after failed attempts
+
+### Rate Limiting Analysis (Read-Only Assessment)
+
+| Endpoint | Expected Rate Limit | Observed | Risk |
+|----------|---------------------|----------|------|
+| `/send_login_otp_v2` | Low (prevent SMS/OTP flooding) | Unknown | HIGH |
+| `/verify_otp` | Very Low (prevent brute force) | Unknown | CRITICAL |
+| `/verify_pin_v2` | Low (prevent PIN brute force) | Unknown | CRITICAL |
+| Token exchange | Standard API limits | Unknown | MEDIUM |
+
+**Key Question**: Are there IP-based or account-based rate limits not visible in documentation?
+
+### Hypothesis Refinement (Based on SURFACE Analysis)
+
+| # | Original Hypothesis | Refined Assessment | CVSS |
+|---|---------------------|-------------------|------|
+| 19 | OTP Brute Force | **HIGH LIKELIHOOD** - 6-digit OTP with unknown rate limiting | 7.5 |
+| 20 | PIN Brute Force | **VERY HIGH LIKELIHOOD** - 4-digit PIN with optional reCAPTCHA | 8.1 |
+| 22 | Request Key Replay | **MEDIUM LIKELIHOOD** - Depends on key expiration policy | 6.5 |
+| 23 | ReCAPTCHA Bypass | **HIGH LIKELIHOOD** - Empty string already accepted | 6.5 |
+
+### New Hypothesis: Multi-Factor Authentication Bypass
+
+**Reasoning**: If reCAPTCHA can be bypassed AND rate limiting is weak, an attacker could:
+1. Obtain valid request_key via send_login_otp (no rate limit observed)
+2. Brute force 6-digit OTP (1M combinations, ~10K requests/hour)
+3. Brute force 4-digit PIN (10K combinations, minutes)
+4. Obtain full access_token without any second factor
+
+**Attack Path**:
+```
+1. POST /vagator/v2/send_login_otp_v2 → request_key
+2. Loop: POST /vagator/v2/verify_otp → new request_key
+3. Loop: POST /vagator/v2/verify_pin_v2 → access_token
+4. Complete account takeover
+```
+
+**Indicators of Vulnerability**:
+- No rate limit response (429 status) after multiple attempts
+- reCAPTCHA token not validated server-side
+- No account lockout after failed attempts
+
+**CVSS**: 8.1 (High) - AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N
+
+---
+
+## Recommendations for Next Phase (HYPOTHESIS)
+
+Based on SURFACE analysis, the following should be prioritized for HYPOTHESIS phase:
+
+1. **Test Rate Limiting** (read-only)
+   - Document response headers for rate limit information
+   - Test if 429 responses appear after N attempts
+   - Identify if limits are IP-based or account-based
+
+2. **Analyze Error Responses**
+   - Document exact error messages for invalid OTP/PIN
+   - Check if response timing varies (potential oracle)
+   - Look for subtle differences in error responses
+
+3. **Investigate reCAPTCHA Integration**
+   - Determine reCAPTCHA version (v2/v3/Enterprise)
+   - Test if empty string bypasses validation
+   - Check if reCAPTCHA is enforced on all endpoints
+
+4. **Document request_key Lifecycle**
+   - Test key expiration (send key, wait, attempt use)
+   - Check if keys are single-use or multi-use
+   - Investigate key format for predictability
+
+---
+
+## STATE UPDATE FOR NEXT RUN
+
+STATUS_TARGET: fyers.in
+STATUS_PHASE: HYPOTHESIS
+STATUS_STATE: HIGH_POTENTIAL
+
+NEXT_STEP_1: Formalize Hypothesis 24: Multi-Factor Authentication Bypass
+NEXT_STEP_2: Document read-only PoC design for rate limit testing
+NEXT_STEP_3: Analyze WebSocket authentication for additional bypass vectors
+NEXT_STEP_4: Investigate session management across authentication factors
+
+---
+
+## CVSS Candidates Summary (Vagator API)
+
+| # | Hypothesis | CVSS | Vector String |
+|---|------------|------|---------------|
+| 19 | OTP Brute Force | 7.5 (High) | AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N |
+| 20 | PIN Brute Force | 8.1 (High) | AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N |
+| 24 | Multi-Factor Auth Bypass | 8.1 (High) | AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N |
+| 22 | Request Key Replay | 6.5 (Medium) | AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N |
+| 23 | reCAPTCHA Bypass | 6.5 (Medium) | AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:L/A:N |
+
+---
+
+## Files Requiring Update
+
+| File | Update Needed |
+|------|---------------|
+| `HYPOTHESIS_VAGATOR.md` | Create with refined hypotheses |
+| `SURFACE_VAGATOR.md` | Create with detailed analysis |
+| `state_mimo.json` | Update to HYPOTHESIS phase |
+| `research_mimo.md` | Append SURFACE findings |
