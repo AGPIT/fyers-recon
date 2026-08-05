@@ -1,10 +1,10 @@
 {
   "target": "fyers.in",
-  "phase": "HYPOTHESIS",
+  "phase": "POC",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Complete the H1 step-1 redirect_uri oracle across all four recovered live client_ids (EFR7964223-101, V71C1UQU24-101, GT2V66D5Y4-101, SOFG221ZX4-101) with registered/foreign-fyers.in/external redirect_uris, and diff the returned login-page hidden fields (`fy_client_id`, echoed redirect_uri) to detect server-side URI reflection \u2014 read-only, spaced to avoid CF 429.",
-    "Enumerate vagator/v2 request keys (get_user_id_v3, verify_otp_v2, verify_pin_v2, refresh_token_v2, totp, guest_user/login_v2) on api-t2.fyers.in via empty/partial-body error-shape diffing to build the H2/H3 PoC request templates.",
-    "Map auth-gated-vs-public classification for the leaked API set (nps/*, campaigns/v1, smart-order/*, flows/tc/timeline, user/v3/app/*, automate/*) using no-token error fingerprints, and capture request/response shapes to finalize read-only PoC designs for H4\u2013H7."
+    "Execute the H1 step-A oracle matrix (8 redirect_uri variants per client) and diff login-page sizes/hashes to map any server-side validation branch, without submitting real credentials or exchanging codes. Then decode the `login.min.js` callback to confirm where post-auth `auth_code`/`redirectUrl` is emitted (document-only).",
+    "Map authz-domain boundary for H5: send an api-t1-issued-style Authorization token (placeholder/sample from config, not real creds) to `api-g1.settings/*` and `api-i1.fd/*` to observe whether the `-401`/`40101` gate is independent of the trade-core `-16` gate (token-scoping oracle, read-only).",
+    "Enumerate the H7 `user/v3/app/create` request schema (accepted/required fields incl. redirect_uri) and the H2 `guest_user/register` required keys via empty/partial-body error-shape diffing; assemble persisted PoC request templates for H1/H3/H5/H7 in next run."
   ]
 }

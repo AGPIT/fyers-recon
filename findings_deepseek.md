@@ -21,3 +21,18 @@ Review research_deepseek.md for details
 
 HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: deepseek)
 Review research_deepseek.md for details
+
+# 7 items on 2026-08-05 04:42:22 UTC
+- **H1 redirect_uri oracle fully mapped (read-only).** For real clients `SOFG221ZX4-101` and `EFR7964223-101`, `GET /api/v3/generate-authcode` returned an identical 60,818-byte login page for three classes of `redirect_uri`: registered (`pledge.fyers.in/index.html`), external hostile (`evil.example.com/cb`), and foreign fyers.in subdomain (`direct.fyers.in/auth/redirect`). No server-side allowlist rejection at step-1; the unregistered URI is accepted. `V71C1UQU24-101` and subsequent calls hit CF **429/1015** rate limit — confirms a genuine unauthenticated public surface (no WAF app-layer filter, Cloudflare edge only). Invalid-format client_id → `302 trade.fyers.in/api-login/error/index.html?error_msg=invalid appType`, then 429.
+- **No server-side URI reflection or echo in the login HTML.** Response body contains no reflection of the supplied `redirect_uri`, `client_id`, or `state`; the values are held client-side in JS. The login POST body itself includes `client_id`, `redirect_uri`, and `appType` (decrypted from string table). This means the *decision of where to deliver the auth_code is made client-side* off the URL param — consistent with step-1 not binding URI → code.
+- **SSO bundle decrypted.** `login.fyers.in/new-sso/17.0/api_v3_login/login.min.js` (310 KB) uses a 1,257-element string-array obfuscation. Decoded backend routes: `api-t2.fyers.in/vagator/v2/*`, `api-t1.fyers.in/api/v3/{token, direct-login}`, `api.fyers.in/api/v2/*`, `tradingview/auth/*`. Confirmed string tokens: `refresh_token_v2`, `validate_refresh_token`, `REFRESH_TOKEN_VALIDITY`, `totp`, `get_user_id_v3`, `identifier_value`. Auth-flow fields: `#fy_client_id`, `client_id_flow`, `registered_client_id_and_pan`, `login_guest_user`, `register_guest_user`.
+- **OTP-gate fingerprint proven.** `send_login_otp_v3` with the correct key `identifier_value` triggers CF **1015** ("error code: 1015" on the rendered page), whereas `mobile_number`/`client_id` keys return `-1025 invalid request`. This delineates a valid request-key vs invalid-key oracle AND confirms an active rate limiter on the OTP send path.
+- **`api-g1.fyers.in/settings/*` new surface.** ~44 per-user settings endpoints (charts, key_ratio, key_metrics, screeners/favourites, one-click, scalper, order-window, qsgs, preferences, quick-trade). All return a **distinct auth fingerprint `{"code":-401,"message":"Unauthorized"}`** without a token — separate microservice, separate auth domain → candidate for cross-service authz gaps.
+- **`api-i1.fyers.in/investment/*/fd/*` auth fingerprint.** Returns `{"error_code":40101,"Authorization token is required"}` — a third distinct auth error scheme (`-16`, `-401`, `40101`) across api-t1/t2, api-g1, api-i1.
+- **Public `indus/v1/config` still live (H4 reproducible).** `https://api-d1-cdn.fyers.in/indus/v1/config` → 113,497 bytes, 73 endpoint blocks, 35 unique `*.fyers.in` hosts, `data_socket.cl_cug` (27 IDs: XS53027, XV15456, XT05527…), `analytics_exceptions.exceptional_clients` (14 IDs), `hsm_config.cug_mob` (9 IDs), plus feature/permission matrices (prime/basic `fundWithdrawal` limits), maintenance windows. The raw `api-d1.fyers.in` origin returns CF 1016 (origin-unreachable) — config is served only via the CDN wrapper.
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: deepseek)
+Review research_deepseek.md for details
+## CVSS Candidates
+- [H1 OAuth code interception] — CVSS 8.1–9.0 (full ATO if code delivery confirmed)
+- [H1 open-redirect / non-binding redirect_uri on generate-authcode] — CVSS 6.1 (confirmed step-1)
