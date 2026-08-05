@@ -31,3 +31,9 @@ NEW ATTACK SURFACE IDENTIFIED (model: mimo)
 Review research_mimo.md for details
 +6. **Webhook Spoofing (Missing HMAC)** (CVSS 8.1) - No signature validation enables forged order events
 +9. **Webhook Secret Leakage** (CVSS 7.5) - Secret embedded in client-side JavaScript code
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+**CVSS**: 7.5 (High) - AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N
+**CVSS**: 6.5 (Medium) - AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N
+**CVSS**: 6.1 (Medium) - AV:N/AC:L/PR:R/UI:R/S:C/C:L/I:L/A:N

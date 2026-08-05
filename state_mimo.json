@@ -1,11 +1,11 @@
 {
   "target": "fyers.in",
-  "phase": "HYPOTHESIS",
-  "status": "IN_PROGRESS",
+  "phase": "POC",
+  "status": "HIGH_POTENTIAL",
   "next_steps": [
-    "Analyze MCP endpoint authentication flow",
-    "Test OAuth token handling and session management",
-    "Investigate third-party MCP server implementations",
-    "Document tool schema and input validation"
+    "Finalize PoC scripts for Hypotheses 11 and 14 (MCP vulnerabilities)",
+    "Document exact curl commands with error handling",
+    "Create MCP-specific safe testing checklist",
+    "Prepare bug bounty submission for MCP vulnerabilities"
   ]
 }
