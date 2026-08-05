@@ -1,8 +1,3 @@
-https://api-t2.fyers.in/automate/tagpositionbook
-https://api-t2.fyers.in/automate/workflow/multi-stop
-https://api-t2.fyers.in/automate/workflow/stop
-https://api-t2.fyers.in/automate/workflows
-https://api-t2.fyers.in/automate/workflows?strategy_id={strategyId}
 https://api-t2.fyers.in/baskets/v1
 https://api-t2.fyers.in/baskets/v1/allitems
 https://api-t2.fyers.in/baskets/v1/items
@@ -2998,3 +2993,8 @@ Wrote file successfully.
 [0m
 The deobfuscation machinery works now. Let me extract the specific cb-denylist and redirect-context values cleanly to a file.
 [91m[1mError: [0m"Streaming response failed: [503] The request queue is full."
+
+===== RUN 2026-08-05 14:39:52 UTC =====
+Model: deepseek | Phase: RECON | Target: fyers.in
+
+/home/runner/work/_temp/bc21ddc1-897c-435c-9e50-51994c33ec44.sh: line 3: /usr/bin/timeout: Argument list too long
