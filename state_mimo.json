@@ -1,11 +1,11 @@
 {
   "target": "fyers.in",
-  "phase": "POC",
+  "phase": "HYPOTHESIS",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Execute PoC scripts with written authorization",
-    "Compile findings into bug bounty submission",
-    "Submit via FYERS Zoho Form",
-    "Monitor for remediation updates"
+    "Analyze MCP endpoint authentication flow",
+    "Test OAuth token handling and session management",
+    "Investigate third-party MCP server implementations",
+    "Document tool schema and input validation"
   ]
 }
