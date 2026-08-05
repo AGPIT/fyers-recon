@@ -1,10 +1,6 @@
 {
   "target": "fyers.in",
-  "phase": "POC",
+  "phase": "RECON",
   "status": "IN_PROGRESS",
-  "next_steps": [
-    "Execute the H1 open-redirect confirmation matrix at step-1 for the second client parameter \u2014 pass a `cb=` value to `generate-authcode` alongside a registered `redirect_uri` and diff the returned login page for any `cb` reflection/validation branch (read-only, spaced \u226515s); note whether `cb` is accepted as an alternative destination pre-auth.",
-    "Complete the H3 deliverable by enumerating the TOTP surface pre-auth: probe `api-t2.fyers.in/vagator/v2/totp` (and `validate_qr`) with empty/partial bodies to map whether the TOTP step lives on the same vagator service or a separate auth domain, and record the error-code transitions vs the `-502` pin gate.",
-    "Continue surface RECON on the config-derived `api-a1.fyers.in` endpoint map: classify the remaining `funds/v1/api/*` (esp. `send_otp`, `verify_otp`, `add_funds_status?order_id=`, `download_transactions`, `transaction_download_key`) as `-21` vs `-16` auth and check the documented query-param objects (`order_id`, `transaction` keys) for IDOR-relevant object shapes to finalize H5 PoC templates."
-  ]
+  "next_steps": []
 }
