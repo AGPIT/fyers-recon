@@ -1849,3 +1849,314 @@ NEXT_STEP_4: Prepare bug bounty submission for MCP vulnerabilities
 3. MCPSafe Token Passthrough: https://mcpsafe.io/threats/token-passthrough
 4. MCP Authorization Spec: https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization
 5. quantabox/fyers-mcp-server: https://github.com/quantabox/fyers-mcp-server
+
+===== RUN 2026-08-05 12:30:00 UTC =====
+Model: mimo | Phase: RECON/SURFACE/HYPOTHESIS/POC | Target: fyers.in
+
+# Target: fyers.in
+# Current Phase: POC (EDIS/TPIN System) - COMPLETE
+
+## Key Findings
+
+### EDIS Attack Surface
+
+| Component | Details |
+|-----------|---------|
+| **API Host** | `api.fyers.in` (Legacy v2) |
+| **Endpoints** | `/api/v2/tpin`, `/api/v2/details`, `/api/v2/index`, `/api/v2/inquiry` |
+| **Auth Format** | `Authorization: <app_id>:<access_token>` |
+| **WebSocket** | `wss://socket.fyers.in/trade/v3` (OnGeneral callback) |
+| **CDSL Portal** | `https://edis.cdslindia.com/eDIS/VerifyDIS/` |
+
+### EDIS Transaction Flow
+
+1. User initiates sell order for holdings
+2. System checks if DDPI/POA is active
+3. If neither → TPIN required via CDSL
+4. FYERS redirects to CDSL portal
+5. User enters TPIN on CDSL portal
+6. CDSL sends OTP to registered mobile/email
+7. User enters OTP to complete authorization
+8. FYERS receives confirmation
+9. Sell order can proceed
+
+### EDIS API Endpoints
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/api/v2/tpin` | GET | Generate CDSL TPIN |
+| `/api/v2/details` | GET | EDIS details |
+| `/api/v2/index` | GET/POST | EDIS index |
+| `/api/v2/inquiry` | POST | EDIS status inquiry |
+
+---
+
+## Hypotheses Generated (EDIS/TPIN System)
+
+| # | Hypothesis | CVSS | Priority |
+|---|------------|------|----------|
+| 15 | EDIS API Authorization Bypass | 9.1 (Critical) | HIGH |
+| 16 | CDSL Redirect URL Manipulation | 7.5 (High) | HIGH |
+| 17 | ISIN Enumeration via EDIS Inquiry | 5.3 (Medium) | MEDIUM |
+| 18 | WebSocket EDIS Data Leakage | 5.3 (Medium) | MEDIUM |
+
+---
+
+## Files Created
+
+| File | Description |
+|------|-------------|
+| `RECON_EDIS.md` | RECON report for EDIS system |
+| `SURFACE_EDIS.md` | SURFACE analysis for EDIS system |
+| `HYPOTHESIS_EDIS.md` | HYPOTHESIS report for EDIS system |
+| `EDIS_POC.md` | POC scripts for EDIS vulnerabilities |
+
+---
+
+## STATE UPDATE FOR NEXT RUN
+
+STATUS_TARGET: fyers.in
+STATUS_PHASE: RECON
+STATUS_STATE: IN_PROGRESS
+
+NEXT_STEP_1: Explore signup.fyers.in registration endpoints
+NEXT_STEP_2: Investigate mobile app API endpoints
+NEXT_STEP_3: Analyze API dashboard security
+NEXT_STEP_4: Document fund transfer/withdrawal flow
+
+===== RUN 2026-08-05 12:18:02 UTC =====
+Model: mimo | Phase: POC | Target: fyers.in
+
+[0m
+> build · mimo-v2.5-free
+[0m
+[0m→ [0mRead state_mimo.json
+Let me read the current state files and then continue research on fyers.in.
+[0m✱ [0mGlob "**/*mimo*.md"[90m in . · 2 matches[0m
+[0m→ [0mRead research_mimo.md
+[0m→ [0mRead findings_mimo.md
+[0m→ [0mRead research_mimo.md[90m [offset=1394][0m
+[0m✱ [0mGlob "**/*mcp*"[90m in . · 0 matches[0m
+[0m✱ [0mGlob "**/*POC*"[90m in . · 0 matches[0m
+Let me read the rest of the research file and check for any MCP-related files.
+[0m
+[0m← [0mWrite MCP_POC.md
+Wrote file successfully.
+[0m
+I have the full picture. The state shows POC phase with HIGH_POTENTIAL status for MCP vulnerabilities (Hypotheses 11-14). Let me complete the POC phase with finalized curl commands and testing checklist.
+[0m← [0mWrite state_mimo.json
+Wrote file successfully.
+[0m
+Now let me update the state to mark MCP POC as COMPLETE and prepare for RECON on a new unexplored surface.
+Starting RECON on a new unexplored surface: **EDIS/TPIN System** (`trade.fyers.in/edis/`). Let me gather information.
+[0m% [0mWebFetch https://trade.fyers.in/edis/
+[0m◈ [0mParallel Web Search "fyers.in EDIS TPIN CDSL integration API endpoint security"
+[0m◈ [0mParallel Web Search "site:fyers.in inurl:edis OR inurl:tpin OR inurl:pledge OR inurl:withdraw API"
+Let me search for more details about the FYERS EDIS API endpoints and the CDSL integration.
+[0m% [0mWebFetch https://support.fyers.in/portal/en/kb/articles/what-is-ddpi-on-fyers-and-what-charges-are-applicable
+[0m◈ [0mParallel Web Search ""fyers" EDIS API v2 tpin generation CDSL integration endpoint"
+[0m◈ [0mParallel Web Search "fyers API EDIS inquiry index details endpoint authentication"
+[0m
+[0m← [0mWrite RECON_EDIS.md
+Wrote file successfully.
+[0m
+Excellent! I now have comprehensive information about the FYERS EDIS system. Let me compile the RECON report.
+[0m← [0mWrite state_mimo.json
+Wrote file successfully.
+[0m
+Now let me update the state and continue with SURFACE analysis.
+Let me now do deeper SURFACE analysis on the EDIS system.
+[0m% [0mWebFetch https://support.fyers.in/portal/en/kb/articles/how-do-i-authorise-my-holdings-before-selling-in-fyers
+[0m◈ [0mParallel Web Search ""api.fyers.in" v2 API authentication authorization EDIS endpoint security"
+[0m◈ [0mParallel Web Search "fyers EDIS websocket real-time update order socket eDIS status"
+[0m
+[0m← [0mWrite SURFACE_EDIS.md
+Wrote file successfully.
+[0m
+Now let me compile the comprehensive SURFACE analysis for the EDIS system.
+[0m← [0mWrite state_mimo.json
+Wrote file successfully.
+[0m
+Now let me update the state and prepare for HYPOTHESIS phase.
+[0m← [0mWrite HYPOTHESIS_EDIS.md
+Wrote file successfully.
+[0m
+Now let me complete the HYPOTHESIS phase with detailed hypotheses for the EDIS system.
+[0m← [0mWrite state_mimo.json
+Wrote file successfully.
+[0m
+Now let me update the state and create the POC scripts.
+[0m← [0mWrite EDIS_POC.md
+Wrote file successfully.
+[0m
+Now let me create the POC scripts for the EDIS vulnerabilities.
+[0m→ [0mRead research_mimo.md[90m [offset=1851][0m
+Now let me update the research_mimo.md file with the EDIS findings and mark the state as COMPLETE.
+[0m
+[0m← [0mEdit research_mimo.md
+Index: /home/runner/work/fyers-recon/fyers-recon/research_mimo.md
+===================================================================
+--- /home/runner/work/fyers-recon/fyers-recon/research_mimo.md
++++ /home/runner/work/fyers-recon/fyers-recon/research_mimo.md
+@@ -1848,4 +1848,78 @@
+ 2. GHSA-jpw9-pfvf-9f58: https://github.com/modelcontextprotocol/python-sdk/security/advisories/GHSA-jpw9-pfvf-9f58
+ 3. MCPSafe Token Passthrough: https://mcpsafe.io/threats/token-passthrough
+ 4. MCP Authorization Spec: https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization
+ 5. quantabox/fyers-mcp-server: https://github.com/quantabox/fyers-mcp-server
++
++===== RUN 2026-08-05 12:30:00 UTC =====
++Model: mimo | Phase: RECON/SURFACE/HYPOTHESIS/POC | Target: fyers.in
++
++# Target: fyers.in
++# Current Phase: POC (EDIS/TPIN System) - COMPLETE
++
++## Key Findings
++
++### EDIS Attack Surface
++
++| Component | Details |
++|-----------|---------|
++| **API Host** | `api.fyers.in` (Legacy v2) |
++| **Endpoints** | `/api/v2/tpin`, `/api/v2/details`, `/api/v2/index`, `/api/v2/inquiry` |
++| **Auth Format** | `Authorization: <app_id>:<access_token>` |
++| **WebSocket** | `wss://socket.fyers.in/trade/v3` (OnGeneral callback) |
++| **CDSL Portal** | `https://edis.cdslindia.com/eDIS/VerifyDIS/` |
++
++### EDIS Transaction Flow
++
++1. User initiates sell order for holdings
++2. System checks if DDPI/POA is active
++3. If neither → TPIN required via CDSL
++4. FYERS redirects to CDSL portal
++5. User enters TPIN on CDSL portal
++6. CDSL sends OTP to registered mobile/email
++7. User enters OTP to complete authorization
++8. FYERS receives confirmation
++9. Sell order can proceed
++
++### EDIS API Endpoints
++
++| Endpoint | Method | Purpose |
++|----------|--------|---------|
++| `/api/v2/tpin` | GET | Generate CDSL TPIN |
++| `/api/v2/details` | GET | EDIS details |
++| `/api/v2/index` | GET/POST | EDIS index |
++| `/api/v2/inquiry` | POST | EDIS status inquiry |
++
++---
++
++## Hypotheses Generated (EDIS/TPIN System)
++
++| # | Hypothesis | CVSS | Priority |
++|---|------------|------|----------|
++| 15 | EDIS API Authorization Bypass | 9.1 (Critical) | HIGH |
++| 16 | CDSL Redirect URL Manipulation | 7.5 (High) | HIGH |
++| 17 | ISIN Enumeration via EDIS Inquiry | 5.3 (Medium) | MEDIUM |
++| 18 | WebSocket EDIS Data Leakage | 5.3 (Medium) | MEDIUM |
++
++---
++
++## Files Created
++
++| File | Description |
++|------|-------------|
++| `RECON_EDIS.md` | RECON report for EDIS system |
++| `SURFACE_EDIS.md` | SURFACE analysis for EDIS system |
++| `HYPOTHESIS_EDIS.md` | HYPOTHESIS report for EDIS system |
++| `EDIS_POC.md` | POC scripts for EDIS vulnerabilities |
++
++---
++
++## STATE UPDATE FOR NEXT RUN
++
++STATUS_TARGET: fyers.in
++STATUS_PHASE: RECON
++STATUS_STATE: IN_PROGRESS
++
++NEXT_STEP_1: Explore signup.fyers.in registration endpoints
++NEXT_STEP_2: Investigate mobile app API endpoints
++NEXT_STEP_3: Analyze API dashboard security
++NEXT_STEP_4: Document fund transfer/withdrawal flow
+
+[0m
+[0m← [0mWrite state_mimo.json
+Wrote file successfully.
+[0m
+Now let me update the state to mark EDIS POC as COMPLETE.
+# Target: fyers.in
+# Current Phase: RECON (Signup/Registration System) - STARTING
+
+## Session Summary
+
+I've completed comprehensive security research on the **FYERS EDIS/TPIN System**. Here's what was accomplished:
+
+---
+
+## Key Findings (EDIS/TPIN System)
+
+### Attack Surface
+
+| Component | Details |
+|-----------|---------|
+| **API Host** | `api.fyers.in` (Legacy v2) |
+| **Endpoints** | `/api/v2/tpin`, `/api/v2/details`, `/api/v2/index`, `/api/v2/inquiry` |
+| **Auth Format** | `Authorization: <app_id>:<access_token>` |
+| **CDSL Portal** | `https://edis.cdslindia.com/eDIS/VerifyDIS/` |
+
+### 4 Hypotheses Generated
+
+| # | Vulnerability | CVSS | Impact |
+|---|---------------|------|--------|
+| 15 | **EDIS API Authorization Bypass** | 9.1 (Critical) | Unauthorized sale of holdings |
+| 16 | **CDSL Redirect URL Manipulation** | 7.5 (High) | Phishing/credential theft |
+| 17 | **ISIN Enumeration** | 5.3 (Medium) | Information disclosure |
+| 18 | **WebSocket EDIS Leakage** | 5.3 (Medium) | Information disclosure |
+
+---
+
+## Files Created
+
+| File | Description |
+|------|-------------|
+| `RECON_EDIS.md` | RECON report for EDIS system |
+| `SURFACE_EDIS.md` | SURFACE analysis for EDIS system |
+| `HYPOTHESIS_EDIS.md` | HYPOTHESIS report for EDIS system |
+| `EDIS_POC.md` | POC scripts for EDIS vulnerabilities |
+
+---
+
+## Combined Priority Ranking (All Surfaces)
+
+| Priority | Hypothesis | CVSS | Surface |
+|----------|------------|------|---------|
+| 1 | #4: appIdHash Bypass | 9.1 | Auth |
+| 2 | #14: MCP OAuth Token Theft | 9.1 | MCP |
+| 3 | #15: EDIS Authorization Bypass | 9.1 | EDIS |
+| 4 | #1: IDOR on Orders | 8.1 | Trading |
+| 5 | #6: Webhook Spoofing | 8.1 | Webhook |
+| 6 | #2: Refresh Token Race | 7.5 | Auth |
+| 7 | #9: Webhook Secret Leakage | 7.5 | Webhook |
+| 8 | #11: MCP Session Hijacking | 7.5 | MCP |
+| 9 | #16: CDSL Redirect Manipulation | 7.5 | EDIS |
+| 10 | #3: WebSocket CSWSH | 6.5 | WebSocket |
+| 11 | #8: Pre-prod Bypass | 6.5 | Infra |
+| 12 | #12: MCP Token Passthrough | 6.5 | MCP |
+| 13 | #7: API Connect XSS | 6.1 | SDK |
+| 14 | #13: MCP Tool Injection | 6.1 | MCP |
+| 15 | #5: Rate Limit Bypass | 5.3 | API |
+| 16 | #10: Status Page Disclosure | 5.3 | Infra |
+| 17 | #17: ISIN Enumeration | 5.3 | EDIS |
+| 18 | #18: WebSocket EDIS Leakage | 5.3 | EDIS |
+
+---
+
+## STATE UPDATE FOR NEXT RUN
+
+STATUS_TARGET: fyers.in
+STATUS_PHASE: RECON
+STATUS_STATE: IN_PROGRESS
+
+NEXT_STEP_1: Explore signup.fyers.in registration endpoints
+NEXT_STEP_2: Investigate OTP verification flow
+NEXT_STEP_3: Document account creation process
+NEXT_STEP_4: Analyze KYC integration security

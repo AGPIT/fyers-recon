@@ -1,11 +1,12 @@
 {
   "target": "fyers.in",
-  "phase": "POC",
-  "status": "HIGH_POTENTIAL",
+  "phase": "RECON",
+  "status": "IN_PROGRESS",
   "next_steps": [
-    "Finalize PoC scripts for Hypotheses 11 and 14 (MCP vulnerabilities)",
-    "Document exact curl commands with error handling",
-    "Create MCP-specific safe testing checklist",
-    "Prepare bug bounty submission for MCP vulnerabilities"
+    "Explore signup.fyers.in registration endpoints",
+    "Investigate mobile app API endpoints",
+    "Analyze API dashboard security",
+    "Document fund transfer/withdrawal flow",
+    "Explore signup.fyers.in registration endpoints"
   ]
 }
