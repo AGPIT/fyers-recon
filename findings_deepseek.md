@@ -14,3 +14,10 @@ Review research_deepseek.md for details
 ## CVSS Candidates
 - [H1 OAuth redirect_uri / auth-code interception] - Estimated CVSS 8.1 (if code->token leakage confirmed)
 - [H1 open redirect on generate-authcode] - Estimated CVSS 6.1 (browser-only oracle)
+
+# 2 items on 2026-08-05 01:23:50 UTC
+- `api-t2.fyers.in/vagator/v2/*` — full endpoint set live (`get_user_id_v3`, `send_login_otp_v3`, `verify_otp_v2`, `verify_pin_v2`, `create_pin_v2`, `forgot_pin_v2`, `change_pin_v2`, `refresh_token_v2`, `verify_token_v2`, `totp`, `generate_qr`, `validate_qr`, `get_session_devices`, `guest_user/login_v2`, `guest_user/register`). Error shapes: `-1025 invalid request`, `-2 Missing request key`, `-1018 something went wrong`, `-1044 invalid input`, `verify_token_v2` returns DRF-style `{"detail":"Not authenticated"}`.
+- `api.fyers.in/api/v2/*` (AWS ALB, no WAF) — same login verbs, form-POST validated, JSON-POST→500 invalid method.
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: deepseek)
+Review research_deepseek.md for details
