@@ -106,6 +106,13 @@ TOTAL HYPOTHESIES: 32 across 10 attack surfaces
 
 TOTAL HYPOTHESIES: 36 across 11 attack surfaces
 
+# HYPOTHESIS Refinement Completed on 2026-08-05 22:30:00 UTC (API Connect & Partners)
+- **H33**: API Connect postMessage Injection - Evidence confirmed in SDK source (CVSS 8.1)
+- **H34**: SDK Key Theft via XSS - API key exposed in demo page (CVSS 7.5)
+- **H35**: Partners Widget Notification Spoofing - Public endpoint confirmed (CVSS 6.5)
+- **H36**: Staging OAuth Client ID Disclosure - Visible in HTML comments (CVSS 3.1)
+- **H14**: MCP OAuth Token Theft - Refined with MCP documentation (CVSS 9.1)
+
 # HYPOTHESIS Refinement Completed on 2026-08-05 21:00:00 UTC (Verified P&L System)
 - **H29**: UUID Leakage via public sharing and search engine indexing (CVSS 5.3)
 - **H30**: Verified P&L API IDOR via user_id parameter (CVSS 7.5)
@@ -162,3 +169,9 @@ Review research_mimo.md for details
  32. **Tax P&L API IDOR** (CVSS 7.5) - Tax P&L endpoint lacks proper authorization
 +33. **API Connect postMessage Injection** (CVSS 8.1) - Missing origin validation on postMessage handler
 +34. **API Connect SDK Key Theft via XSS** (CVSS 7.5) - API key exposed in SDK initialization
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+ 36. **Staging OAuth Client ID Disclosure** (CVSS 3.1) - Commented staging client ID in HTML source
++- **H33**: API Connect postMessage Injection - Evidence confirmed in SDK source (CVSS 8.1)
++- **H34**: SDK Key Theft via XSS - API key exposed in demo page (CVSS 7.5)

@@ -1,12 +1,12 @@
 {
   "target": "fyers.in",
-  "phase": "HYPOTHESIS",
+  "phase": "POC",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Formalize hypotheses for API Connect postMessage injection (H33)",
-    "Design read-only PoC for SDK key theft (H34)",
-    "Analyze partners widget notification flow for spoofing (H35)",
-    "Investigate MCP OAuth redirect flow for token theft (H14)",
-    "Formalize hypotheses for API Connect postMessage injection (H33)"
+    "Create POC_APICONNECT.md with curl/HTML test cases",
+    "Document read-only testing methodology for H33-H36",
+    "Design safe postMessage injection test",
+    "Prepare findings for submission",
+    "Create POC_APICONNECT.md with curl/HTML test cases"
   ]
 }
