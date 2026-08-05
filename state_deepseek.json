@@ -1,6 +1,10 @@
 {
   "target": "fyers.in",
-  "phase": "RECON",
-  "status": "IN_PROGRESS",
-  "next_steps": []
+  "phase": "HYPOTHESIS",
+  "status": "HIGH_POTENTIAL",
+  "next_steps": [
+    "Promote H1 to POC-design phase: construct exact curl sequences (generate-authcode with hostile redirect_uri + state, then the client-side JS delivery analysis) as a documented PoC design, and enumerate the reserved-`cb` denylist from `login.min.js` for a full open-redirect whitelist; assign CVSS.",
+    "Full static pass of the Windows MCP .exe (77 MB) for FIA_TOKEN/OAuth scopes + local-token storage, to firm up H8 conditional rating.",
+    "Re-diff `indus/v1/config` for newly added hosts (check `api-y1` trade routes' true home, `debt.fyers.in` backend) and enumerate `insights.fyers.in` / `savedcharts.fyers.in` widget surfaces for token-bearing endpoints (guest-created content IDOR)."
+  ]
 }

@@ -127,5 +127,38 @@ Review research_deepseek.md for details
 HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: deepseek)
 Review research_deepseek.md for details
  - [H8 MCP FIA_TOKEN cross-domain scoping / tool ATO] — CVSS 6.5–8.0 (conditional)
-+- **NEW: raw Microsoft SQL Server error leak (unauthenticated) on `api-i1.fyers.in/mf/data/v2/scheme/details/chart`.** With valid `period` (1M/1Y/3M/5Y; `1D` is invalid) returns `{"Number":1103,"SQLState":[52,50,48,48,48],"Message":"Incorrect table name ''"}` — SQLState decodes to "42000". Backend is SQL Server; the chart table name is interpolated server-side (empty for unknown params), and the raw DB error is reflected with no wrapper and **no auth**. isin/plan_id/symbol params accepted but do not set the table name → table name derived server-side. Error-based oracle + stack disclosure on a public endpoint (H10, CVSS 4.3 baseline; SQLi conditional on table-name provenance).
++- **NEW: SQL error leak (unauthenticated) on `api-i1.fyers.in/mf/data/v2/scheme/details/chart`.** With valid `period` (1M/3M/6M/1Y/3Y/5Y; 1D/1W invalid) returns `{"Number":1103,"SQLState":[52,50,48,48,48],"Message":"Incorrect table name ''"}` (SQLState="42000"). Backend = MS SQL Server; no wrapper and no auth.
++
++# SURFACE round 2026-08-05 22:48 UTC
++- **H10 closed on chart table-name provenance.** `scheme_code` is the table selector: `scheme_code=47941&period=1Y` returns full public NAV history (`nav_history[]` timestamps+NAV); `scheme_code` is **parameterized** (strings/non-exist codes → empty `nav_history[]`, no injection). The raw SQL-1103 error only surfaces on the `scheme_code`-absent / plan_id-only fallback path (empty interpolated table name). ⇒ No SQLi; the leak collapses to a no-auth NAV-history enumeration + a benign error-shape oracle on a sting path with SQL Server engine disclosure. H10 downgraded to CVSS 3.9–4.3.
++- **H11 cdsl/dev route-validity oracle mapped (read-only).** Distinction: valid path+POST → `"Invalid Input Format"`; valid path+wrong method → `"Invalid request method"`; unknown resource → `"Invalid resource"`. Route matrix: `cdslEdis/{index,details,tpin}` + `edis/{index,details,tpin}` = valid POST JSON; `pledge/{userdata,status,reqdetails}` + `unpledge/status` = valid GET (then `Invalid Input Format` on wrong method); `pledge/setup` + `unpledge/setup` = POST; everything else `Invalid resource`. **No progressive field oracle** — every body (`{"client_id"}`, `{"fy_id"}`, `{"tpin"}`, JDBC/form/multipart/text) returns uniform `Invalid Input Format` (no auth fingerprint, but also no key-branching). Surface is a dev-stage EDIS/TPIN route skeleton; **no auth bypass demonstrated**, only route/method schema disclosure. H11 downgraded to CVSS 5.3 (schema disclosure only).
++- **`api/beta/*` is a dead backend** — uniform `502 Bad Gateway` on all 8 routes (get_all_plans/products/subscriptions/appThirdParty/activateThirdParty/get_msiuser_details/get_product_report) across GET/POST. No public surface; no auth oracle; deprioritized.
++- **`api-y1.fyers.in/trade/v3/{orders,orders/slice}` → 404** ("Test Page" Apache host). The config's `api-y1/...` entries do not resolve — trade-core lives on api-t2/api-t1. Confirmed 5th hostname enum (dead).
++- **New api-i1 auth-domain (fingerprint #12).** `api-i1.fyers.in/fy/mf/v1/holdings` → `{"error_code":-15,"status_code":401,"message":"Could not authenticate the user"}` — the `-15` trade-core domain, distinct from the other api-i1 domains (40101/-101/-101-variant/-100). Same hostname, per-service authz split confirmed again.
++- **`vagator/v2/guest_user/login_v2`** (api-t2) → `-1024 "please provide a valid mobile number"` (pre-auth, `-1024` new code on login path) — validation-before-auth on the guest-user login; reusable as a phone-format oracle.
++- Confirmed stable: `api-a1/funds/send_otp` 404; `api-g1/settings/user` `-401`; `quantainer/oi_stats/*` `-401`; `verif_token_v2` DRF `{"detail":Not authenticated}`; `indus/v1/config` live (now serves `ab_feature_set` + product-matrix).
+
++HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: deepseek)
++Review research_deepseek.md for details
++
 +## CVSS Candidates
++- [H10 chart SQL-engine/error oracle] — CVSS 3.9–4.1 (downgraded; NAV history is legitimately public, no SQLi proven)
++- [H11 cdsl/dev route+method schema disclosure] — CVSS 5.5 (downgraded; no auth-bypass demonstrated)
++- [H1 open redirect on login host] — CVSS 6.1 (carried)
++- [H1 OAuth code interception] — CVSS 8.1–9.0 (carried, conditional on code-delivery)
+
+## CVSS Candidates
+
+# 6 items on 2026-08-05 23:42:47 UTC
+- **H10 closed (downgraded).** `scheme_code` is the chart table selector — `scheme_code=47941&period=1Y` returns real public NAV history; strings/nonexistent codes → empty `nav_history[]` (parameterized, **no injection**). The raw SQL-1103 error only fires on the plan_id-only/`scheme_code`-absent fallback path with an empty interpolated table name. ⇒ engine disclosure + benign error oracle, no SQLi. CVSS 3.9–4.1.
+- **H11 cdsl/dev route-validity oracle mapped.** Three-way discriminator: valid path+method → `"Invalid Input Format"`; wrong method → `"Invalid request method"`; unknown resource → `"Invalid resource"`. Valid routes: `cdslEdis/{index,details,tpin}`, `edis/{index,details,tpin}` (POST JSON); `pledge/{userdata,status,reqdetails}`, `unpledge/status` (GET); `pledge/setup`/`unpledge/setup` (POST). **No progressive field oracle** — every body shape returns uniform error, no auth fingerprint. Schema disclosure only. CVSS 5.5 (downgraded).
+- **`api/beta/*` dead backend** — uniform 502 across all 8 routes (GET/POST). `api-y1/trade/v3/*` → 404 (Apache Test Page host, config entries don't resolve).
+- **New auth fingerprint #12:** `api-i1/fy/mf/v1/holdings` → `-15 "Could not authenticate the user"` (trade-core domain on api-i1, distinct from its 40101/-101/-100).
+- **`vagator/v2/guest_user/login_v2`** → `-1024 "please provide a valid mobile number"` (validation-before-auth phone oracle, pre-auth).
+- Confirmed stable: api-a1 send_otp 404, api-g1 `-401`, quantainer `-401`, `indus/v1/config` live (now with `ab_feature_set` product matrix).
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: deepseek)
+Review research_deepseek.md for details
+  - [H8 MCP FIA_TOKEN cross-domain scoping / tool ATO] — CVSS 6.5–8.0 (conditional)
+-+- **NEW: raw Microsoft SQL Server error leak (unauthenticated) on `api-i1.fyers.in/mf/data/v2/scheme/details/chart`.** With valid `period` (1M/1Y/3M/5Y; `1D` is invalid) returns `{"Number":1103,"SQLState":[52,50,48,48,48],"Message":"Incorrect table name ''"}` — SQLState decodes to "42000". Backend is SQL Server; the chart table name is interpolated server-side (empty for unknown params), and the raw DB error is reflected with no wrapper and **no auth**. isin/plan_id/symbol params accepted but do not set the table name → table name derived server-side. Error-based oracle + stack disclosure on a public endpoint (H10, CVSS 4.3 baseline; SQLi conditional on table-name provenance).
+++- **H10 closed on chart table-name provenance.** `scheme_code` is the table selector: `scheme_code=47941&period=1Y` returns full public NAV history (`nav_history[]` timestamps+NAV); `scheme_code` is **parameterized** (strings/non-exist codes → empty `nav_history[]`, no injection). The raw SQL-1103 error only surfaces on the `scheme_code`-absent / plan_id-only fallback path (empty interpolated table name). ⇒ No SQLi; the leak collapses to a no-auth NAV-history enumeration + a benign error-shape oracle on a sting path with SQL Server engine disclosure. H10 downgraded to CVSS 3.9–4.3.
