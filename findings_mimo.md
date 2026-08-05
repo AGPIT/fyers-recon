@@ -37,3 +37,38 @@ Review research_mimo.md for details
 **CVSS**: 7.5 (High) - AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N
 **CVSS**: 6.5 (Medium) - AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N
 **CVSS**: 6.1 (Medium) - AV:N/AC:L/PR:R/UI:R/S:C/C:L/I:L/A:N
+
+# 4 MCP Hypotheses Generated on 2026-08-05 10:04:38 UTC (MCP Integration)
+11. **MCP Session Hijacking via SSE** (CVSS 7.5) - Session ID not bound to authenticated principal
+12. **MCP Token Passthrough** (CVSS 6.5) - User token forwarded without audience validation
+13. **MCP Tool Description Injection** (CVSS 6.1) - XSS via malicious tool descriptions
+14. **MCP OAuth Token Theft** (CVSS 9.1) - Redirect URI manipulation steals auth codes
+
+NEW ATTACK SURFACE IDENTIFIED (model: mimo)
+Review research_mimo.md for details
++11. **MCP Session Hijacking via SSE** (CVSS 7.5) - Session ID not bound to authenticated principal
++14. **MCP OAuth Token Theft** (CVSS 9.1) - Redirect URI manipulation steals auth codes
+
+# 4 EDIS Hypotheses Generated on 2026-08-05 12:30:00 UTC (EDIS/TPIN System)
+15. **EDIS API Authorization Bypass** (CVSS 9.1) - Missing auth on EDIS endpoints
+16. **CDSL Redirect URL Manipulation** (CVSS 7.5) - Phishing via manipulated redirect
+17. **ISIN Enumeration** (CVSS 5.3) - Information disclosure via EDIS inquiry
+18. **WebSocket EDIS Leakage** (CVSS 5.3) - EDIS data exposed via WebSocket
+
+# 5 Signup/Registration Hypotheses Generated on 2026-08-05 12:30:00 UTC (Vagator OTP API)
+19. **OTP Brute Force** (CVSS 7.5) - No rate limiting on verify_otp endpoint
+20. **PIN Brute Force** (CVSS 8.1) - No lockout on verify_pin endpoint
+21. **fy_id Enumeration** (CVSS 5.3) - User enumeration via send_login_otp response
+22. **Request Key Replay** (CVSS 6.5) - Reuse of expired request_keys
+23. **ReCAPTCHA Bypass** (CVSS 6.5) - Empty recaptcha_token accepted
+
+TOTAL HYPOTHESIES: 23 across 8 attack surfaces
+
+# 1 items on 2026-08-05 14:42:22 UTC
+- /home/runner/work/fyers-recon/fyers-recon/findings_mimo.md
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
++| # | Hypothesis | CVSS | Priority |
++| Priority | Hypothesis | CVSS | Surface |
+ **CVSS**: 7.5 (High) - AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N

@@ -1,12 +1,12 @@
 {
   "target": "fyers.in",
-  "phase": "RECON",
+  "phase": "SURFACE",
   "status": "IN_PROGRESS",
   "next_steps": [
     "Explore signup.fyers.in registration endpoints",
-    "Investigate mobile app API endpoints",
-    "Analyze API dashboard security",
-    "Document fund transfer/withdrawal flow",
-    "Explore signup.fyers.in registration endpoints"
+    "Investigate OTP verification flow",
+    "Document account creation process",
+    "Analyze KYC integration security",
+    "Analyze Vagator API rate limiting and lockout mechanisms"
   ]
 }
