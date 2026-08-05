@@ -1,0 +1,64 @@
+name: SmartHunt Deep Scan
+
+# Periodic deep scan that cross-checks the AI hunters.
+# Runs active OWASP/secret/CORS checks against the in-scope target, then
+# commits a trimmed report the researcher bots consume in later runs.
+
+on:
+  schedule:
+    - cron: "15 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  TARGET: fyers.in
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Clone SmartHunt
+        run: |
+          git clone --depth 1 https://github.com/riteshekbote/SmartHunt.git /opt/smarthunt
+          pip install -q -r /opt/smarthunt/requirements.txt
+
+      - name: Run scan (wildcard, bounded)
+        run: |
+          cd /opt/smarthunt
+          mkdir -p /tmp/sh-out
+          python3 smarthunt.py --cli "*.${TARGET}" -y --no-sqlmap --threads 4 \
+            --max-pages 60 --max-js 25 --depth 3 --out /tmp/sh-out \
+            > /tmp/smarthunt-run.log 2>&1 || true
+
+      - name: Flatten report artifacts
+        run: |
+          rm -rf smarthunt-results
+          mkdir -p smarthunt-results/lists
+          # copy every proof-checked REPORT, findings CSV and list file
+          find /tmp/sh-out -name "*REPORT*" -exec cp {} smarthunt-results/ \; 2>/dev/null || true
+          find /tmp/sh-out -name "*findings.csv" -exec cp {} smarthunt-results/ \; 2>/dev/null || true
+          find /tmp/sh-out -type d -name lists -exec cp -r {} smarthunt-results/ \; 2>/dev/null || true
+          find /tmp/sh-out -name "*-report.html" -exec cp {} smarthunt-results/ \; 2>/dev/null || true
+          # keep a trimmed run log for evidence
+          tail -n 400 /tmp/smarthunt-run.log > smarthunt-results/run-log.txt 2>/dev/null || true
+          ls -la smarthunt-results
+
+      - name: Commit results
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add smarthunt-results/ || true
+          git diff --cached --quiet || git commit -m "smarthunt deep scan $(date -u +'%Y-%m-%d-%H-%M')"
+          git pull --rebase || true
+          git push || true

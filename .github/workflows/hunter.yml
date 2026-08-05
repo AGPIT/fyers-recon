@@ -120,6 +120,20 @@ jobs:
           PROMPT_START
           cat ctx-research_${MODEL_NAME}.txt >> research-prompt.txt
 
+          # Any SmartHunt deep-scan report committed by the nightly job?
+          SH_DONE=0
+          if ls smarthunt-results/*REPORT* >/dev/null 2>&1; then
+            SH_DONE=1
+            echo "" >> research-prompt.txt
+            echo "SMARTHUNT DEEP-SCAN REPORT (read it; verify hypotheses it raised):" >> research-prompt.txt
+            tail -c 20000 smarthunt-results/*REPORT* >> research-prompt.txt
+          fi
+          if [ "$SH_DONE" = "0" ] && ls smarthunt-results/*findings.csv >/dev/null 2>&1; then
+            echo "" >> research-prompt.txt
+            echo "SMARTHUNT FINDINGS CSV (readable text, verify before trusting):" >> research-prompt.txt
+            cut -d, -f1-6 smarthunt-results/*findings.csv | tail -c 15000 >> research-prompt.txt
+          fi
+
           # Inject verified new-host inventory (may not exist in older runs)
           if [ -f surface-map-new-hosts.md ]; then
             echo "" >> research-prompt.txt
