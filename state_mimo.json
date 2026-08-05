@@ -1,6 +1,11 @@
 {
   "target": "fyers.in",
-  "phase": "RECON",
+  "phase": "SURFACE",
   "status": "IN_PROGRESS",
-  "next_steps": []
+  "next_steps": [
+    "Analyze API Connect SDK JavaScript for token handling vulnerabilities",
+    "Investigate webhook secret validation mechanism",
+    "Test pre-production environment access controls",
+    "Enumerate signup.fyers.in for registration flaws"
+  ]
 }
