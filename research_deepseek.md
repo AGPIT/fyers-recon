@@ -1,8 +1,3 @@
-https://api-t2.fyers.in/baskets/v2/items
-https://api-t2.fyers.in/indri/v1/strategies
-https://api-t2.fyers.in/indri/v1/strategies/my
-https://api-t2.fyers.in/indri/v1/strategies/publish
-https://api-t2.fyers.in/indri/v1/strategies/symbols
 https://api-t2.fyers.in/indus/history/greeks/real-time
 https://api-t2.fyers.in/osb/draft?strategy_id=
 https://api-t2.fyers.in/osb/my
@@ -2998,3 +2993,8 @@ Model: deepseek | Phase: RECON | Target: fyers.in
 Model: deepseek | Phase: RECON | Target: fyers.in
 
 /home/runner/work/_temp/e40ea061-2394-4e83-bca4-514121df1f95.sh: line 3: /usr/bin/timeout: Argument list too long
+
+===== RUN 2026-08-05 18:05:54 UTC =====
+Model: deepseek | Phase: RECON | Target: fyers.in
+
+/home/runner/work/_temp/e3659805-91ae-4250-8dbe-f83224c2bdec.sh: line 3: /usr/bin/timeout: Argument list too long
