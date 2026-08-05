@@ -5627,3 +5627,222 @@ https://alerts.fyers.in/dashboard
   https://config.fyers.in/config/prime_banner_v2.json
 [0m
 High-value leads: `api-y1.fyers.in/trade/v3/*` (trade-core on the "test page" host), `api.fyers.in/api/v2/direct-login`, `api.fyers.in/fy/cdsl/dev/*` (EDIS/TPIN dev paths on prod), `config.fyers.in/config/prime_banner.json`. Probing read-only, spaced.
+
+===== RUN 2026-08-05 21:25:51 UTC =====
+Model: deepseek | Phase: SURFACE | Target: fyers.in
+
+[0m
+> build · deepseek-v4-flash-free
+[0m
+[0m$ [0mcd /tmp/opencode && probe(){ printf "%-52s " "$1"; timeout 8 curl -s -m 6 "$2" | head -c 160; echo; sleep 15; }
+probe "api.fyers.in fy/cdsl/dev/cdslEdis/index" "https://api.fyers.in/fy/cdsl/dev/cdslEdis/index"
+probe "api.fyers.in fy/cdsl/dev/edis/index" "https://api.fyers.in/fy/cdsl/dev/edis/index"
+probe "api.fyers.in fy/cdsl/dev/pledge/userdata" "https://api.fyers.in/fy/cdsl/dev/pledge/userdata"
+api.fyers.in fy/cdsl/dev/cdslEdis/index              Invalid request method
+api.fyers.in fy/cdsl/dev/edis/index                  Invalid request method
+api.fyers.in fy/cdsl/dev/pledge/userdata             {"s": "error", "code": "", "message": "Invalid Input Format"}
+[0m
+[0m$ [0mcd /tmp/opencode && probe(){ printf "%-52s " "$1"; timeout 8 curl -s -m 6 "$2" ${3:+-X $3} ${4:+-H "$4"} ${5:+-d "$5"} | head -c 200; echo; sleep 15; }
+probe "cdslEdis/index POST {}" "https://api.fyers.in/fy/cdsl/dev/cdslEdis/index" "POST" "Content-Type: application/json" '{}'
+probe "edis/index POST {}" "https://api.fyers.in/fy/cdsl/dev/edis/index" "POST" "Content-Type: application/json" '{}'
+probe "pledge/userdata POST {}" "https://api.fyers.in/fy/cdsl/dev/pledge/userdata" "POST" "Content-Type: application/json" '{}'
+probe "pledge/setup POST {}" "https://api.fyers.in/fy/cdsl/dev/pledge/setup" "POST" "Content-Type: application/json" '{}'
+probe "edis/tpin POST {}" "https://api.fyers.in/fy/cdsl/dev/edis/tpin" "POST" "Content-Type: application/json" '{}'
+cdslEdis/index POST {}                               Invalid Input Format
+edis/index POST {}                                   {"s": "error", "code": "", "message": "Invalid Input Format"}
+pledge/userdata POST {}                              Invalid request method
+pledge/setup POST {}                                 {"s": "error", "code": "", "message": "Invalid Input Format"}
+edis/tpin POST {}                                    {"s": "error", "code": "", "message": "Invalid Input Format"}
+[0m
+[0m$ [0mcd /tmp/opencode && probe(){ printf "%-52s " "$1"; timeout 8 curl -s -m 6 "$2" ${3:+-X $3} ${4:+-H "$4"} ${5:+-d "$5"} | head -c 220; echo; sleep 15; }
+probe "cdslEdis/index POST form" "https://api.fyers.in/fy/cdsl/dev/cdslEdis/index" "POST" "Content-Type: application/x-www-form-urlencoded" 'a=1'
+probe "cdslEdis/index POST json+x" "https://api.fyers.in/fy/cdsl/dev/cdslEdis/index" "POST" "Content-Type: application/json" '{"client_id":"x"}'
+probe "NON-dev cdslEdis/index GET" "https://api.fyers.in/fy/cdsl/cdslEdis/index"
+probe "NON-dev pledge/userdata GET" "https://api.fyers.in/fy/cdsl/pledge/userdata"
+probe "cdslEdis/details GET" "https://api.fyers.in/fy/cdsl/dev/cdslEdis/details"
+cdslEdis/index POST form                             Invalid Input Format
+cdslEdis/index POST json+x                           Invalid Input Format
+NON-dev cdslEdis/index GET                           {"s": "error", "code": 500, "message": "Invalid Request, please provide valid method"}
+NON-dev pledge/userdata GET                          {"s": "error", "code": 500, "message": "Invalid Request, please provide valid method"}
+cdslEdis/details GET                                 Invalid request method
+[0m
+[0m$ [0mcd /tmp/opencode && probe(){ printf "%-52s " "$1"; timeout 8 curl -s -m 6 "$2" | head -c 200; echo; sleep 15; }
+probe "i1 scheme/details/chart?isin=" "https://api-i1.fyers.in/mf/data/v2/scheme/details/chart?isin=INF789F1AYN0"
+probe "i1 scheme/details/holding-allocation?isin=" "https://api-i1.fyers.in/mf/data/v2/scheme/details/holding-allocation?isin=INF789F1AYN0"
+probe "i1 scheme/details/overview?isin=" "https://api-i1.fyers.in/mf/data/v2/scheme/details/overview?isin=INF789F1AYN0"
+probe "i1 mf/data/v2/explore/filters" "https://api-i1.fyers.in/mf/data/v2/explore/filters"
+probe "i1 mf/data/v2/redeem-ow" "https://api-i1.fyers.in/mf/data/v2/redeem-ow"
+i1 scheme/details/chart?isin=                        {"error":"invalid period"}
+i1 scheme/details/holding-allocation?isin=           {"s":"ok","error_code":0,"data":{"investment_types":[{"name":"Equity","value":788.2882948000005,"percentage":100},{"name":"Others","value":0,"percentage":0}],"sector_allocation":[{"type":"Equity","all
+i1 scheme/details/overview?isin=                     {"s":"error","error_code":-101,"data":[],"message":"Authorization token is required"}
+i1 mf/data/v2/explore/filters                        {"s":"ok","error_code":0,"data":{"ratings":[{"name":"5","value":"6"},{"name":"4","value":"5"},{"name":"3","value":"4"},{"name":"2","value":"3"},{"name":"1","value":"2"},{"name":"No ratings","value":"1
+i1 mf/data/v2/redeem-ow                              {"s":"error","error_code":-101,"data":[],"message":"Authorization token is required"}
+[0m
+[0m$ [0mcd /tmp/opencode && probe(){ printf "%-52s " "$1"; timeout 8 curl -s -m 6 "$2" | head -c 200; echo; sleep 15; }
+probe "i1 chart?isin&period=1M" "https://api-i1.fyers.in/mf/data/v2/scheme/details/chart?isin=INF789F1AYN0&period=1M"
+probe "i1 chart?plan_id&period=1Y" "https://api-i1.fyers.in/mf/data/v2/scheme/details/chart?plan_id=43495&period=1Y"
+probe "i1 about?scheme_code=47941" "https://api-i1.fyers.in/mf/data/v2/scheme/details/about?scheme_code=47941"
+i1 chart?isin&period=1M                              {"Number":1103,"SQLState":[52,50,48,48,48],"Message":"Incorrect table name ''"}
+i1 chart?plan_id&period=1Y                           {"Number":1103,"SQLState":[52,50,48,48,48],"Message":"Incorrect table name ''"}
+i1 about?scheme_code=47941                           {"s":"errpr","error_code":-100,"data":null,"message":"Scheme code and isin code do not match"}
+[0m
+**Critical leak found**: `scheme/details/chart` returns a **raw SQL Server error** (`SQLState [52,50,48,48,48]` = "42000", `Incorrect table name ''`) unauthenticated — the backend interpolates an empty table name. Mapping the param schema read-only to see how the table name is derived.
+[0m$ [0mcd /tmp/opencode && probe(){ printf "%-52s " "$1"; timeout 8 curl -s -m 6 "$2" | head -c 260; echo; sleep 15; }
+probe "chart?symbol=NIFTY&period=1Y" "https://api-i1.fyers.in/mf/data/v2/scheme/details/chart?symbol=NIFTY&period=1Y"
+probe "chart?plan_id=43495&period=1D" "https://api-i1.fyers.in/mf/data/v2/scheme/details/chart?plan_id=43495&period=1D"
+probe "chart?isin=INF789F1AYN0&period=1D" "https://api-i1.fyers.in/mf/data/v2/scheme/details/chart?isin=INF789F1AYN0&period=1D"
+probe "chart?period=1Y only" "https://api-i1.fyers.in/mf/data/v2/scheme/details/chart?period=1Y"
+chart?symbol=NIFTY&period=1Y                         {"Number":1103,"SQLState":[52,50,48,48,48],"Message":"Incorrect table name ''"}
+chart?plan_id=43495&period=1D                        {"error":"invalid period"}
+chart?isin=INF789F1AYN0&period=1D                    {"error":"invalid period"}
+chart?period=1Y only                                 {"Number":1103,"SQLState":[52,50,48,48,48],"Message":"Incorrect table name ''"}
+[0m
+[0m$ [0mcd /tmp/opencode && probe(){ printf "%-52s " "$1"; timeout 8 curl -s -m 6 "$2" | head -c 260; echo; sleep 14; }
+probe "chart isin+plan_id 1Y" "https://api-i1.fyers.in/mf/data/v2/scheme/details/chart?isin=INF789F1AYN0&plan_id=43495&period=1Y"
+probe "chart period=3M" "https://api-i1.fyers.in/mf/data/v2/scheme/details/chart?period=3M"
+probe "chart period=5Y" "https://api-i1.fyers.in/mf/data/v2/scheme/details/chart?period=5Y"
+probe "chart isin=INF789F1AYN0 1M" "https://api-i1.fyers.in/mf/data/v2/scheme/details/chart?isin=INF789F1AYN0&period=1M"
+chart isin+plan_id 1Y                                {"Number":1103,"SQLState":[52,50,48,48,48],"Message":"Incorrect table name ''"}
+chart period=3M                                      {"Number":1103,"SQLState":[52,50,48,48,48],"Message":"Incorrect table name ''"}
+chart period=5Y                                      {"Number":1103,"SQLState":[52,50,48,48,48],"Message":"Incorrect table name ''"}
+chart isin=INF789F1AYN0 1M                           {"Number":1103,"SQLState":[52,50,48,48,48],"Message":"Incorrect table name ''"}
+[0m
+[0m$ [0mcd /tmp/opencode && probe(){ printf "%-52s " "$1"; timeout 8 curl -s -m 6 "$2" | head -c 220; echo; sleep 14; }
+probe "config.fyers.in prime_banner" "https://config.fyers.in/config/prime_banner.json"
+probe "t1-cdn screeners/SWOT" "https://api-t1-cdn.fyers.in/v1/screeners/SWOT"
+probe "t1-cdn screeners/about" "https://api-t1-cdn.fyers.in/v1/screeners/about"
+probe "t1-cdn screeners/similar" "https://api-t1-cdn.fyers.in/v1/screeners/similar"
+config.fyers.in prime_banner                         {
+  "banners": {
+    "home": {
+      "basic": {
+        "web": "https://assets.fyers.in/prime/primev2/home_basic_w.png",
+        "mobile": "https://assets.fyers.in/fy_ui/mkt_basic.png",
+        "tablet": "https://assets.
+t1-cdn screeners/SWOT                                <html>
+<head><title>503 Service Temporarily Unavailable</title></head>
+<body>
+<center><h1>503 Service Temporarily Unavailable</h1></center>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&
+t1-cdn screeners/about                               <html>
+<head><title>503 Service Temporarily Unavailable</title></head>
+<body>
+<center><h1>503 Service Temporarily Unavailable</h1></center>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&
+t1-cdn screeners/similar                             <html>
+<head><title>503 Service Temporarily Unavailable</title></head>
+<body>
+<center><h1>503 Service Temporarily Unavailable</h1></center>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&
+[0m
+[0m$ [0mcd /tmp/opencode && probe(){ printf "%-52s " "$1"; timeout 8 curl -s -m 6 "$2" | head -c 220; echo; sleep 14; }
+probe "i1 mf/txn/v1/get-banks" "https://api-i1.fyers.in/mf/txn/v1/get-banks"
+probe "i1 tapi validate-upi" "https://api-i1.fyers.in/investment/tapi/v1/ipo/v2/validate-upi"
+probe "i1 fd/plans?id=1" "https://api-i1.fyers.in/investment/fixed_income/v1/fd/plans?id=1"
+probe "i1 mf/data/v2/explore filters via POST" "https://api-i1.fyers.in/mf/data/v2/explore/filters?category=equity"
+i1 mf/txn/v1/get-banks                               {"s":"error","error_code":-101,"message":"Authorisation token is missing.","data":[]}
+i1 tapi validate-upi                                 404 page not found
+i1 fd/plans?id=1                                     {"s":"error","error_code":40101,"message":"Authorization token is required","data":[]}
+i1 mf/data/v2/explore filters via POST               {"s":"ok","error_code":0,"data":{"ratings":[{"name":"5","value":"6"},{"name":"4","value":"5"},{"name":"3","value":"4"},{"name":"2","value":"3"},{"name":"1","value":"2"},{"name":"No ratings","value":"1"}],"risk":[{"name":
+[0m
+[0m# [0mTodos
+[✓] SURFACE: mcp.fyers.in full JSON-RPC method walk - auth-gate vs protocol-gate ordering
+[✓] SURFACE: assets.fyers.in MCP installers static analysis (pkg -> npx mcp-remote, no embedded scopes)
+[✓] SURFACE: quantainer/oi_stats + automate-chn vs api-t2 split + watson-obs -99 fingerprint
+[✓] SURFACE: api-i1 mf/data/v2 public tier + raw SQL error leak on scheme/details/chart
+[✓] SURFACE: api.fyers.in cdsl/dev pre-auth input-validation surface
+[•] Compile SURFACE report + state update
+[0m
+SURFACE mapping complete for this run. Compiling findings and updating state files.
+[0m→ [0mRead findings_deepseek.md[90m [offset=1, limit=40][0m
+[0m→ [0mRead state_deepseek.json
+[0m→ [0mRead findings_deepseek.md[90m [offset=41, limit=55][0m
+[0m
+[0m← [0mEdit findings_deepseek.md
+Index: /home/runner/work/fyers-recon/fyers-recon/findings_deepseek.md
+===================================================================
+--- /home/runner/work/fyers-recon/fyers-recon/findings_deepseek.md
++++ /home/runner/work/fyers-recon/fyers-recon/findings_deepseek.md
+@@ -92,4 +92,25 @@
+ - [H8 MCP FIA_TOKEN cross-domain scoping / tool ATO] — CVSS 6.5–8.0 (conditional)
+ 
+ HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: deepseek)
+ Review research_deepseek.md for details
++
++# SURFACE round 2026-08-05 20:xx UTC
++- **H8 boundary oracle finalized — `mcp.fyers.in` auth is enforced ONLY at POST dispatch, not on the SSE stream.** Full JSON-RPC walk (no token): `initialize` → 200 identity+capabilities (only unauth method); `notifications/initialized`, `tools/list`, `tools/call`, `resources/list`, `resources/templates/list`, `prompts/list`, `ping` → all `Invalid session ID`. `GET /mcp` returns 200 `text/event-stream` holding open with a bogus `Authorization: Bearer` (no sessionId event, no error, no auth check) — the stream open is unauthenticated, session gate lives at request dispatch. `.well-known/oauth-*`, `/oauth`, `/mcp/oauth` all 404 → OAuth metadata not exposed server-side (native flow via client).
++- **MCP macOS `.pkg` statically dissected (assets.fyers.in/mcp/macos/1.0.0/FYERS-Claude-MCP-Installer-v1.0.0.pkg, 22,175 B xar).** Contains: `Distribution`/`PackageInfo` (`com.fyers.claudeinstaller`, postinstall), `welcome/license.html`, and a 15,872 B gzip `postinstall` bundle with 3 shell scripts. Behaviour: downloads Node.js v20.18.0 and Claude.dmg, then writes `~/Library/Application Support/Claude/claude_desktop_config.json` with `{"mcpServers":{"FYERS-MCP":{"command":"npx","args":["mcp-remote","https://mcp.fyers.in/mcp"]}}}`. **No token/scopes embedded** — auth is native MCP OAuth (`mcp-remote`), confirming H8 relies purely on the FIA_TOKEN bearer at the SSE endpoint. Windows .exe is 77,235,112 B (not pulled; noted for later static analysis if needed).
++- **api-i1 split into four independent auth domains (fingerprints #9–#11).** `investment/*/fd/*` → `40101 "Authorization token is required"`; `mf/data/v2/*` gated set → `-101 "Authorization token is required"`; `mf/txn/v1/*` → `-101 "Authorisation token is missing."` (message variant); `investment/tapi/v1/ipo/v2/*` → `-100 "Authorisation token required."`. Four distinct error schemes under one hostname ⇒ per-service authz domains.
++- **NEW: raw Microsoft SQL Server error leak (unauthenticated) on `api-i1.fyers.in/mf/data/v2/scheme/details/chart`.** With valid `period` (1M/1Y/3M/5Y; `1D` is invalid) returns `{"Number":1103,"SQLState":[52,50,48,48,48],"Message":"Incorrect table name ''"}` — SQLState decodes to "42000". Backend is SQL Server; the chart table name is interpolated server-side (empty for unknown params), and the raw DB error is reflected with no wrapper and **no auth**. isin/plan_id/symbol params accepted but do not set the table name → table name derived server-side. Error-based oracle + stack disclosure on a public endpoint (H10, CVSS 4.3 baseline; SQLi conditional on table-name provenance).
++- **Public `mf/data/v2` data tier enumerated (api-i1).** No-auth 200: `home` (plan_id/ISIN/NAV/AUM/expense_ratio/ratings of top funds), `assortments` (category-wise index values), `collateral` (funds eligible as margin incl. haircut), `explore/filters` (rating/risk/AMC enum), `scheme/details/about?isin=` (fund objective), `scheme/details/holding-allocation?isin=` (equity/debt split, sector allocation), `scheme/details/chart` (SQL leak). Gated `-101`: `scheme/details/overview`, `get_order_window`, `redeem-ow`, `sip_schedule_dates`. Auth-gate ordering is inconsistent per-endpoint (validation-before-auth on `about`; auth-before-params on `overview`).
++- **NEW: `api.fyers.in/fy/cdsl/dev/*` pre-auth input-validation surface.** `{cdslEdis,edis,pledge}/{index,details,tpin,userdata,setup,status,reqdetails}` respond with input errors ("Invalid request method" on GET, "Invalid Input Format" on POST `{}`) — **no auth fingerprint at all** (no `-16`/`-401`/`-21`). The non-`dev` twins (`/fy/cdsl/cdslEdis/index` etc.) return the standard session-gate `500 "Invalid Request, please provide valid method"`. ⇒ a dev-stage EDIS/TPIN (electronic-delivery-instruction / pledge) service on the prod `api.fyers.in` host validates input before any observable auth; EDIS + TPIN = securities-transfer primitive (H11, behind input schema unknown; PoC = request-schema field-walk read-only).
++- **`vagator/v2/get_tradecast_token` is a pre-auth GET oracle** (`{"s":"error","code":-1044,"message":"invalid input"}` for any/no param; auth header ignored) — tradecast websocket-token endpoint, param schema not yet recovered from any JS bundle (absent from trade.js/fyers_common_modules.js).
++- **`watson-obs/v1/telemetry`** (api-t2) POST → `-99 "unauthorised access token"` — auth fingerprint #8; GET → 404.
++- **Config-drift deltas vs prior dump:** new quantainer surface `quantainer/v1/oi_stats/{change,drops,historical_pcr_max_pain,interpretation,max_pain,multi_strike,spurts,time_vs_oi,trending}` all `-401 "Please provide valid token"`; new `alpha/v1/client` → 404; `osb/my` and `indus/history/greeks/real-time` → `-16`; `automate-chn.fyers.in/automate/backtest/{cancel,result,status,trade-book-export,trade-book}` (all `-16`). Host count now 36 (35 + no change), URL count 870.
++- **`api-t1-cdn.fyers.in/v1/screeners/*`** (SWOT/about/similar + ~30 candlestick patterns) → 503 Cloudflare challenge — screeners surface moved behind a bot gate; not publicly readable this run.
++- **Public `config.fyers.in/config/prime_banner*.json`** → 200 marketing-banner image URLs (assets host); `public.fyers.in/{messages/public.json, mpp_details/mpp_config.json, app/smartSearchText.json}` → 200 public content; `public.fyers.in/sym_details/` is S3 (NoSuchKey on dir) with 30 symbol-master files (CSV/JSON/gz) — standard public symbol data.
++
++HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: deepseek)
++Review research_deepseek.md for details
++## CVSS Candidates
++- [H10 raw SQL Server error disclosure on mf/data/v2/scheme/details/chart] — CVSS 4.3 (unauthenticated stack/error oracle; SQLi conditional, behind schema knowledge)
++- [H11 api.fyers.in cdsl/dev EDIS/TPIN pre-auth input-validation surface] — CVSS 5.3–7.5 (validation-before-auth; securities-transfer primitive conditional on param schema + missing auth)
++- [H8 MCP unauthenticated identity/capability disclosure] — CVSS 5.3
++- [H8 MCP FIA_TOKEN cross-domain scoping / tool ATO] — CVSS 6.5–8.0 (conditional)
+
+[0m
+[0m← [0mWrite state_deepseek.json
+Wrote file successfully.
+[0m
+[0m# [0mTodos
+[✓] SURFACE: mcp.fyers.in full JSON-RPC method walk - auth-gate vs protocol-gate ordering
+[✓] SURFACE: assets.fyers.in MCP installers static analysis (pkg -> npx mcp-remote, no embedded scopes)
+[✓] SURFACE: quantainer/oi_stats + automate-chn vs api-t2 split + watson-obs -99 fingerprint
+[✓] SURFACE: api-i1 mf/data/v2 public tier + raw SQL error leak on scheme/details/chart
+[✓] SURFACE: api.fyers.in cdsl/dev pre-auth input-validation surface
+[✓] Compile SURFACE report + state update
+[0m
+# Target: fyers.in
+# Current Phase: SURFACE (IN_PROGRESS)
+
+## Key Findings
+- **Raw SQL Server error leak (unauthenticated)** on `api-i1.fyers.in/mf/data/v2/scheme/details/chart`: valid `period` values (1M/1Y/3M/5Y) return `{"Number":1103,"SQLState":[52,50,48,48,48],"Message":"Incorrect table name ''"}` (SQLState = "42000"). Backend = MS SQL Server; chart table name interpolated server-side, raw DB error reflected with no wrapper and no auth. New H10.
+- **api.fyers.in `fy/cdsl/dev/*` pre-auth input-validation surface** (H11): `{cdslEdis,edis,pledge}/{index,details,tpin,userdata,setup,status}` return input errors ("Invalid request method"/"Invalid Input Format") with **no auth fingerprint**, while non-dev twins return the session-gate `500`. Dev-stage EDIS/TPIN (securities-transfer) service validates before auth on prod.
+- **MCP .pkg dissected**: 22 KB xar → postinstall writes Claude config `npx mcp-remote https://mcp.fyers.in/mcp`; no embedded token/scopes. H8 relies purely on FIA_TOKEN at the SSE endpoint; auth enforced only at POST dispatch (`initialize` is the sole unauth method).
+- **api-i1 = 4 auth domains**: `40101` (fd), `-101 "Authorization token is required"` (mf/data gated), `-101 "Authorisation token is missing."` (mf/txn), `-100 "Authorisation token required."` (tapi IPO).
+- **Public mf/data tier**: home/assortments/collateral/explore-filters/about/holding-allocation public; overview/get_order_window/redeem-ow/sip_schedule_dates gated.
+- **Auth fingerprint #8**: `watson-obs/v1/telemetry` POST → `-99 "unauthorised access token"`.
+- Config drift: +`quantainer/v1/oi_stats/*` (-401), `osb/my`/`indus/history/greeks/real-time` (-16), automate-chn backtest set (-16); `api-t1-cdn screeners` now Cloudflare-503.
+
+## API Endpoints
+- `api-i1.fyers.in/mf/data/v2/scheme/details/chart?period=1Y` (GET, no-auth) — SQL error oracle
+- `api.fyers.in/fy/cdsl/dev/{cdslEdis,edis,pledge}/*` (POST, no auth-fingerprint) — input-validation oracle
+- `api-i1.fyers.in/mf/data/v2/scheme/details/{about,holding-allocation}?isin=` (GET, public)
+- `api-t2.fyers.in/vagator/v2/get_tradecast_token` (GET, `-1044`)
+- `api-t2.fyers.in/watson-obs/v1/telemetry` (POST, `-99`)
+
+## Hypotheses
+### H10: SQL error-based oracle on public MF chart endpoint
+**Reasoning:** valid period reaches SQL with empty interpolated table name; raw Number/SQLState/Message reflected unauthenticated. **Impact:** stack/DB-engine disclosure + error oracle (4.3); SQLi conditional on whether any param (e.g. plan_id/isin/period) feeds the table-name/query (not yet demonstrated). **Test (read-only):** benign value classes → record error-shape table; no injection payloads.
+### H11: cdsl/dev EDIS/TPIN validation-before-auth
+**Reasoning:** dev-stage service on prod host validates input with zero auth fingerprint, non-dev twin session-gated. **Impact:** if any `dev` path reaches pledge/EDIS data without auth → 6.5–7.5; else 5.3 (schema disclosure). **Test (read-only):** field-walk POST schema via error-shape diffing; no real client/PAN/TPIN.
+### H9 (carried): token-scoping table now complete (document-only; needs authorized token).
+
+## CVSS Candidates
+- [H10 raw SQL error disclosure mf/data/chart] — CVSS 4.3 (SQLi conditional)
+- [H11 cdsl/dev pre-auth input-validation surface] — CVSS 5.3–7.5 (conditional)
+- [H8 MCP unauth identity/capability disclosure] — CVSS 5.3
+- [H8 MCP FIA_TOKEN scoping / tool ATO] — CVSS 6.5–8.0 (conditional)
+- Carried: H1 open redirect 6.1 / code interception 8.1–9.0, H3 refresh-token 7.5–9.0, H4 config 5.3, H5/H9 6.5–8.0 (behind auth)
+
+---
+## STATE UPDATE FOR NEXT RUN
+STATUS_TARGET: fyers.in
+STATUS_PHASE: SURFACE
+STATUS_STATE: IN_PROGRESS
+
+NEXT_STEP_1: H11 read-only field-walk of `api.fyers.in/fy/cdsl/dev/*` request schema (empty/partial-body error diff, JSON vs form) to enumerate accepted keys and confirm whether any path bypasses auth; compare to non-dev session-gate. No real client/PAN/TPIN values.
+NEXT_STEP_2: H10 read-only mapping of `mf/data/v2/scheme/details/chart` table-name derivation with benign value classes; record full error-shape table as the error oracle. No SQLi payloads.
+NEXT_STEP_3: Static scan of Windows MCP .exe (77 MB) for FIA_TOKEN/OAuth scopes; recover `get_tradecast_token` param schema from `sso.js` string-table (vagator `-1044` oracle).
+NEXT_STEP_4: Enumerate api-i1 `mf/txn/v1/*`, `tapi/v1/ipo/*`, `mf/fy/v1/holdings`, and `api.fyers.in/api/beta/*` for pre-auth behavior + new fingerprints.
+NEXT_STEP_5: Re-diff `indus/v1/config` for newly added hosts/endpoints to keep the RECON host map current.
