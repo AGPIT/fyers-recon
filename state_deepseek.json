@@ -3,8 +3,8 @@
   "phase": "POC",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Execute the H1 step-A oracle matrix (8 redirect_uri variants per client) and diff login-page sizes/hashes to map any server-side validation branch, without submitting real credentials or exchanging codes. Then decode the `login.min.js` callback to confirm where post-auth `auth_code`/`redirectUrl` is emitted (document-only).",
-    "Map authz-domain boundary for H5: send an api-t1-issued-style Authorization token (placeholder/sample from config, not real creds) to `api-g1.settings/*` and `api-i1.fd/*` to observe whether the `-401`/`40101` gate is independent of the trade-core `-16` gate (token-scoping oracle, read-only).",
-    "Enumerate the H7 `user/v3/app/create` request schema (accepted/required fields incl. redirect_uri) and the H2 `guest_user/register` required keys via empty/partial-body error-shape diffing; assemble persisted PoC request templates for H1/H3/H5/H7 in next run."
+    "H1 PoC deliverable (document-only, no creds/code): statically trace the `login.min.js` post-auth handler around the `_0x1b1ef9['redirect_uri']` site to determine whether `auth_code`/`approvalUrl`/`redirectUrl` is emitted from the client-side URL param; capture the callback response-format template in the report.",
+    "H3 PoC deliverable: walk the complete `validate-refresh-token` field-validation order (`grant_type\u2192appIdHash\u2192refresh_token\u2192pin`) with dummy values, spaced, and record the exact error-code/success-shape table; note any identity-confusion signal when arbitrary `appIdHash`+`pin` are supplied.",
+    "If phase yields no new branch, begin a fresh RECON pass on an unexplored surface from the config-derived host list \u2014 prioritize `api-a1.fyers.in/manage/account/*` (90+ endpoints) and `api-t2.fyers.in/automate/*` string-ID shape \u2014 mapping auth-vs-public and any additional auth-domain fingerprints for H5/H7."
   ]
 }
