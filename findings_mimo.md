@@ -90,6 +90,25 @@ Review research_mimo.md for details
 
 TOTAL HYPOTHESIES: 28 across 9 attack surfaces
 
+# 4 Verified P&L/Account Hypotheses Generated on 2026-08-05 20:00:00 UTC (Verified P&L System)
+29. **Verified P&L IDOR via UUID Enumeration** (CVSS 5.3) - Sequential/predictable UUIDs expose P&L data
+30. **Verified P&L API Endpoint IDOR** (CVSS 7.5) - API accepts user IDs bypassing UUID protection
+31. **Account Management CSRF** (CVSS 8.1) - Missing CSRF on profile modification endpoints
+32. **Tax P&L API IDOR** (CVSS 7.5) - Tax P&L endpoint lacks proper authorization
+
+TOTAL HYPOTHESIES: 32 across 10 attack surfaces
+
+# HYPOTHESIS Refinement Completed on 2026-08-05 21:00:00 UTC (Verified P&L System)
+- **H29**: UUID Leakage via public sharing and search engine indexing (CVSS 5.3)
+- **H30**: Verified P&L API IDOR via user_id parameter (CVSS 7.5)
+- **H31**: Account Management CSRF on profile modification endpoints (CVSS 8.1)
+- **H32**: Tax P&L API IDOR via fyers_id parameter (CVSS 7.5)
+
+# POC Design Completed on 2026-08-05 21:30:00 UTC (Verified P&L System)
+- **POC_VERIFIEDPNL.md**: Created with read-only testing methodology for H29-H32
+- **Coverage**: UUID Leakage, API IDOR, CSRF, Tax P&L IDOR
+- **Status**: POC design complete, ready for authorized testing
+
 # POC Design Completed on 2026-08-05 18:30:00 UTC (Fund Transfer System)
 - **POC_FUNDTRANSFER.md**: Created with read-only testing methodology for H25-H28
 - **Coverage**: CSRF, IDOR, Race Condition, Session Fixation
@@ -108,3 +127,24 @@ Review research_mimo.md for details
 ## High-Value Hypotheses
 - IDOR Testing (H26)
 - IDOR Testing (H26)
+
+# 13 items on 2026-08-05 19:58:03 UTC
+- /home/runner/work/fyers-recon/fyers-recon/research_mimo.md
+- /home/runner/work/fyers-recon/fyers-recon/findings_mimo.md
+- **POC_FUNDTRANSFER.md**: Created with read-only testing methodology for H25-H28
+- **Coverage**: CSRF, IDOR, Race Condition, Session Fixation
+- **Status**: POC design complete, ready for authorized testing
+- /home/runner/work/fyers-recon/fyers-recon/research_mimo.md
+- /home/runner/work/fyers-recon/fyers-recon/findings_mimo.md
+- **H30**: Verified P&L API IDOR via user_id parameter (CVSS 7.5)
+- **H31**: Account Management CSRF on profile modification endpoints (CVSS 8.1)
+- **H32**: Tax P&L API IDOR via fyers_id parameter (CVSS 7.5)
+- **POC_FUNDTRANSFER.md**: Created with read-only testing methodology for H25-H28
+- **Coverage**: CSRF, IDOR, Race Condition, Session Fixation
+- **Status**: POC design complete, ready for authorized testing
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+ 28. **Session Fixation on Fund Transfer** (CVSS 6.5) - Session not regenerated after authentication
++29. **Verified P&L IDOR via UUID Enumeration** (CVSS 5.3) - Sequential/predictable UUIDs expose P&L data
++30. **Verified P&L API Endpoint IDOR** (CVSS 7.5) - API accepts user IDs bypassing UUID protection

@@ -1,12 +1,12 @@
 {
   "target": "fyers.in",
-  "phase": "RECON",
+  "phase": "SURFACE",
   "status": "IN_PROGRESS",
   "next_steps": [
     "Explore myaccount.fyers.in endpoints",
     "Investigate backoffice.fyers.in security",
     "Analyze partner-dashboard.fyers.in access controls",
     "Document account management API endpoints",
-    "Explore myaccount.fyers.in endpoints"
+    "Analyze verifiedpnl.fyers.in JavaScript for API endpoints"
   ]
 }
