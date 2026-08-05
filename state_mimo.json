@@ -1,11 +1,11 @@
 {
   "target": "fyers.in",
-  "phase": "SURFACE",
+  "phase": "POC",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Analyze API Connect SDK JavaScript for token handling vulnerabilities",
-    "Investigate webhook secret validation mechanism",
-    "Test pre-production environment access controls",
-    "Enumerate signup.fyers.in for registration flaws"
+    "Execute PoC scripts with written authorization",
+    "Compile findings into bug bounty submission",
+    "Submit via FYERS Zoho Form",
+    "Monitor for remediation updates"
   ]
 }

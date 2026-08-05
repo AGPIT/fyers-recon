@@ -19,3 +19,15 @@ Review research_mimo.md for details
 +1. **IDOR on Order Endpoints** (CVSS 8.1) - Sequential order IDs enable cross-account access
 +2. **Refresh Token Race Condition** (CVSS 7.5) - Concurrent refresh requests fork token families
 +3. **WebSocket CSWSH** (CVSS 6.5) - Missing Origin validation enables cross-site hijacking
+
+# 5 Additional Hypotheses Generated on 2026-08-05 01:45:00 UTC (New Surface)
+6. **Webhook Spoofing (Missing HMAC)** (CVSS 8.1) - No signature validation enables forged order events
+7. **API Connect SDK XSS** (CVSS 6.1) - Dynamic parameters allow token theft via XSS
+8. **Pre-prod Environment Bypass** (CVSS 6.5) - Weaker security controls in sandbox environment
+9. **Webhook Secret Leakage** (CVSS 7.5) - Secret embedded in client-side JavaScript code
+10. **Status Page Disclosure** (CVSS 5.3) - Internal infrastructure details exposed
+
+NEW ATTACK SURFACE IDENTIFIED (model: mimo)
+Review research_mimo.md for details
++6. **Webhook Spoofing (Missing HMAC)** (CVSS 8.1) - No signature validation enables forged order events
++9. **Webhook Secret Leakage** (CVSS 7.5) - Secret embedded in client-side JavaScript code
