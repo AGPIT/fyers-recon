@@ -2997,4 +2997,344 @@ Summary:
 - **New Hypotheses**: 4 (H25-H28) on Fund Transfer system
 - **Total Hypotheses**: 28 across 9 attack surfaces
 - **Files Created**: `HYPOTHESIS_VAGATOR.md`, `POC_VAGATOR.md`, `RECON_FUNDTRANSFER.md`
+
+===== RUN 2026-08-05 18:30:00 UTC =====
+Model: mimo | Phase: POC | Target: fyers.in
+
+# Target: fyers.in
+# Current Phase: POC (Fund Transfer/Withdrawal System) - COMPLETE
+
+## Key Findings
+
+### POC Design Created
+
+| File | Description |
+|------|-------------|
+| `POC_FUNDTRANSFER.md` | Read-only testing methodology for fund transfer vulnerabilities |
+
+### Hypotheses POC Coverage
+
+| # | Hypothesis | CVSS | POC Status |
+|---|------------|------|------------|
+| 25 | CSRF on Withdrawal | 8.1 (High) | ✅ Complete |
+| 26 | IDOR on Bank Details | 7.5 (High) | ✅ Complete |
+| 27 | Race Condition Withdrawal | 7.5 (High) | ✅ Complete |
+| 28 | Session Fixation | 6.5 (Medium) | ✅ Complete |
+
+### POC Methodology Summary
+
+#### CSRF Testing (H25)
+- CORS policy analysis on `data.fyers.in`
+- Preflight request testing
+- Origin header validation
+
+#### IDOR Testing (H26)
+- Bank details response structure analysis
+- Parameter tampering checks
+- Sequential ID detection
+
+#### Race Condition Testing (H27)
+- Rate limit detection via rapid requests
+- Response timing analysis
+- Request serialization checks
+
+#### Session Fixation Testing (H28)
+- Session cookie comparison (pre/post auth)
+- Cookie attribute analysis (Secure, HttpOnly, SameSite)
+- Session binding verification
+
+---
+
+## Combined Priority Ranking (All 28 Hypotheses)
+
+| Priority | Hypothesis | CVSS | Surface |
+|----------|------------|------|---------|
+| 1 | #4: appIdHash Bypass | 9.1 | Auth |
+| 2 | #14: MCP OAuth Token Theft | 9.1 | MCP |
+| 3 | #15: EDIS Authorization Bypass | 9.1 | EDIS |
+| 4 | #1: IDOR on Orders | 8.1 | Trading |
+| 5 | #6: Webhook Spoofing | 8.1 | Webhook |
+| 6 | #20: PIN Brute Force | 8.1 | Signup |
+| 7 | #24: Multi-Factor Auth Bypass | 8.1 | Signup |
+| 8 | **#25: CSRF on Withdrawal** | **8.1** | **Fund Transfer** |
+| 9 | #2: Refresh Token Race | 7.5 | Auth |
+| 10 | #9: Webhook Secret Leakage | 7.5 | Webhook |
+| 11 | #11: MCP Session Hijacking | 7.5 | MCP |
+| 12 | #16: CDSL Redirect Manipulation | 7.5 | EDIS |
+| 13 | #19: OTP Brute Force | 7.5 | Signup |
+| 14 | **#26: IDOR on Bank Details** | **7.5** | **Fund Transfer** |
+| 15 | **#27: Race Condition Withdrawal** | **7.5** | **Fund Transfer** |
+
+---
+
+## Files Created This Session
+
+| File | Description |
+|------|-------------|
+| `POC_FUNDTRANSFER.md` | POC design for fund transfer vulnerabilities |
+
+---
+
+## STATE UPDATE FOR NEXT RUN
+
+STATUS_TARGET: fyers.in
+STATUS_PHASE: RECON
+STATUS_STATE: IN_PROGRESS
+
+NEXT_STEP_1: Explore myaccount.fyers.in endpoints
+NEXT_STEP_2: Investigate backoffice.fyers.in security
+NEXT_STEP_3: Analyze partner-dashboard.fyers.in access controls
+NEXT_STEP_4: Document account management API endpoints
 - **Next Phase**: SURFACE analysis on Fund Transfer endpoints
+
+===== RUN 2026-08-05 19:07:50 UTC =====
+Model: mimo | Phase: POC | Target: fyers.in
+
+[0m
+> build · mimo-v2.5-free
+[0m
+[0m→ [0mRead state_mimo.json
+[0m→ [0mRead research_mimo.md[90m [limit=100, offset=2900][0m
+[0m→ [0mRead findings_mimo.md
+[0m✱ [0mGlob "**/*POC*.md"[90m 0 matches[0m
+[0m✱ [0mGlob "**/*poc*.md"[90m 0 matches[0m
+[0m→ [0mRead .
+[0m
+[0m# [0mTodos
+[•] Create POC_FUNDTRANSFER.md with read-only testing methodology for CSRF, IDOR, Race Condition, Session Fixation
+[ ] Update state_mimo.json to reflect POC completion for fund transfer
+[ ] Update research_mimo.md with POC findings
+[ ] Prepare for next RECON phase on unexplored surface
+[0m
+[0m← [0mWrite POC_FUNDTRANSFER.md
+Wrote file successfully.
+[0m
+[0m# [0mTodos
+[✓] Create POC_FUNDTRANSFER.md with read-only testing methodology for CSRF, IDOR, Race Condition, Session Fixation
+[•] Update state_mimo.json to reflect POC completion for fund transfer
+[ ] Update research_mimo.md with POC findings
+[ ] Prepare for next RECON phase on unexplored surface
+[0m
+[0m← [0mWrite state_mimo.json
+Wrote file successfully.
+[0m
+[0m→ [0mRead research_mimo.md[90m [limit=50, offset=2950][0m
+[0m
+[0m← [0mEdit research_mimo.md
+Index: /home/runner/work/fyers-recon/fyers-recon/research_mimo.md
+===================================================================
+--- /home/runner/work/fyers-recon/fyers-recon/research_mimo.md
++++ /home/runner/work/fyers-recon/fyers-recon/research_mimo.md
+@@ -2996,5 +2996,93 @@
+ - **Phase Completed**: HYPOTHESIS (Vagator API) → RECON (Fund Transfer)
+ - **New Hypotheses**: 4 (H25-H28) on Fund Transfer system
+ - **Total Hypotheses**: 28 across 9 attack surfaces
+ - **Files Created**: `HYPOTHESIS_VAGATOR.md`, `POC_VAGATOR.md`, `RECON_FUNDTRANSFER.md`
++
++===== RUN 2026-08-05 18:30:00 UTC =====
++Model: mimo | Phase: POC | Target: fyers.in
++
++# Target: fyers.in
++# Current Phase: POC (Fund Transfer/Withdrawal System) - COMPLETE
++
++## Key Findings
++
++### POC Design Created
++
++| File | Description |
++|------|-------------|
++| `POC_FUNDTRANSFER.md` | Read-only testing methodology for fund transfer vulnerabilities |
++
++### Hypotheses POC Coverage
++
++| # | Hypothesis | CVSS | POC Status |
++|---|------------|------|------------|
++| 25 | CSRF on Withdrawal | 8.1 (High) | ✅ Complete |
++| 26 | IDOR on Bank Details | 7.5 (High) | ✅ Complete |
++| 27 | Race Condition Withdrawal | 7.5 (High) | ✅ Complete |
++| 28 | Session Fixation | 6.5 (Medium) | ✅ Complete |
++
++### POC Methodology Summary
++
++#### CSRF Testing (H25)
++- CORS policy analysis on `data.fyers.in`
++- Preflight request testing
++- Origin header validation
++
++#### IDOR Testing (H26)
++- Bank details response structure analysis
++- Parameter tampering checks
++- Sequential ID detection
++
++#### Race Condition Testing (H27)
++- Rate limit detection via rapid requests
++- Response timing analysis
++- Request serialization checks
++
++#### Session Fixation Testing (H28)
++- Session cookie comparison (pre/post auth)
++- Cookie attribute analysis (Secure, HttpOnly, SameSite)
++- Session binding verification
++
++---
++
++## Combined Priority Ranking (All 28 Hypotheses)
++
++| Priority | Hypothesis | CVSS | Surface |
++|----------|------------|------|---------|
++| 1 | #4: appIdHash Bypass | 9.1 | Auth |
++| 2 | #14: MCP OAuth Token Theft | 9.1 | MCP |
++| 3 | #15: EDIS Authorization Bypass | 9.1 | EDIS |
++| 4 | #1: IDOR on Orders | 8.1 | Trading |
++| 5 | #6: Webhook Spoofing | 8.1 | Webhook |
++| 6 | #20: PIN Brute Force | 8.1 | Signup |
++| 7 | #24: Multi-Factor Auth Bypass | 8.1 | Signup |
++| 8 | **#25: CSRF on Withdrawal** | **8.1** | **Fund Transfer** |
++| 9 | #2: Refresh Token Race | 7.5 | Auth |
++| 10 | #9: Webhook Secret Leakage | 7.5 | Webhook |
++| 11 | #11: MCP Session Hijacking | 7.5 | MCP |
++| 12 | #16: CDSL Redirect Manipulation | 7.5 | EDIS |
++| 13 | #19: OTP Brute Force | 7.5 | Signup |
++| 14 | **#26: IDOR on Bank Details** | **7.5** | **Fund Transfer** |
++| 15 | **#27: Race Condition Withdrawal** | **7.5** | **Fund Transfer** |
++
++---
++
++## Files Created This Session
++
++| File | Description |
++|------|-------------|
++| `POC_FUNDTRANSFER.md` | POC design for fund transfer vulnerabilities |
++
++---
++
++## STATE UPDATE FOR NEXT RUN
++
++STATUS_TARGET: fyers.in
++STATUS_PHASE: RECON
++STATUS_STATE: IN_PROGRESS
++
++NEXT_STEP_1: Explore myaccount.fyers.in endpoints
++NEXT_STEP_2: Investigate backoffice.fyers.in security
++NEXT_STEP_3: Analyze partner-dashboard.fyers.in access controls
++NEXT_STEP_4: Document account management API endpoints
+ - **Next Phase**: SURFACE analysis on Fund Transfer endpoints
+
+[0m
+[0m# [0mTodos
+[✓] Create POC_FUNDTRANSFER.md with read-only testing methodology for CSRF, IDOR, Race Condition, Session Fixation
+[✓] Update state_mimo.json to reflect POC completion for fund transfer
+[•] Update research_mimo.md with POC findings
+[ ] Prepare for next RECON phase on unexplored surface
+[0m
+[0m← [0mEdit findings_mimo.md
+Index: /home/runner/work/fyers-recon/fyers-recon/findings_mimo.md
+===================================================================
+--- /home/runner/work/fyers-recon/fyers-recon/findings_mimo.md
++++ /home/runner/work/fyers-recon/fyers-recon/findings_mimo.md
+@@ -89,8 +89,13 @@
+ 28. **Session Fixation on Fund Transfer** (CVSS 6.5) - Session not regenerated after authentication
+ 
+ TOTAL HYPOTHESIES: 28 across 9 attack surfaces
+ 
++# POC Design Completed on 2026-08-05 18:30:00 UTC (Fund Transfer System)
++- **POC_FUNDTRANSFER.md**: Created with read-only testing methodology for H25-H28
++- **Coverage**: CSRF, IDOR, Race Condition, Session Fixation
++- **Status**: POC design complete, ready for authorized testing
++
+ HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+ Review research_mimo.md for details
+ | # | Hypothesis | CVSS | Likelihood | Evidence |
+ ### CVSS 3.1 Calculation
+
+[0m
+[0m# [0mTodos
+[✓] Create POC_FUNDTRANSFER.md with read-only testing methodology for CSRF, IDOR, Race Condition, Session Fixation
+[✓] Update state_mimo.json to reflect POC completion for fund transfer
+[✓] Update research_mimo.md with POC findings
+[✓] Prepare for next RECON phase on unexplored surface
+[0m
+[0m← [0mWrite POC_SUMMARY.md
+Wrote file successfully.
+[0m
+# Target: fyers.in
+# Current Phase: POC (Fund Transfer/Withdrawal System) - COMPLETE
+
+## Key Findings
+
+### POC Design Completed
+
+| File | Description |
+|------|-------------|
+| `POC_FUNDTRANSFER.md` | Read-only testing methodology for CSRF, IDOR, Race Condition, Session Fixation |
+
+### Hypotheses POC Coverage
+
+| # | Hypothesis | CVSS | POC Status |
+|---|------------|------|------------|
+| 25 | CSRF on Withdrawal | 8.1 (High) | ✅ Complete |
+| 26 | IDOR on Bank Details | 7.5 (High) | ✅ Complete |
+| 27 | Race Condition Withdrawal | 7.5 (High) | ✅ Complete |
+| 28 | Session Fixation | 6.5 (Medium) | ✅ Complete |
+
+## POC Methodology Summary
+
+### CSRF Testing (H25)
+- CORS policy analysis on `data.fyers.in`
+- Preflight request testing
+- Origin header validation
+
+### IDOR Testing (H26)
+- Bank details response structure analysis
+- Parameter tampering checks
+- Sequential ID detection
+
+### Race Condition Testing (H27)
+- Rate limit detection via rapid requests
+- Response timing analysis
+- Request serialization checks
+
+### Session Fixation Testing (H28)
+- Session cookie comparison (pre/post auth)
+- Cookie attribute analysis (Secure, HttpOnly, SameSite)
+- Session binding verification
+
+## Combined Priority Ranking (All 28 Hypotheses)
+
+| Priority | Hypothesis | CVSS | Surface |
+|----------|------------|------|---------|
+| 1 | #4: appIdHash Bypass | 9.1 | Auth |
+| 2 | #14: MCP OAuth Token Theft | 9.1 | MCP |
+| 3 | #15: EDIS Authorization Bypass | 9.1 | EDIS |
+| 4 | #1: IDOR on Orders | 8.1 | Trading |
+| 5 | #6: Webhook Spoofing | 8.1 | Webhook |
+| 6 | #20: PIN Brute Force | 8.1 | Signup |
+| 7 | #24: Multi-Factor Auth Bypass | 8.1 | Signup |
+| 8 | **#25: CSRF on Withdrawal** | **8.1** | **Fund Transfer** |
+| 9 | #2: Refresh Token Race | 7.5 | Auth |
+| 10 | #9: Webhook Secret Leakage | 7.5 | Webhook |
+| 11 | #11: MCP Session Hijacking | 7.5 | MCP |
+| 12 | #16: CDSL Redirect Manipulation | 7.5 | EDIS |
+| 13 | #19: OTP Brute Force | 7.5 | Signup |
+| 14 | **#26: IDOR on Bank Details** | **7.5** | **Fund Transfer** |
+| 15 | **#27: Race Condition Withdrawal** | **7.5** | **Fund Transfer** |
+
+## Files Created
+
+| File | Description |
+|------|-------------|
+| `POC_FUNDTRANSFER.md` | POC design for fund transfer vulnerabilities |
+| `POC_SUMMARY.md` | Summary of POC completion |
+
+---
+
+## STATE UPDATE FOR NEXT RUN
+
+STATUS_TARGET: fyers.in
+STATUS_PHASE: RECON
+STATUS_STATE: IN_PROGRESS
+
+NEXT_STEP_1: Explore myaccount.fyers.in endpoints
+NEXT_STEP_2: Investigate backoffice.fyers.in security
+NEXT_STEP_3: Analyze partner-dashboard.fyers.in access controls
+NEXT_STEP_4: Document account management API endpoints

@@ -1,12 +1,12 @@
 {
   "target": "fyers.in",
-  "phase": "POC",
+  "phase": "RECON",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Create POC_VAGATOR.md with detailed curl commands",
-    "Document safe testing methodology for rate limits",
-    "Analyze WebSocket authentication for additional vectors",
-    "Investigate fund transfer/withdrawal flow security",
-    "Create POC_VAGATOR.md with detailed curl commands"
+    "Explore myaccount.fyers.in endpoints",
+    "Investigate backoffice.fyers.in security",
+    "Analyze partner-dashboard.fyers.in access controls",
+    "Document account management API endpoints",
+    "Explore myaccount.fyers.in endpoints"
   ]
 }
