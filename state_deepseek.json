@@ -1,12 +1,6 @@
 {
   "target": "fyers.in",
-  "phase": "SURFACE",
+  "phase": "RECON",
   "status": "IN_PROGRESS",
-  "next_steps": [
-    "H11 read-only field-walk of `api.fyers.in/fy/cdsl/dev/*` request schema (empty/partial-body error diff, JSON vs form) to enumerate accepted keys and confirm whether any path bypasses auth; compare to non-dev session-gate. No real client/PAN/TPIN values.",
-    "H10 read-only mapping of `mf/data/v2/scheme/details/chart` table-name derivation with benign value classes; record full error-shape table as the error oracle. No SQLi payloads.",
-    "Static scan of Windows MCP .exe (77 MB) for FIA_TOKEN/OAuth scopes; recover `get_tradecast_token` param schema from `sso.js` string-table (vagator `-1044` oracle).",
-    "Enumerate api-i1 `mf/txn/v1/*`, `tapi/v1/ipo/*`, `mf/fy/v1/holdings`, and `api.fyers.in/api/beta/*` for pre-auth behavior + new fingerprints.",
-    "Re-diff `indus/v1/config` for newly added hosts/endpoints to keep the RECON host map current."
-  ]
+  "next_steps": []
 }
