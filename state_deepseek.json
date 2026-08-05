@@ -3,8 +3,8 @@
   "phase": "POC",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "H1 PoC deliverable (document-only, no creds/code): statically trace the `login.min.js` post-auth handler around the `_0x1b1ef9['redirect_uri']` site to determine whether `auth_code`/`approvalUrl`/`redirectUrl` is emitted from the client-side URL param; capture the callback response-format template in the report.",
-    "H3 PoC deliverable: walk the complete `validate-refresh-token` field-validation order (`grant_type\u2192appIdHash\u2192refresh_token\u2192pin`) with dummy values, spaced, and record the exact error-code/success-shape table; note any identity-confusion signal when arbitrary `appIdHash`+`pin` are supplied.",
-    "If phase yields no new branch, begin a fresh RECON pass on an unexplored surface from the config-derived host list \u2014 prioritize `api-a1.fyers.in/manage/account/*` (90+ endpoints) and `api-t2.fyers.in/automate/*` string-ID shape \u2014 mapping auth-vs-public and any additional auth-domain fingerprints for H5/H7."
+    "Execute the H1 open-redirect confirmation matrix at step-1 for the second client parameter \u2014 pass a `cb=` value to `generate-authcode` alongside a registered `redirect_uri` and diff the returned login page for any `cb` reflection/validation branch (read-only, spaced \u226515s); note whether `cb` is accepted as an alternative destination pre-auth.",
+    "Complete the H3 deliverable by enumerating the TOTP surface pre-auth: probe `api-t2.fyers.in/vagator/v2/totp` (and `validate_qr`) with empty/partial bodies to map whether the TOTP step lives on the same vagator service or a separate auth domain, and record the error-code transitions vs the `-502` pin gate.",
+    "Continue surface RECON on the config-derived `api-a1.fyers.in` endpoint map: classify the remaining `funds/v1/api/*` (esp. `send_otp`, `verify_otp`, `add_funds_status?order_id=`, `download_transactions`, `transaction_download_key`) as `-21` vs `-16` auth and check the documented query-param objects (`order_id`, `transaction` keys) for IDOR-relevant object shapes to finalize H5 PoC templates."
   ]
 }
