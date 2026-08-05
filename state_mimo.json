@@ -1,12 +1,11 @@
 {
   "target": "fyers.in",
-  "phase": "POC",
+  "phase": "RECON",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Create POC_APICONNECT.md with curl/HTML test cases",
-    "Document read-only testing methodology for H33-H36",
-    "Design safe postMessage injection test",
-    "Prepare findings for submission",
-    "Create POC_APICONNECT.md with curl/HTML test cases"
+    "Explore backoffice.fyers.in endpoints and security",
+    "Analyze partner-dashboard.fyers.in access controls",
+    "Investigate fundtransfer.fyers.in CSRF protections",
+    "Document account management API endpoints"
   ]
 }

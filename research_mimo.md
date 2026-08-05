@@ -5150,3 +5150,333 @@ Summary:
 - **Total Hypotheses**: 36 across 11 attack surfaces
 - **Files Created**: `HYPOTHESIS_APICONNECT.md`
 - **High-Value Finding**: postMessage injection in API Connect SDK (H33, CVSS 8.1) - Evidence confirmed in source code
+
+===== RUN 2026-08-05 22:45:00 UTC =====
+Model: mimo | Phase: POC | Target: fyers.in
+
+# Target: fyers.in
+# Current Phase: POC (API Connect & Partners) - COMPLETE
+
+## Key Findings
+
+### POC Documentation Created
+
+| File | Description |
+|------|-------------|
+| `POC_APICONNECT.md` | Read-only testing methodology for H33-H36 |
+
+### Test Coverage
+
+| Hypothesis | Test Type | Method |
+|------------|-----------|--------|
+| H33: postMessage Injection | SDK source analysis | curl + grep |
+| H34: SDK Key Theft | Key extraction | curl + regex |
+| H35: Notification Spoofing | Endpoint verification | curl + JSON parse |
+| H36: OAuth Disclosure | HTML comment analysis | curl + grep |
+
+### Key Test Commands
+
+```bash
+# H33: Verify no origin validation
+curl -s "https://api-connect-docs.fyers.in/fyers-lib.js" | grep -c 'event\.origin'
+
+# H34: Extract API keys
+curl -s "https://api-connect-docs.fyers.in/demo.html" | grep -oE '[A-Z0-9]{10}-[0-9]+'
+
+# H35: Check public endpoint
+curl -s "https://public.fyers.in/messages/public.json" | head -20
+
+# H36: Find OAuth IDs
+curl -s "https://myaccount.fyers.in" | grep -oE '[0-9]+-[a-z0-9]+\.apps\.googleusercontent\.com'
+```
+
+### Risk Assessment
+
+| Hypothesis | CVSS | Likelihood | Impact | Priority |
+|------------|------|------------|--------|----------|
+| H33: postMessage Injection | 8.1 | HIGH | HIGH | CRITICAL |
+| H34: SDK Key Theft | 7.5 | MEDIUM | HIGH | HIGH |
+| H35: Notification Spoofing | 6.5 | HIGH | MEDIUM | HIGH |
+| H36: OAuth Disclosure | 3.1 | CONFIRMED | LOW | LOW |
+
+---
+
+## Combined Priority Ranking (All 36 Hypotheses)
+
+| Priority | Hypothesis | CVSS | Surface |
+|----------|------------|------|---------|
+| 1 | #4: appIdHash Bypass | 9.1 | Auth |
+| 2 | #14: MCP OAuth Token Theft | 9.1 | MCP |
+| 3 | #15: EDIS Authorization Bypass | 9.1 | EDIS |
+| 4 | #1: IDOR on Orders | 8.1 | Trading |
+| 5 | #6: Webhook Spoofing | 8.1 | Webhook |
+| 6 | #20: PIN Brute Force | 8.1 | Signup |
+| 7 | #24: Multi-Factor Auth Bypass | 8.1 | Signup |
+| 8 | #25: CSRF on Withdrawal | 8.1 | Fund Transfer |
+| 9 | #31: Account Mgmt CSRF | 8.1 | Account |
+| 10 | **#33: API Connect postMessage** | **8.1** | **API Connect** |
+| 11 | #2: Refresh Token Race | 7.5 | Auth |
+| 12 | #9: Webhook Secret Leakage | 7.5 | Webhook |
+| 13 | #11: MCP Session Hijacking | 7.5 | MCP |
+| 14 | #16: CDSL Redirect Manipulation | 7.5 | EDIS |
+| 15 | #19: OTP Brute Force | 7.5 | Signup |
+| 16 | #26: IDOR on Bank Details | 7.5 | Fund Transfer |
+| 17 | #27: Race Condition Withdrawal | 7.5 | Fund Transfer |
+| 18 | #30: Verified P&L API IDOR | 7.5 | Verified P&L |
+| 19 | #32: Tax P&L API IDOR | 7.5 | API |
+| 20 | **#34: SDK Key Theft via XSS** | **7.5** | **API Connect** |
+| 21 | **#35: Notification Spoofing** | **6.5** | **Partners** |
+| 22 | **#36: Staging OAuth Disclosure** | **3.1** | **Account** |
+
+---
+
+## Files Created
+
+| File | Description |
+|------|-------------|
+| `POC_APICONNECT.md` | POC design for API Connect vulnerabilities |
+
+---
+
+## STATE UPDATE FOR NEXT RUN
+
+STATUS_TARGET: fyers.in
+STATUS_PHASE: RECON
+STATUS_STATE: IN_PROGRESS
+
+NEXT_STEP_1: Explore backoffice.fyers.in endpoints and security
+NEXT_STEP_2: Analyze partner-dashboard.fyers.in access controls
+NEXT_STEP_3: Investigate fundtransfer.fyers.in CSRF protections
+NEXT_STEP_4: Document account management API endpoints
+
+---
+
+**Run Complete.**
+
+Summary:
+- **Phase Completed**: POC (API Connect & Partners)
+- **POC Coverage**: H33-H36 with read-only test methodology
+- **Total Hypotheses**: 36 across 11 attack surfaces
+- **Files Created**: `POC_APICONNECT.md`
+- **Next Phase**: RECON on new unexplored surface
+
+===== RUN 2026-08-05 23:37:37 UTC =====
+Model: mimo | Phase: POC | Target: fyers.in
+
+[0m
+> build · mimo-v2.5-free
+[0m
+[0m→ [0mRead state_mimo.json
+[0m→ [0mRead findings_mimo.md
+[0m✱ [0mGlob "**/*POC*.md"[90m 0 matches[0m
+[0m→ [0mRead research_mimo.md[90m [offset=4800, limit=200][0m
+[0m→ [0mRead research_mimo.md[90m [offset=5000, limit=200][0m
+[0m
+[0m← [0mWrite POC_APICONNECT.md
+Wrote file successfully.
+[0m
+[0m← [0mEdit state_mimo.json
+Index: /home/runner/work/fyers-recon/fyers-recon/state_mimo.json
+===================================================================
+--- /home/runner/work/fyers-recon/fyers-recon/state_mimo.json
++++ /home/runner/work/fyers-recon/fyers-recon/state_mimo.json
+@@ -1,12 +1,11 @@
+ {
+   "target": "fyers.in",
+-  "phase": "POC",
++  "phase": "RECON",
+   "status": "IN_PROGRESS",
+   "next_steps": [
+-    "Create POC_APICONNECT.md with curl/HTML test cases",
+-    "Document read-only testing methodology for H33-H36",
+-    "Design safe postMessage injection test",
+-    "Prepare findings for submission",
+-    "Create POC_APICONNECT.md with curl/HTML test cases"
++    "Explore backoffice.fyers.in endpoints and security",
++    "Analyze partner-dashboard.fyers.in access controls",
++    "Investigate fundtransfer.fyers.in CSRF protections",
++    "Document account management API endpoints"
+   ]
+ }
+\ No newline at end of file
+
+[0m
+[0m← [0mEdit findings_mimo.md
+Index: /home/runner/work/fyers-recon/fyers-recon/findings_mimo.md
+===================================================================
+--- /home/runner/work/fyers-recon/fyers-recon/findings_mimo.md
++++ /home/runner/work/fyers-recon/fyers-recon/findings_mimo.md
+@@ -112,8 +112,13 @@
+ - **H35**: Partners Widget Notification Spoofing - Public endpoint confirmed (CVSS 6.5)
+ - **H36**: Staging OAuth Client ID Disclosure - Visible in HTML comments (CVSS 3.1)
+ - **H14**: MCP OAuth Token Theft - Refined with MCP documentation (CVSS 9.1)
+ 
++# POC Design Completed on 2026-08-05 22:45:00 UTC (API Connect & Partners)
++- **POC_APICONNECT.md**: Created with read-only testing methodology for H33-H36
++- **Coverage**: postMessage Injection, SDK Key Theft, Notification Spoofing, OAuth Disclosure
++- **Status**: POC design complete, ready for authorized testing
++
+ # HYPOTHESIS Refinement Completed on 2026-08-05 21:00:00 UTC (Verified P&L System)
+ - **H29**: UUID Leakage via public sharing and search engine indexing (CVSS 5.3)
+ - **H30**: Verified P&L API IDOR via user_id parameter (CVSS 7.5)
+ - **H31**: Account Management CSRF on profile modification endpoints (CVSS 8.1)
+
+[0m
+[0m→ [0mRead research_mimo.md[90m [offset=5140, limit=20][0m
+[0m
+[0m← [0mEdit research_mimo.md
+Index: /home/runner/work/fyers-recon/fyers-recon/research_mimo.md
+===================================================================
+--- /home/runner/work/fyers-recon/fyers-recon/research_mimo.md
++++ /home/runner/work/fyers-recon/fyers-recon/research_mimo.md
+@@ -5149,4 +5149,113 @@
+ - **New Hypotheses**: 5 refined (H33-H36, H14)
+ - **Total Hypotheses**: 36 across 11 attack surfaces
+ - **Files Created**: `HYPOTHESIS_APICONNECT.md`
+ - **High-Value Finding**: postMessage injection in API Connect SDK (H33, CVSS 8.1) - Evidence confirmed in source code
++
++===== RUN 2026-08-05 22:45:00 UTC =====
++Model: mimo | Phase: POC | Target: fyers.in
++
++# Target: fyers.in
++# Current Phase: POC (API Connect & Partners) - COMPLETE
++
++## Key Findings
++
++### POC Documentation Created
++
++| File | Description |
++|------|-------------|
++| `POC_APICONNECT.md` | Read-only testing methodology for H33-H36 |
++
++### Test Coverage
++
++| Hypothesis | Test Type | Method |
++|------------|-----------|--------|
++| H33: postMessage Injection | SDK source analysis | curl + grep |
++| H34: SDK Key Theft | Key extraction | curl + regex |
++| H35: Notification Spoofing | Endpoint verification | curl + JSON parse |
++| H36: OAuth Disclosure | HTML comment analysis | curl + grep |
++
++### Key Test Commands
++
++```bash
++# H33: Verify no origin validation
++curl -s "https://api-connect-docs.fyers.in/fyers-lib.js" | grep -c 'event\.origin'
++
++# H34: Extract API keys
++curl -s "https://api-connect-docs.fyers.in/demo.html" | grep -oE '[A-Z0-9]{10}-[0-9]+'
++
++# H35: Check public endpoint
++curl -s "https://public.fyers.in/messages/public.json" | head -20
++
++# H36: Find OAuth IDs
++curl -s "https://myaccount.fyers.in" | grep -oE '[0-9]+-[a-z0-9]+\.apps\.googleusercontent\.com'
++```
++
++### Risk Assessment
++
++| Hypothesis | CVSS | Likelihood | Impact | Priority |
++|------------|------|------------|--------|----------|
++| H33: postMessage Injection | 8.1 | HIGH | HIGH | CRITICAL |
++| H34: SDK Key Theft | 7.5 | MEDIUM | HIGH | HIGH |
++| H35: Notification Spoofing | 6.5 | HIGH | MEDIUM | HIGH |
++| H36: OAuth Disclosure | 3.1 | CONFIRMED | LOW | LOW |
++
++---
++
++## Combined Priority Ranking (All 36 Hypotheses)
++
++| Priority | Hypothesis | CVSS | Surface |
++|----------|------------|------|---------|
++| 1 | #4: appIdHash Bypass | 9.1 | Auth |
++| 2 | #14: MCP OAuth Token Theft | 9.1 | MCP |
++| 3 | #15: EDIS Authorization Bypass | 9.1 | EDIS |
++| 4 | #1: IDOR on Orders | 8.1 | Trading |
++| 5 | #6: Webhook Spoofing | 8.1 | Webhook |
++| 6 | #20: PIN Brute Force | 8.1 | Signup |
++| 7 | #24: Multi-Factor Auth Bypass | 8.1 | Signup |
++| 8 | #25: CSRF on Withdrawal | 8.1 | Fund Transfer |
++| 9 | #31: Account Mgmt CSRF | 8.1 | Account |
++| 10 | **#33: API Connect postMessage** | **8.1** | **API Connect** |
++| 11 | #2: Refresh Token Race | 7.5 | Auth |
++| 12 | #9: Webhook Secret Leakage | 7.5 | Webhook |
++| 13 | #11: MCP Session Hijacking | 7.5 | MCP |
++| 14 | #16: CDSL Redirect Manipulation | 7.5 | EDIS |
++| 15 | #19: OTP Brute Force | 7.5 | Signup |
++| 16 | #26: IDOR on Bank Details | 7.5 | Fund Transfer |
++| 17 | #27: Race Condition Withdrawal | 7.5 | Fund Transfer |
++| 18 | #30: Verified P&L API IDOR | 7.5 | Verified P&L |
++| 19 | #32: Tax P&L API IDOR | 7.5 | API |
++| 20 | **#34: SDK Key Theft via XSS** | **7.5** | **API Connect** |
++| 21 | **#35: Notification Spoofing** | **6.5** | **Partners** |
++| 22 | **#36: Staging OAuth Disclosure** | **3.1** | **Account** |
++
++---
++
++## Files Created
++
++| File | Description |
++|------|-------------|
++| `POC_APICONNECT.md` | POC design for API Connect vulnerabilities |
++
++---
++
++## STATE UPDATE FOR NEXT RUN
++
++STATUS_TARGET: fyers.in
++STATUS_PHASE: RECON
++STATUS_STATE: IN_PROGRESS
++
++NEXT_STEP_1: Explore backoffice.fyers.in endpoints and security
++NEXT_STEP_2: Analyze partner-dashboard.fyers.in access controls
++NEXT_STEP_3: Investigate fundtransfer.fyers.in CSRF protections
++NEXT_STEP_4: Document account management API endpoints
++
++---
++
++**Run Complete.**
++
++Summary:
++- **Phase Completed**: POC (API Connect & Partners)
++- **POC Coverage**: H33-H36 with read-only test methodology
++- **Total Hypotheses**: 36 across 11 attack surfaces
++- **Files Created**: `POC_APICONNECT.md`
++- **Next Phase**: RECON on new unexplored surface
+
+[0m
+[0m✱ [0mGlob "**/POC_SUMMARY.md"[90m 0 matches[0m
+[0m
+[0m← [0mWrite POC_SUMMARY.md
+Wrote file successfully.
+[0m
+[0m→ [0mRead state_mimo.json
+**Run Complete.**
+
+## Summary
+
+**Phase Completed**: POC (API Connect & Partners)
+
+### Files Created
+- `POC_APICONNECT.md` - Read-only testing methodology for H33-H36
+- `POC_SUMMARY.md` - Overall POC tracking
+
+### POC Coverage
+| Hypothesis | CVSS | Test Type |
+|------------|------|-----------|
+| H33: postMessage Injection | 8.1 | SDK source analysis |
+| H34: SDK Key Theft | 7.5 | Key extraction |
+| H35: Notification Spoofing | 6.5 | Endpoint verification |
+| H36: OAuth Disclosure | 3.1 | HTML comment analysis |
+
+### Next Phase: RECON
+Starting reconnaissance on new unexplored surfaces:
+1. `backoffice.fyers.in` - Back-office portal
+2. `partner-dashboard.fyers.in` - Partner dashboard
+3. `fundtransfer.fyers.in` - Fund transfer SPA
+4. `api-t1.fyers.in` - API gateway
+
+### Total Progress
+- **Hypotheses**: 36 across 11 attack surfaces
+- **POCs Completed**: 3 surfaces (Fund Transfer, Verified P&L, API Connect)
+- **POCs Remaining**: 8 surfaces (Trading, Webhook, MCP, EDIS, Signup, Auth, Account, Partners)

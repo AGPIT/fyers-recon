@@ -113,6 +113,11 @@ TOTAL HYPOTHESIES: 36 across 11 attack surfaces
 - **H36**: Staging OAuth Client ID Disclosure - Visible in HTML comments (CVSS 3.1)
 - **H14**: MCP OAuth Token Theft - Refined with MCP documentation (CVSS 9.1)
 
+# POC Design Completed on 2026-08-05 22:45:00 UTC (API Connect & Partners)
+- **POC_APICONNECT.md**: Created with read-only testing methodology for H33-H36
+- **Coverage**: postMessage Injection, SDK Key Theft, Notification Spoofing, OAuth Disclosure
+- **Status**: POC design complete, ready for authorized testing
+
 # HYPOTHESIS Refinement Completed on 2026-08-05 21:00:00 UTC (Verified P&L System)
 - **H29**: UUID Leakage via public sharing and search engine indexing (CVSS 5.3)
 - **H30**: Verified P&L API IDOR via user_id parameter (CVSS 7.5)
@@ -175,3 +180,9 @@ Review research_mimo.md for details
  36. **Staging OAuth Client ID Disclosure** (CVSS 3.1) - Commented staging client ID in HTML source
 +- **H33**: API Connect postMessage Injection - Evidence confirmed in SDK source (CVSS 8.1)
 +- **H34**: SDK Key Theft via XSS - API key exposed in demo page (CVSS 7.5)
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+ - **H35**: Partners Widget Notification Spoofing - Public endpoint confirmed (CVSS 6.5)
+ - **H36**: Staging OAuth Client ID Disclosure - Visible in HTML comments (CVSS 3.1)
+ - **H14**: MCP OAuth Token Theft - Refined with MCP documentation (CVSS 9.1)
