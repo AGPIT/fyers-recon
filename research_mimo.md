@@ -4351,3 +4351,442 @@ Summary:
 - **New Hypotheses**: 4 (H29-H32) on Verified P&L system
 - **Total Hypotheses**: 32 across 10 attack surfaces
 - **Files Created**: `RECON_VERIFIEDPNL.md`, `SURFACE_VERIFIEDPNL.md`, `HYPOTHESIS_VERIFIEDPNL.md`, `POC_VERIFIEDPNL.md`
+
+===== RUN 2026-08-05 22:00:00 UTC =====
+Model: mimo | Phase: SURFACE | Target: fyers.in
+
+# Target: fyers.in
+# Current Phase: SURFACE (Account Management & API Connect) - COMPLETE
+
+## Key Findings
+
+### New Attack Surface: API Connect SDK
+
+| Component | Details |
+|-----------|---------|
+| **SDK Location** | `https://api-connect-docs.fyers.in/fyers-lib.js` |
+| **Auth Endpoint** | `https://api-connect.fyers.in/redirection` (POST form) |
+| **Demo Key** | `XNQ201Q7YA-101` (hardcoded in demo page) |
+| **jQuery** | 1.11.1 (outdated, from Google CDN) |
+
+### Critical Security Finding: postMessage Injection
+
+The SDK's `window.on("message")` handler does NOT validate `event.origin`. Any page can send a crafted message to trigger the SDK's callback, potentially injecting a malicious `request_token`.
+
+**Attack Path**:
+```
+1. Attacker hosts malicious page
+2. Victim visits page while authenticated with Fyers
+3. Malicious page sends postMessage with fake request_token
+4. SDK callback receives (status, request_token)
+5. Attacker obtains valid session token
+```
+
+### Partners Dashboard Widget
+
+| Property | Value |
+|----------|-------|
+| **Framework** | Flutter Web (SPA) |
+| **Widget** | fyers-widget.min.js (obfuscated) |
+| **Notification URLs** | assets.fyers.in/fy_notifications/, public.fyers.in/messages/public.json |
+| **Cookie** | fy_notifaction_ids_[date] (typo: "notifaction") |
+| **Domain** | .fyers.in (all subdomains) |
+
+### myaccount.fyers.in
+
+| Property | Value |
+|----------|-------|
+| **Framework** | Flutter Web |
+| **Auth** | Session-based via login.fyers.in redirect |
+| **OAuth** | Google OAuth client ID: 286450894109-... |
+| **Features** | Profile, KYC, Bank Details, Nomination, TOTP, Verified P&L |
+
+---
+
+## Hypotheses Generated
+
+| # | Hypothesis | CVSS | Priority |
+|---|------------|------|----------|
+| 33 | **API Connect postMessage Injection** | 8.1 (High) | HIGH |
+| 34 | **API Connect SDK Key Theft via XSS** | 7.5 (High) | HIGH |
+| 35 | **Partners Widget Notification Spoofing** | 6.5 (Medium) | MEDIUM |
+| 36 | **Staging OAuth Client ID Disclosure** | 3.1 (Low) | LOW |
+
+---
+
+## Combined Priority Ranking (All 36 Hypotheses)
+
+| Priority | Hypothesis | CVSS | Surface |
+|----------|------------|------|---------|
+| 1 | #4: appIdHash Bypass | 9.1 | Auth |
+| 2 | #14: MCP OAuth Token Theft | 9.1 | MCP |
+| 3 | #15: EDIS Authorization Bypass | 9.1 | EDIS |
+| 4 | #1: IDOR on Orders | 8.1 | Trading |
+| 5 | #6: Webhook Spoofing | 8.1 | Webhook |
+| 6 | #20: PIN Brute Force | 8.1 | Signup |
+| 7 | #24: Multi-Factor Auth Bypass | 8.1 | Signup |
+| 8 | #25: CSRF on Withdrawal | 8.1 | Fund Transfer |
+| 9 | #31: Account Mgmt CSRF | 8.1 | Account |
+| 10 | **#33: API Connect postMessage Injection** | **8.1** | **API Connect** |
+| 11 | #2: Refresh Token Race | 7.5 | Auth |
+| 12 | #9: Webhook Secret Leakage | 7.5 | Webhook |
+| 13 | #11: MCP Session Hijacking | 7.5 | MCP |
+| 14 | #16: CDSL Redirect Manipulation | 7.5 | EDIS |
+| 15 | #19: OTP Brute Force | 7.5 | Signup |
+| 16 | #26: IDOR on Bank Details | 7.5 | Fund Transfer |
+| 17 | #27: Race Condition Withdrawal | 7.5 | Fund Transfer |
+| 18 | #30: Verified P&L API IDOR | 7.5 | Verified P&L |
+| 19 | #32: Tax P&L API IDOR | 7.5 | API |
+| 20 | **#34: API Connect SDK Key Theft** | **7.5** | **API Connect** |
+| 21 | **#35: Partners Widget Notification Spoofing** | **6.5** | **Partners** |
+
+---
+
+## Files Created
+
+| File | Description |
+|------|-------------|
+| `SURFACE_ACCOUNTMGMT.md` | SURFACE analysis for account management & API Connect |
+
+---
+
+## STATE UPDATE FOR NEXT RUN
+
+STATUS_TARGET: fyers.in
+STATUS_PHASE: HYPOTHESIS
+STATUS_STATE: IN_PROGRESS
+
+NEXT_STEP_1: Formalize hypotheses for API Connect postMessage injection (H33)
+NEXT_STEP_2: Design read-only PoC for SDK key theft (H34)
+NEXT_STEP_3: Analyze partners widget notification flow for spoofing (H35)
+NEXT_STEP_4: Investigate MCP OAuth redirect flow for token theft (H14)
+
+===== RUN 2026-08-05 21:17:05 UTC =====
+Model: mimo | Phase: SURFACE | Target: fyers.in
+
+[0m
+> build · mimo-v2.5-free
+[0m
+[0m→ [0mRead state_mimo.json
+[0m→ [0mRead findings_mimo.md
+[0m→ [0mRead research_mimo.md[90m [offset=3500][0m
+[0m✱ [0mGlob "**/*SURFACE*.md"[90m 0 matches[0m
+[0m✱ [0mGlob "**/*POC*.md"[90m 0 matches[0m
+[0m% [0mWebFetch https://myaccount.fyers.in
+[0m% [0mWebFetch https://partner-dashboard.fyers.in
+[0m% [0mWebFetch https://api-dashboard.fyers.in
+Now let me fetch the unexplored account management surfaces:
+[0m◈ [0mParallel Web Search "site:fyers.in inurl:myaccount OR inurl:profile OR inurl:settings API endpoint"
+[0m✗ [0mWebFetch https://myapi.fyers.in/dashboard failed
+[91m[1mError: [0mStatusCode: non 2xx status code (404 GET https://myapi.fyers.in/dashboard)
+[0m✗ [0mWebFetch https://myapi.fyers.in/docsv3 failed
+[91m[1mError: [0mStatusCode: non 2xx status code (404 GET https://myapi.fyers.in/docsv3)
+[0m% [0mWebFetch https://api-connect-docs.fyers.in
+[0m% [0mWebFetch https://community.fyers.in
+[0m% [0mWebFetch https://api-connect-docs.fyers.in/demo.html
+[0m% [0mWebFetch https://partners.fyers.in/manifest.json
+[0m% [0mWebFetch https://api-connect-docs.fyers.in/docs/order
+[0m◈ [0mParallel Web Search "site:fyers.in "api-connect" OR "API Connect" SDK JavaScript integration"
+[0m% [0mWebFetch https://api-connect-docs.fyers.in/fyers-lib.js
+Now let me fetch the API Connect SDK JavaScript and the partners dashboard widget:
+[0m% [0mWebFetch https://api-connect.fyers.in/
+[0m% [0mWebFetch https://support.fyers.in/portal/en/kb/fyers-api-integrations/fyers-mcp
+[0m• [0mAnalyze fyers-lib.js SDK[90m Explore Agent[0m
+[0m% [0mWebFetch https://partners.fyers.in/fyers_widget/fyers-widget.min.js
+[0m✓ [0mAnalyze fyers-lib.js SDK[90m Explore Agent[0m
+[0m
+[0m← [0mWrite SURFACE_ACCOUNTMGMT.md
+Wrote file successfully.
+[0m
+Now I have sufficient data for the SURFACE analysis. Let me create the report and update state:
+[0m← [0mEdit findings_mimo.md
+Index: /home/runner/work/fyers-recon/fyers-recon/findings_mimo.md
+===================================================================
+--- /home/runner/work/fyers-recon/fyers-recon/findings_mimo.md
++++ /home/runner/work/fyers-recon/fyers-recon/findings_mimo.md
+@@ -97,8 +97,16 @@
+ 32. **Tax P&L API IDOR** (CVSS 7.5) - Tax P&L endpoint lacks proper authorization
+ 
+ TOTAL HYPOTHESIES: 32 across 10 attack surfaces
+ 
++# 4 API Connect/Account Mgmt Hypotheses Generated on 2026-08-05 22:00:00 UTC (API Connect & Partners)
++33. **API Connect postMessage Injection** (CVSS 8.1) - Missing origin validation on postMessage handler
++34. **API Connect SDK Key Theft via XSS** (CVSS 7.5) - API key exposed in SDK initialization
++35. **Partners Widget Notification Spoofing** (CVSS 6.5) - Unauthenticated notification data fetch
++36. **Staging OAuth Client ID Disclosure** (CVSS 3.1) - Commented staging client ID in HTML source
++
++TOTAL HYPOTHESIES: 36 across 11 attack surfaces
++
+ # HYPOTHESIS Refinement Completed on 2026-08-05 21:00:00 UTC (Verified P&L System)
+ - **H29**: UUID Leakage via public sharing and search engine indexing (CVSS 5.3)
+ - **H30**: Verified P&L API IDOR via user_id parameter (CVSS 7.5)
+ - **H31**: Account Management CSRF on profile modification endpoints (CVSS 8.1)
+
+[0m
+[0m← [0mEdit state_mimo.json
+Index: /home/runner/work/fyers-recon/fyers-recon/state_mimo.json
+===================================================================
+--- /home/runner/work/fyers-recon/fyers-recon/state_mimo.json
++++ /home/runner/work/fyers-recon/fyers-recon/state_mimo.json
+@@ -1,12 +1,11 @@
+ {
+   "target": "fyers.in",
+-  "phase": "SURFACE",
++  "phase": "HYPOTHESIS",
+   "status": "IN_PROGRESS",
+   "next_steps": [
+-    "Explore myaccount.fyers.in endpoints",
+-    "Investigate backoffice.fyers.in security",
+-    "Analyze partner-dashboard.fyers.in access controls",
+-    "Document account management API endpoints",
+-    "Analyze verifiedpnl.fyers.in JavaScript for API endpoints"
++    "Formalize hypotheses for API Connect postMessage injection (H33)",
++    "Design read-only PoC for SDK key theft (H34)",
++    "Analyze partners widget notification flow for spoofing (H35)",
++    "Investigate MCP OAuth redirect flow for token theft (H14)"
+   ]
+ }
+\ No newline at end of file
+
+[0m
+[0m→ [0mRead research_mimo.md[90m [offset=4340][0m
+[0m
+[0m← [0mEdit research_mimo.md
+Index: /home/runner/work/fyers-recon/fyers-recon/research_mimo.md
+===================================================================
+--- /home/runner/work/fyers-recon/fyers-recon/research_mimo.md
++++ /home/runner/work/fyers-recon/fyers-recon/research_mimo.md
+@@ -4350,4 +4350,113 @@
+ - **Phase Completed**: RECON → SURFACE → HYPOTHESIS → POC (Verified P&L System)
+ - **New Hypotheses**: 4 (H29-H32) on Verified P&L system
+ - **Total Hypotheses**: 32 across 10 attack surfaces
+ - **Files Created**: `RECON_VERIFIEDPNL.md`, `SURFACE_VERIFIEDPNL.md`, `HYPOTHESIS_VERIFIEDPNL.md`, `POC_VERIFIEDPNL.md`
++
++===== RUN 2026-08-05 22:00:00 UTC =====
++Model: mimo | Phase: SURFACE | Target: fyers.in
++
++# Target: fyers.in
++# Current Phase: SURFACE (Account Management & API Connect) - COMPLETE
++
++## Key Findings
++
++### New Attack Surface: API Connect SDK
++
++| Component | Details |
++|-----------|---------|
++| **SDK Location** | `https://api-connect-docs.fyers.in/fyers-lib.js` |
++| **Auth Endpoint** | `https://api-connect.fyers.in/redirection` (POST form) |
++| **Demo Key** | `XNQ201Q7YA-101` (hardcoded in demo page) |
++| **jQuery** | 1.11.1 (outdated, from Google CDN) |
++
++### Critical Security Finding: postMessage Injection
++
++The SDK's `window.on("message")` handler does NOT validate `event.origin`. Any page can send a crafted message to trigger the SDK's callback, potentially injecting a malicious `request_token`.
++
++**Attack Path**:
++```
++1. Attacker hosts malicious page
++2. Victim visits page while authenticated with Fyers
++3. Malicious page sends postMessage with fake request_token
++4. SDK callback receives (status, request_token)
++5. Attacker obtains valid session token
++```
++
++### Partners Dashboard Widget
++
++| Property | Value |
++|----------|-------|
++| **Framework** | Flutter Web (SPA) |
++| **Widget** | fyers-widget.min.js (obfuscated) |
++| **Notification URLs** | assets.fyers.in/fy_notifications/, public.fyers.in/messages/public.json |
++| **Cookie** | fy_notifaction_ids_[date] (typo: "notifaction") |
++| **Domain** | .fyers.in (all subdomains) |
++
++### myaccount.fyers.in
++
++| Property | Value |
++|----------|-------|
++| **Framework** | Flutter Web |
++| **Auth** | Session-based via login.fyers.in redirect |
++| **OAuth** | Google OAuth client ID: 286450894109-... |
++| **Features** | Profile, KYC, Bank Details, Nomination, TOTP, Verified P&L |
++
++---
++
++## Hypotheses Generated
++
++| # | Hypothesis | CVSS | Priority |
++|---|------------|------|----------|
++| 33 | **API Connect postMessage Injection** | 8.1 (High) | HIGH |
++| 34 | **API Connect SDK Key Theft via XSS** | 7.5 (High) | HIGH |
++| 35 | **Partners Widget Notification Spoofing** | 6.5 (Medium) | MEDIUM |
++| 36 | **Staging OAuth Client ID Disclosure** | 3.1 (Low) | LOW |
++
++---
++
++## Combined Priority Ranking (All 36 Hypotheses)
++
++| Priority | Hypothesis | CVSS | Surface |
++|----------|------------|------|---------|
++| 1 | #4: appIdHash Bypass | 9.1 | Auth |
++| 2 | #14: MCP OAuth Token Theft | 9.1 | MCP |
++| 3 | #15: EDIS Authorization Bypass | 9.1 | EDIS |
++| 4 | #1: IDOR on Orders | 8.1 | Trading |
++| 5 | #6: Webhook Spoofing | 8.1 | Webhook |
++| 6 | #20: PIN Brute Force | 8.1 | Signup |
++| 7 | #24: Multi-Factor Auth Bypass | 8.1 | Signup |
++| 8 | #25: CSRF on Withdrawal | 8.1 | Fund Transfer |
++| 9 | #31: Account Mgmt CSRF | 8.1 | Account |
++| 10 | **#33: API Connect postMessage Injection** | **8.1** | **API Connect** |
++| 11 | #2: Refresh Token Race | 7.5 | Auth |
++| 12 | #9: Webhook Secret Leakage | 7.5 | Webhook |
++| 13 | #11: MCP Session Hijacking | 7.5 | MCP |
++| 14 | #16: CDSL Redirect Manipulation | 7.5 | EDIS |
++| 15 | #19: OTP Brute Force | 7.5 | Signup |
++| 16 | #26: IDOR on Bank Details | 7.5 | Fund Transfer |
++| 17 | #27: Race Condition Withdrawal | 7.5 | Fund Transfer |
++| 18 | #30: Verified P&L API IDOR | 7.5 | Verified P&L |
++| 19 | #32: Tax P&L API IDOR | 7.5 | API |
++| 20 | **#34: API Connect SDK Key Theft** | **7.5** | **API Connect** |
++| 21 | **#35: Partners Widget Notification Spoofing** | **6.5** | **Partners** |
++
++---
++
++## Files Created
++
++| File | Description |
++|------|-------------|
++| `SURFACE_ACCOUNTMGMT.md` | SURFACE analysis for account management & API Connect |
++
++---
++
++## STATE UPDATE FOR NEXT RUN
++
++STATUS_TARGET: fyers.in
++STATUS_PHASE: HYPOTHESIS
++STATUS_STATE: IN_PROGRESS
++
++NEXT_STEP_1: Formalize hypotheses for API Connect postMessage injection (H33)
++NEXT_STEP_2: Design read-only PoC for SDK key theft (H34)
++NEXT_STEP_3: Analyze partners widget notification flow for spoofing (H35)
++NEXT_STEP_4: Investigate MCP OAuth redirect flow for token theft (H14)
+
+[0m
+# Target: fyers.in
+# Current Phase: SURFACE (Account Management & API Connect) - COMPLETE
+
+## Key Findings
+
+### New Attack Surface: API Connect SDK (fyers-lib.js)
+
+| Component | Details |
+|-----------|---------|
+| **SDK Location** | `https://api-connect-docs.fyers.in/fyers-lib.js` |
+| **Auth Endpoint** | `https://api-connect.fyers.in/redirection` (POST form) |
+| **Demo API Key** | `XNQ201Q7YA-101` (hardcoded in demo page) |
+| **jQuery Version** | 1.11.1 (outdated, 3 known CVEs) |
+
+### Critical Finding: postMessage without Origin Validation
+
+The SDK's `window.on("message")` handler does **NOT** validate `event.origin`. Any page can send a crafted message to inject a malicious `request_token`, enabling session hijacking.
+
+**Attack Path**:
+```
+1. Attacker hosts malicious page with postMessage listener
+2. Victim visits attacker page while authenticated with Fyers
+3. Attacker sends: {request_token: "MALICIOUS", status: "success"}
+4. SDK callback fires with attacker-controlled token
+5. Attacker obtains valid session
+```
+
+**CVSS**: 8.1 (High) - AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N
+
+### Partners Dashboard Widget
+
+| Component | Details |
+|-----------|---------|
+| **Framework** | Flutter Web SPA |
+| **Widget** | `fyers-widget.min.js` (heavily obfuscated) |
+| **Notification URL** | `https://public.fyers.in/messages/public.json` |
+| **Cookie** | `fy_notifaction_ids_[date]` (typo: "notifaction") |
+| **Cookie Domain** | `.fyers.in` (all subdomains) |
+
+### myaccount.fyers.in
+
+| Component | Details |
+|-----------|---------|
+| **Framework** | Flutter Web |
+| **Auth** | Session-based via `login.fyers.in` redirect |
+| **OAuth Client ID** | `286450894109-608ml77icehbhpvplp2645hqqm6rtope.apps.googleusercontent.com` |
+| **Staging Client ID** | `902868841845-...` (visible in HTML comment - info disclosure) |
+
+---
+
+## 4 New Hypotheses Generated
+
+| # | Hypothesis | CVSS | Priority |
+|---|------------|------|----------|
+| 33 | **API Connect postMessage Injection** | 8.1 (High) | HIGH |
+| 34 | **API Connect SDK Key Theft via XSS** | 7.5 (High) | HIGH |
+| 35 | **Partners Widget Notification Spoofing** | 6.5 (Medium) | MEDIUM |
+| 36 | **Staging OAuth Client ID Disclosure** | 3.1 (Low) | LOW |
+
+---
+
+## Combined Priority Ranking (All 36 Hypotheses)
+
+| Priority | Hypothesis | CVSS | Surface |
+|----------|------------|------|---------|
+| 1 | #4: appIdHash Bypass | 9.1 | Auth |
+| 2 | #14: MCP OAuth Token Theft | 9.1 | MCP |
+| 3 | #15: EDIS Authorization Bypass | 9.1 | EDIS |
+| 4 | #1: IDOR on Orders | 8.1 | Trading |
+| 5 | #6: Webhook Spoofing | 8.1 | Webhook |
+| 6 | #20: PIN Brute Force | 8.1 | Signup |
+| 7 | #24: Multi-Factor Auth Bypass | 8.1 | Signup |
+| 8 | #25: CSRF on Withdrawal | 8.1 | Fund Transfer |
+| 9 | #31: Account Mgmt CSRF | 8.1 | Account |
+| 10 | **#33: API Connect postMessage Injection** | **8.1** | **API Connect** |
+| 11 | #2: Refresh Token Race | 7.5 | Auth |
+| 12 | #9: Webhook Secret Leakage | 7.5 | Webhook |
+| 13 | #11: MCP Session Hijacking | 7.5 | MCP |
+| 14 | #16: CDSL Redirect Manipulation | 7.5 | EDIS |
+| 15 | #19: OTP Brute Force | 7.5 | Signup |
+| 16 | #26: IDOR on Bank Details | 7.5 | Fund Transfer |
+| 17 | #27: Race Condition Withdrawal | 7.5 | Fund Transfer |
+| 18 | #30: Verified P&L API IDOR | 7.5 | Verified P&L |
+| 19 | #32: Tax P&L API IDOR | 7.5 | API |
+| 20 | **#34: API Connect SDK Key Theft** | **7.5** | **API Connect** |
+| 21 | **#35: Partners Widget Notification Spoofing** | **6.5** | **Partners** |
+
+---
+
+## Files Created
+
+| File | Description |
+|------|-------------|
+| `SURFACE_ACCOUNTMGMT.md` | SURFACE analysis for account management & API Connect |
+
+---
+
+## STATE UPDATE FOR NEXT RUN
+
+STATUS_TARGET: fyers.in
+STATUS_PHASE: HYPOTHESIS
+STATUS_STATE: IN_PROGRESS
+
+NEXT_STEP_1: Formalize hypotheses for API Connect postMessage injection (H33)
+NEXT_STEP_2: Design read-only PoC for SDK key theft (H34)
+NEXT_STEP_3: Analyze partners widget notification flow for spoofing (H35)
+NEXT_STEP_4: Investigate MCP OAuth redirect flow for token theft (H14)
+
+---
+
+**Run Complete.**
+
+Summary:
+- **Phase Completed**: SURFACE (Account Management & API Connect)
+- **New Hypotheses**: 4 (H33-H36) on API Connect & Partners
+- **Total Hypotheses**: 36 across 11 attack surfaces
+- **Files Created**: `SURFACE_ACCOUNTMGMT.md`
+- **High-Value Finding**: postMessage injection in API Connect SDK (H33, CVSS 8.1)

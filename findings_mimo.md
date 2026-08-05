@@ -98,6 +98,14 @@ TOTAL HYPOTHESIES: 28 across 9 attack surfaces
 
 TOTAL HYPOTHESIES: 32 across 10 attack surfaces
 
+# 4 API Connect/Account Mgmt Hypotheses Generated on 2026-08-05 22:00:00 UTC (API Connect & Partners)
+33. **API Connect postMessage Injection** (CVSS 8.1) - Missing origin validation on postMessage handler
+34. **API Connect SDK Key Theft via XSS** (CVSS 7.5) - API key exposed in SDK initialization
+35. **Partners Widget Notification Spoofing** (CVSS 6.5) - Unauthenticated notification data fetch
+36. **Staging OAuth Client ID Disclosure** (CVSS 3.1) - Commented staging client ID in HTML source
+
+TOTAL HYPOTHESIES: 36 across 11 attack surfaces
+
 # HYPOTHESIS Refinement Completed on 2026-08-05 21:00:00 UTC (Verified P&L System)
 - **H29**: UUID Leakage via public sharing and search engine indexing (CVSS 5.3)
 - **H30**: Verified P&L API IDOR via user_id parameter (CVSS 7.5)
@@ -148,3 +156,9 @@ Review research_mimo.md for details
  28. **Session Fixation on Fund Transfer** (CVSS 6.5) - Session not regenerated after authentication
 +29. **Verified P&L IDOR via UUID Enumeration** (CVSS 5.3) - Sequential/predictable UUIDs expose P&L data
 +30. **Verified P&L API Endpoint IDOR** (CVSS 7.5) - API accepts user IDs bypassing UUID protection
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+ 32. **Tax P&L API IDOR** (CVSS 7.5) - Tax P&L endpoint lacks proper authorization
++33. **API Connect postMessage Injection** (CVSS 8.1) - Missing origin validation on postMessage handler
++34. **API Connect SDK Key Theft via XSS** (CVSS 7.5) - API key exposed in SDK initialization

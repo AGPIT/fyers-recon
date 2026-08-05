@@ -1,12 +1,12 @@
 {
   "target": "fyers.in",
-  "phase": "SURFACE",
+  "phase": "HYPOTHESIS",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Explore myaccount.fyers.in endpoints",
-    "Investigate backoffice.fyers.in security",
-    "Analyze partner-dashboard.fyers.in access controls",
-    "Document account management API endpoints",
-    "Analyze verifiedpnl.fyers.in JavaScript for API endpoints"
+    "Formalize hypotheses for API Connect postMessage injection (H33)",
+    "Design read-only PoC for SDK key theft (H34)",
+    "Analyze partners widget notification flow for spoofing (H35)",
+    "Investigate MCP OAuth redirect flow for token theft (H14)",
+    "Formalize hypotheses for API Connect postMessage injection (H33)"
   ]
 }
