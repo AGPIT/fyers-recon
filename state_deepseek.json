@@ -5,6 +5,8 @@
   "next_steps": [
     "Write the formal H1 PoC writeup (step-1 curl, victim-flow, direct-login body incl. the new v2 `-443`/`-17` and v3 `-441` gates, the two success indicators, CVSS 6.1/8.1\u20139.0) and flag READY FOR AUTHENTICATED CONFIRMATION of `data.Url` code delivery.",
     "Crawl the `indus/v1/config` endpoint map for gallery/savechart object-id path patterns to design the H13 authenticated IDOR test (chart-settings / user-profile object keys).",
-    "Re-probe `mcp.fyers.in/mcp` SSE session binding with an authenticated FIA_TOKEN when available (H8 final confirmation); include `api-support@fyers.in` and the `fyers/claude-installer` auto-update channel in the disclosure report."
+    "Re-probe `mcp.fyers.in/mcp` SSE session binding with an authenticated FIA_TOKEN when available (H8 final confirmation); include `api-support@fyers.in` and the `fyers/claude-installer` auto-update channel in the disclosure report.",
+    "H1 requires authenticated confirmation of `data.Url` code delivery \u2014 no further pre-auth work possible; hand to program with the design doc (indicators + CVSS both specified).",
+    "H13 authenticated IDOR test (program-side): own-charts enumeration on `data.fyers.in/dev-fyers/savechart/1.2/charts`, then cross-account `chartId`/study-template read; test gallery DELETE `token_id` scope."
   ]
 }
