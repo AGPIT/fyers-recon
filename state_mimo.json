@@ -1,11 +1,11 @@
 {
   "target": "fyers.in",
-  "phase": "SURFACE",
+  "phase": "HYPOTHESIS",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Analyze login.fyers.in OAuth flow and callback validation",
-    "Test SSRF on api-a1.fyers.in source parameter",
-    "Investigate community.fyers.in open redirect exploitation",
-    "Document int-invest.fyers.in IIS attack surface"
+    "Formalize H50-H57 with detailed PoC methodology",
+    "Analyze login.fyers.in OAuth callback validation",
+    "Test bo-login.fyers.in session management",
+    "Investigate API token refresh mechanism"
   ]
 }

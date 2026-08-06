@@ -429,3 +429,9 @@ Review research_mimo.md for details
 +50. **Login OAuth Redirect Manipulation** (CVSS 7.5) - cb parameter accepts arbitrary URLs
 +51. **Community Open Redirect to Phishing** (CVSS 4.7) - redirect parameter allows external URLs
 +52. **SSRF via source Parameter** (CVSS 7.5) - api-a1/api-i1 accept URLs in source param
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+1. **Session Token Leakage in URLs** (CVSS 7.5)
+2. **Development Environment Exposed** (CVSS 6.5)
+3. **IIS TRACE Method Enabled** (CVSS 3.1)
