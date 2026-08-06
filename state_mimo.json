@@ -1,12 +1,12 @@
 {
   "target": "fyers.in",
-  "phase": "HYPOTHESIS",
+  "phase": "SURFACE",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Create POC_FUNDTRANSFER.md with read-only testing methodology",
-    "Document CSRF test cases for fund transfer endpoints",
-    "Design IDOR testing methodology for bank details",
-    "Prepare SSTI verification test for api-i1.fyers.in",
-    "Explore api-y1.fyers.in (RHEL test page - investigate further)"
+    "Analyze mtfddpi.fyers.in JavaScript for DigiLock integration",
+    "Test api-i1.fyers.in SSTI with authenticated session",
+    "Investigate debt.fyers.in API endpoints",
+    "Document open-account.fyers.in form handling",
+    "Formalize H43 (SSTI) with authenticated testing methodology"
   ]
 }
