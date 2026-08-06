@@ -1,12 +1,11 @@
 {
   "target": "fyers.in",
-  "phase": "SURFACE",
+  "phase": "HYPOTHESIS",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Analyze fundtransfer.fyers.in JavaScript for API endpoints",
-    "Test fund transfer session management",
-    "Investigate partner dashboard access controls",
-    "Document CSRF protection mechanisms",
-    "Analyze fundtransfer.fyers.in JavaScript for API endpoints"
+    "Formalize CSRF hypotheses with evidence from JS analysis",
+    "Document session exposure in withdrawal flow",
+    "Analyze IDOR potential on bank account endpoints",
+    "Design read-only PoC for CSRF testing"
   ]
 }

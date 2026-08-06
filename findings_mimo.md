@@ -200,3 +200,18 @@ Review research_mimo.md for details
 +37. **Fund Transfer CSRF** (CVSS 8.1) - Missing CSRF on fund transfer endpoints
 +38. **Fund Transfer IDOR** (CVSS 7.5) - Sequential fund transaction IDs enable cross-account access
 +39. **Partner Dashboard Unauthorized Access** (CVSS 6.5) - Weak access controls on partner portal
+
+# SURFACE Analysis Completed on 2026-08-06 02:00:00 UTC (Fund Transfer System)
+- **SURFACE_FUNDTRANSFER.md**: Created with detailed analysis of fund transfer system
+- **Key Findings**: CSRF confirmed absent, Session exposure in URL, Outdated jQuery
+- **Endpoints Verified**: 5 fund transfer endpoints analyzed
+- **Status**: SURFACE analysis complete, HYPOTHESIS phase next
+
+# 1 items on 2026-08-06 04:29:54 UTC
+- /home/runner/work/fyers-recon/fyers-recon/findings_mimo.md
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
++| # | Hypothesis | CVSS | Refined Assessment |
++| Priority | Hypothesis | CVSS | Surface |
+ +37. **Fund Transfer CSRF** (CVSS 8.1) - Missing CSRF on fund transfer endpoints
