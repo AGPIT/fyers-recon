@@ -3,8 +3,9 @@
   "phase": "POC",
   "status": "HIGH_POTENTIAL",
   "next_steps": [
-    "Authenticated authz-fragmentation test on api-a1-prod (campaigns/Pydantic vs myaccount/-374/-17 vs api-a1 funds/-21) + withdraw-fund amount-then-auth bypass check.",
-    "Walk `investment/jhelum/v1/api/offer_list_v2` params to enumerate the public IPO listings; confirm scope of offer_details_v2.",
-    "H8 authenticated FIA_TOKEN test on mcp.fyers.in (tools/list/call); finalize disclosure report (api-support + fyers/claude-installer channel). Re-diff config for new hosts each run."
+    "Authenticated tests (program-side): api-a1-prod authz fragmentation incl. withdraw-fund; marina/v1/ddpi cross-account instruction-object IDOR (eSign PDF download); utility email-preference schema-valid unauth access.",
+    "H8 authenticated FIA_TOKEN test on mcp.fyers.in (tools/list/call) for tool-level least-privilege.",
+    "Re-probe api-t1/api/v3/toggle-alert + api/nps/* spaced after rate-limit clears; re-diff both config.fyers.in/config/config.gz and indus/v1/config for new hosts each run.",
+    "Finalize disclosure report (api-support@fyers.in + fyers/claude-installer channel; note missing security.txt/VDP; include SSTI false-positive exclusion)."
   ]
 }
