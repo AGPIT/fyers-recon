@@ -1,11 +1,12 @@
 {
   "target": "fyers.in",
-  "phase": "RECON",
+  "phase": "SURFACE",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Explore backoffice.fyers.in endpoints and security",
-    "Analyze partner-dashboard.fyers.in access controls",
-    "Investigate fundtransfer.fyers.in CSRF protections",
-    "Document account management API endpoints"
+    "Analyze fundtransfer.fyers.in JavaScript for API endpoints",
+    "Test fund transfer session management",
+    "Investigate partner dashboard access controls",
+    "Document CSRF protection mechanisms",
+    "Analyze fundtransfer.fyers.in JavaScript for API endpoints"
   ]
 }

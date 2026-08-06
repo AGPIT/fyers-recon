@@ -118,6 +118,14 @@ TOTAL HYPOTHESIES: 36 across 11 attack surfaces
 - **Coverage**: postMessage Injection, SDK Key Theft, Notification Spoofing, OAuth Disclosure
 - **Status**: POC design complete, ready for authorized testing
 
+# 4 Fund Transfer/Partner Hypotheses Generated on 2026-08-06 00:00:00 UTC (Fund Transfer & Partners)
+37. **Fund Transfer CSRF** (CVSS 8.1) - Missing CSRF on fund transfer endpoints
+38. **Fund Transfer IDOR** (CVSS 7.5) - Sequential fund transaction IDs enable cross-account access
+39. **Partner Dashboard Unauthorized Access** (CVSS 6.5) - Weak access controls on partner portal
+40. **Status Page Information Disclosure** (CVSS 3.1) - Internal component IDs exposed
+
+TOTAL HYPOTHESIES: 40 across 12 attack surfaces
+
 # HYPOTHESIS Refinement Completed on 2026-08-05 21:00:00 UTC (Verified P&L System)
 - **H29**: UUID Leakage via public sharing and search engine indexing (CVSS 5.3)
 - **H30**: Verified P&L API IDOR via user_id parameter (CVSS 7.5)
@@ -186,3 +194,9 @@ Review research_mimo.md for details
  - **H35**: Partners Widget Notification Spoofing - Public endpoint confirmed (CVSS 6.5)
  - **H36**: Staging OAuth Client ID Disclosure - Visible in HTML comments (CVSS 3.1)
  - **H14**: MCP OAuth Token Theft - Refined with MCP documentation (CVSS 9.1)
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
++37. **Fund Transfer CSRF** (CVSS 8.1) - Missing CSRF on fund transfer endpoints
++38. **Fund Transfer IDOR** (CVSS 7.5) - Sequential fund transaction IDs enable cross-account access
++39. **Partner Dashboard Unauthorized Access** (CVSS 6.5) - Weak access controls on partner portal

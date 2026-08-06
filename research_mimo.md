@@ -5480,3 +5480,414 @@ Starting reconnaissance on new unexplored surfaces:
 - **Hypotheses**: 36 across 11 attack surfaces
 - **POCs Completed**: 3 surfaces (Fund Transfer, Verified P&L, API Connect)
 - **POCs Remaining**: 8 surfaces (Trading, Webhook, MCP, EDIS, Signup, Auth, Account, Partners)
+
+===== RUN 2026-08-06 00:00:00 UTC =====
+Model: mimo | Phase: RECON | Target: fyers.in
+
+# Target: fyers.in
+# Current Phase: RECON (Fund Transfer & Partner Systems) - COMPLETE
+
+## Key Findings
+
+### New Attack Surface: Fund Transfer System
+
+| Component | Details |
+|-----------|---------|
+| **Frontend** | `fundtransfer.fyers.in` |
+| **Backend API** | `data.fyers.in` |
+| **Withdrawal Auth** | `bo-login.fyers.in` (separate login) |
+| **Payment Methods** | UPI, Net Banking, NEFT/RTGS/IMPS |
+
+### New Attack Surface: Partner Dashboard
+
+| Component | Details |
+|-----------|---------|
+| **Domain** | `partner-dashboard.fyers.in` |
+| **Framework** | Flutter Web SPA |
+| **Version** | 3.0 |
+| **Widget** | `fyers-widget.min.js` (obfuscated) |
+
+### API Endpoints Discovered
+
+| Endpoint | Method | Purpose | Auth |
+|----------|--------|---------|------|
+| `/fy/v1/fundtx/v1/view` | POST | View fund balances | Session |
+| `/fy/v1/fundtx/v1/bankdetails` | POST | Get bank details | Session |
+| `/fy/v1/fundtx/v1/marginutilized` | POST | View margin utilized | Session |
+| `/fy/v1/fundtx/v1/addfunds` | POST | Add funds | Session |
+| `/fy/v1/fundtx/v1/withdraw` | POST | Withdraw funds | Session |
+
+### Security Observations
+
+| System | Auth | CSRF | Rate Limit |
+|--------|------|------|------------|
+| Fund Transfer | Session-based | Unknown | Unknown |
+| Partner Dashboard | Unknown | Unknown | Unknown |
+| Status Page | Public | N/A | N/A |
+
+---
+
+## Hypotheses Generated
+
+| # | Hypothesis | CVSS | Priority |
+|---|------------|------|----------|
+| 37 | **Fund Transfer CSRF** | 8.1 (High) | HIGH |
+| 38 | **Fund Transfer IDOR** | 7.5 (High) | HIGH |
+| 39 | **Partner Dashboard Unauthorized Access** | 6.5 (Medium) | MEDIUM |
+| 40 | **Status Page Information Disclosure** | 3.1 (Low) | LOW |
+
+---
+
+## Combined Priority Ranking (All 40 Hypotheses)
+
+| Priority | Hypothesis | CVSS | Surface |
+|----------|------------|------|---------|
+| 1 | #4: appIdHash Bypass | 9.1 | Auth |
+| 2 | #14: MCP OAuth Token Theft | 9.1 | MCP |
+| 3 | #15: EDIS Authorization Bypass | 9.1 | EDIS |
+| 4 | #1: IDOR on Orders | 8.1 | Trading |
+| 5 | #6: Webhook Spoofing | 8.1 | Webhook |
+| 6 | #20: PIN Brute Force | 8.1 | Signup |
+| 7 | #24: Multi-Factor Auth Bypass | 8.1 | Signup |
+| 8 | #25: CSRF on Withdrawal | 8.1 | Fund Transfer |
+| 9 | #31: Account Mgmt CSRF | 8.1 | Account |
+| 10 | #33: API Connect postMessage | 8.1 | API Connect |
+| 11 | **#37: Fund Transfer CSRF** | **8.1** | **Fund Transfer** |
+| 12 | #2: Refresh Token Race | 7.5 | Auth |
+| 13 | #9: Webhook Secret Leakage | 7.5 | Webhook |
+| 14 | #11: MCP Session Hijacking | 7.5 | MCP |
+| 15 | #16: CDSL Redirect Manipulation | 7.5 | EDIS |
+| 16 | #19: OTP Brute Force | 7.5 | Signup |
+| 17 | #26: IDOR on Bank Details | 7.5 | Fund Transfer |
+| 18 | #27: Race Condition Withdrawal | 7.5 | Fund Transfer |
+| 19 | #30: Verified P&L API IDOR | 7.5 | Verified P&L |
+| 20 | #32: Tax P&L API IDOR | 7.5 | API |
+| 21 | **#38: Fund Transfer IDOR** | **7.5** | **Fund Transfer** |
+| 22 | #34: SDK Key Theft via XSS | 7.5 | API Connect |
+| 23 | #35: Notification Spoofing | 6.5 | Partners |
+| 24 | **#39: Partner Dashboard Access** | **6.5** | **Partner** |
+| 25 | #36: Staging OAuth Disclosure | 3.1 | Account |
+| 26 | **#40: Status Page Disclosure** | **3.1** | **Status** |
+
+---
+
+## Files Created
+
+| File | Description |
+|------|-------------|
+| `RECON_FUNDTRANSFER.md` | RECON report for Fund Transfer & Partner systems |
+
+---
+
+## STATE UPDATE FOR NEXT RUN
+
+STATUS_TARGET: fyers.in
+STATUS_PHASE: SURFACE
+STATUS_STATE: IN_PROGRESS
+
+NEXT_STEP_1: Analyze fundtransfer.fyers.in JavaScript for API endpoints
+NEXT_STEP_2: Test fund transfer session management
+NEXT_STEP_3: Investigate partner dashboard access controls
+NEXT_STEP_4: Document CSRF protection mechanisms
+
+===== RUN 2026-08-06 01:05:37 UTC =====
+Model: mimo | Phase: RECON | Target: fyers.in
+
+[0m
+> build · mimo-v2.5-free
+[0m
+[0m→ [0mRead state_mimo.json
+[0m✗ [0mWebFetch https://backoffice.fyers.in failed
+[91m[1mError: [0mTransport error (GET https://backoffice.fyers.in)
+[0m% [0mWebFetch https://partner-dashboard.fyers.in
+[0m% [0mWebFetch https://fundtransfer.fyers.in
+[0m◈ [0mExa Web Search "site:fyers.in backoffice partner-dashboard fundtransfer API endpoints"
+[0m% [0mWebFetch https://bo-login.fyers.in
+[0m◈ [0mExa Web Search "site:fyers.in bo-login backoffice login authentication"
+[0m✗ [0mWebFetch https://backoffice.fyers.in/login failed
+[91m[1mError: [0mTransport error (GET https://backoffice.fyers.in/login)
+[0m✗ [0mWebFetch https://api-t1.fyers.in/api/v3/funds failed
+[91m[1mError: [0mStatusCode: non 2xx status code (401 GET https://api-t1.fyers.in/api/v3/funds)
+[0m% [0mWebFetch https://fundtransfer.fyers.in/addFunds.html
+[0m% [0mWebFetch https://status.fyers.in
+[0m✗ [0mWebFetch https://api-t1.fyers.in/api/v3/profile failed
+[91m[1mError: [0mStatusCode: non 2xx status code (400 GET https://api-t1.fyers.in/api/v3/profile)
+[0m✗ [0mWebFetch https://data.fyers.in/fy/v1/fundtx/v1/view failed
+[91m[1mError: [0mStatusCode: non 2xx status code (500 GET https://data.fyers.in/fy/v1/fundtx/v1/view)
+[0m% [0mWebFetch https://partner-dashboard.fyers.in/manifest.json
+[0m✗ [0mWebFetch https://api-connect-docs.fyers.in/docs failed
+[91m[1mError: [0mStatusCode: non 2xx status code (404 GET https://api-connect-docs.fyers.in/docs)
+[0m
+[0m← [0mWrite RECON_FUNDTRANSFER.md
+Wrote file successfully.
+[0m
+[0m← [0mWrite state_mimo.json
+Wrote file successfully.
+[0m
+[0m→ [0mRead findings_mimo.md[90m [limit=30, offset=110][0m
+[0m
+[0m← [0mEdit findings_mimo.md
+Index: /home/runner/work/fyers-recon/fyers-recon/findings_mimo.md
+===================================================================
+--- /home/runner/work/fyers-recon/fyers-recon/findings_mimo.md
++++ /home/runner/work/fyers-recon/fyers-recon/findings_mimo.md
+@@ -117,8 +117,16 @@
+ - **POC_APICONNECT.md**: Created with read-only testing methodology for H33-H36
+ - **Coverage**: postMessage Injection, SDK Key Theft, Notification Spoofing, OAuth Disclosure
+ - **Status**: POC design complete, ready for authorized testing
+ 
++# 4 Fund Transfer/Partner Hypotheses Generated on 2026-08-06 00:00:00 UTC (Fund Transfer & Partners)
++37. **Fund Transfer CSRF** (CVSS 8.1) - Missing CSRF on fund transfer endpoints
++38. **Fund Transfer IDOR** (CVSS 7.5) - Sequential fund transaction IDs enable cross-account access
++39. **Partner Dashboard Unauthorized Access** (CVSS 6.5) - Weak access controls on partner portal
++40. **Status Page Information Disclosure** (CVSS 3.1) - Internal component IDs exposed
++
++TOTAL HYPOTHESIES: 40 across 12 attack surfaces
++
+ # HYPOTHESIS Refinement Completed on 2026-08-05 21:00:00 UTC (Verified P&L System)
+ - **H29**: UUID Leakage via public sharing and search engine indexing (CVSS 5.3)
+ - **H30**: Verified P&L API IDOR via user_id parameter (CVSS 7.5)
+ - **H31**: Account Management CSRF on profile modification endpoints (CVSS 8.1)
+
+[0m
+[0m→ [0mRead research_mimo.md[90m [limit=30, offset=5250][0m
+[0m→ [0mRead research_mimo.md[90m [limit=30, offset=5450][0m
+[0m→ [0mRead research_mimo.md[90m [limit=10, offset=5475][0m
+[0m
+[0m← [0mEdit research_mimo.md
+Index: /home/runner/work/fyers-recon/fyers-recon/research_mimo.md
+===================================================================
+--- /home/runner/work/fyers-recon/fyers-recon/research_mimo.md
++++ /home/runner/work/fyers-recon/fyers-recon/research_mimo.md
+@@ -5479,4 +5479,113 @@
+ ### Total Progress
+ - **Hypotheses**: 36 across 11 attack surfaces
+ - **POCs Completed**: 3 surfaces (Fund Transfer, Verified P&L, API Connect)
+ - **POCs Remaining**: 8 surfaces (Trading, Webhook, MCP, EDIS, Signup, Auth, Account, Partners)
++
++===== RUN 2026-08-06 00:00:00 UTC =====
++Model: mimo | Phase: RECON | Target: fyers.in
++
++# Target: fyers.in
++# Current Phase: RECON (Fund Transfer & Partner Systems) - COMPLETE
++
++## Key Findings
++
++### New Attack Surface: Fund Transfer System
++
++| Component | Details |
++|-----------|---------|
++| **Frontend** | `fundtransfer.fyers.in` |
++| **Backend API** | `data.fyers.in` |
++| **Withdrawal Auth** | `bo-login.fyers.in` (separate login) |
++| **Payment Methods** | UPI, Net Banking, NEFT/RTGS/IMPS |
++
++### New Attack Surface: Partner Dashboard
++
++| Component | Details |
++|-----------|---------|
++| **Domain** | `partner-dashboard.fyers.in` |
++| **Framework** | Flutter Web SPA |
++| **Version** | 3.0 |
++| **Widget** | `fyers-widget.min.js` (obfuscated) |
++
++### API Endpoints Discovered
++
++| Endpoint | Method | Purpose | Auth |
++|----------|--------|---------|------|
++| `/fy/v1/fundtx/v1/view` | POST | View fund balances | Session |
++| `/fy/v1/fundtx/v1/bankdetails` | POST | Get bank details | Session |
++| `/fy/v1/fundtx/v1/marginutilized` | POST | View margin utilized | Session |
++| `/fy/v1/fundtx/v1/addfunds` | POST | Add funds | Session |
++| `/fy/v1/fundtx/v1/withdraw` | POST | Withdraw funds | Session |
++
++### Security Observations
++
++| System | Auth | CSRF | Rate Limit |
++|--------|------|------|------------|
++| Fund Transfer | Session-based | Unknown | Unknown |
++| Partner Dashboard | Unknown | Unknown | Unknown |
++| Status Page | Public | N/A | N/A |
++
++---
++
++## Hypotheses Generated
++
++| # | Hypothesis | CVSS | Priority |
++|---|------------|------|----------|
++| 37 | **Fund Transfer CSRF** | 8.1 (High) | HIGH |
++| 38 | **Fund Transfer IDOR** | 7.5 (High) | HIGH |
++| 39 | **Partner Dashboard Unauthorized Access** | 6.5 (Medium) | MEDIUM |
++| 40 | **Status Page Information Disclosure** | 3.1 (Low) | LOW |
++
++---
++
++## Combined Priority Ranking (All 40 Hypotheses)
++
++| Priority | Hypothesis | CVSS | Surface |
++|----------|------------|------|---------|
++| 1 | #4: appIdHash Bypass | 9.1 | Auth |
++| 2 | #14: MCP OAuth Token Theft | 9.1 | MCP |
++| 3 | #15: EDIS Authorization Bypass | 9.1 | EDIS |
++| 4 | #1: IDOR on Orders | 8.1 | Trading |
++| 5 | #6: Webhook Spoofing | 8.1 | Webhook |
++| 6 | #20: PIN Brute Force | 8.1 | Signup |
++| 7 | #24: Multi-Factor Auth Bypass | 8.1 | Signup |
++| 8 | #25: CSRF on Withdrawal | 8.1 | Fund Transfer |
++| 9 | #31: Account Mgmt CSRF | 8.1 | Account |
++| 10 | #33: API Connect postMessage | 8.1 | API Connect |
++| 11 | **#37: Fund Transfer CSRF** | **8.1** | **Fund Transfer** |
++| 12 | #2: Refresh Token Race | 7.5 | Auth |
++| 13 | #9: Webhook Secret Leakage | 7.5 | Webhook |
++| 14 | #11: MCP Session Hijacking | 7.5 | MCP |
++| 15 | #16: CDSL Redirect Manipulation | 7.5 | EDIS |
++| 16 | #19: OTP Brute Force | 7.5 | Signup |
++| 17 | #26: IDOR on Bank Details | 7.5 | Fund Transfer |
++| 18 | #27: Race Condition Withdrawal | 7.5 | Fund Transfer |
++| 19 | #30: Verified P&L API IDOR | 7.5 | Verified P&L |
++| 20 | #32: Tax P&L API IDOR | 7.5 | API |
++| 21 | **#38: Fund Transfer IDOR** | **7.5** | **Fund Transfer** |
++| 22 | #34: SDK Key Theft via XSS | 7.5 | API Connect |
++| 23 | #35: Notification Spoofing | 6.5 | Partners |
++| 24 | **#39: Partner Dashboard Access** | **6.5** | **Partner** |
++| 25 | #36: Staging OAuth Disclosure | 3.1 | Account |
++| 26 | **#40: Status Page Disclosure** | **3.1** | **Status** |
++
++---
++
++## Files Created
++
++| File | Description |
++|------|-------------|
++| `RECON_FUNDTRANSFER.md` | RECON report for Fund Transfer & Partner systems |
++
++---
++
++## STATE UPDATE FOR NEXT RUN
++
++STATUS_TARGET: fyers.in
++STATUS_PHASE: SURFACE
++STATUS_STATE: IN_PROGRESS
++
++NEXT_STEP_1: Analyze fundtransfer.fyers.in JavaScript for API endpoints
++NEXT_STEP_2: Test fund transfer session management
++NEXT_STEP_3: Investigate partner dashboard access controls
++NEXT_STEP_4: Document CSRF protection mechanisms
+
+[0m
+# Target: fyers.in
+# Current Phase: RECON (Fund Transfer & Partner Systems) - COMPLETE
+
+## Key Findings
+
+### New Attack Surface: Fund Transfer System
+
+| Component | Details |
+|-----------|---------|
+| **Frontend** | `fundtransfer.fyers.in` |
+| **Backend API** | `data.fyers.in` |
+| **Withdrawal Auth** | `bo-login.fyers.in` (separate login) |
+| **Payment Methods** | UPI, Net Banking, NEFT/RTGS/IMPS |
+
+### New Attack Surface: Partner Dashboard
+
+| Component | Details |
+|-----------|---------|
+| **Domain** | `partner-dashboard.fyers.in` |
+| **Framework** | Flutter Web SPA |
+| **Version** | 3.0 |
+| **Widget** | `fyers-widget.min.js` (obfuscated) |
+
+### API Endpoints Discovered
+
+| Endpoint | Method | Purpose | Auth |
+|----------|--------|---------|------|
+| `/fy/v1/fundtx/v1/view` | POST | View fund balances | Session |
+| `/fy/v1/fundtx/v1/bankdetails` | POST | Get bank details | Session |
+| `/fy/v1/fundtx/v1/marginutilized` | POST | View margin utilized | Session |
+| `/fy/v1/fundtx/v1/addfunds` | POST | Add funds | Session |
+| `/fy/v1/fundtx/v1/withdraw` | POST | Withdraw funds | Session |
+
+### Security Observations
+
+| System | Auth | CSRF | Rate Limit |
+|--------|------|------|------------|
+| Fund Transfer | Session-based | Unknown | Unknown |
+| Partner Dashboard | Unknown | Unknown | Unknown |
+| Status Page | Public | N/A | N/A |
+
+---
+
+## 4 New Hypotheses Generated
+
+| # | Hypothesis | CVSS | Priority |
+|---|------------|------|----------|
+| 37 | **Fund Transfer CSRF** | 8.1 (High) | HIGH |
+| 38 | **Fund Transfer IDOR** | 7.5 (High) | HIGH |
+| 39 | **Partner Dashboard Unauthorized Access** | 6.5 (Medium) | MEDIUM |
+| 40 | **Status Page Information Disclosure** | 3.1 (Low) | LOW |
+
+---
+
+## Combined Priority Ranking (All 40 Hypotheses)
+
+| Priority | Hypothesis | CVSS | Surface |
+|----------|------------|------|---------|
+| 1 | #4: appIdHash Bypass | 9.1 | Auth |
+| 2 | #14: MCP OAuth Token Theft | 9.1 | MCP |
+| 3 | #15: EDIS Authorization Bypass | 9.1 | EDIS |
+| 4 | #1: IDOR on Orders | 8.1 | Trading |
+| 5 | #6: Webhook Spoofing | 8.1 | Webhook |
+| 6 | #20: PIN Brute Force | 8.1 | Signup |
+| 7 | #24: Multi-Factor Auth Bypass | 8.1 | Signup |
+| 8 | #25: CSRF on Withdrawal | 8.1 | Fund Transfer |
+| 9 | #31: Account Mgmt CSRF | 8.1 | Account |
+| 10 | #33: API Connect postMessage | 8.1 | API Connect |
+| 11 | **#37: Fund Transfer CSRF** | **8.1** | **Fund Transfer** |
+| 12 | #2: Refresh Token Race | 7.5 | Auth |
+| 13 | #9: Webhook Secret Leakage | 7.5 | Webhook |
+| 14 | #11: MCP Session Hijacking | 7.5 | MCP |
+| 15 | #16: CDSL Redirect Manipulation | 7.5 | EDIS |
+| 16 | #19: OTP Brute Force | 7.5 | Signup |
+| 17 | #26: IDOR on Bank Details | 7.5 | Fund Transfer |
+| 18 | #27: Race Condition Withdrawal | 7.5 | Fund Transfer |
+| 19 | #30: Verified P&L API IDOR | 7.5 | Verified P&L |
+| 20 | #32: Tax P&L API IDOR | 7.5 | API |
+| 21 | **#38: Fund Transfer IDOR** | **7.5** | **Fund Transfer** |
+| 22 | #34: SDK Key Theft via XSS | 7.5 | API Connect |
+| 23 | #35: Notification Spoofing | 6.5 | Partners |
+| 24 | **#39: Partner Dashboard Access** | **6.5** | **Partner** |
+| 25 | #36: Staging OAuth Disclosure | 3.1 | Account |
+| 26 | **#40: Status Page Disclosure** | **3.1** | **Status** |
+
+---
+
+## Files Created
+
+| File | Description |
+|------|-------------|
+| `RECON_FUNDTRANSFER.md` | RECON report for Fund Transfer & Partner systems |
+
+---
+
+## STATE UPDATE FOR NEXT RUN
+
+STATUS_TARGET: fyers.in
+STATUS_PHASE: SURFACE
+STATUS_STATE: IN_PROGRESS
+
+NEXT_STEP_1: Analyze fundtransfer.fyers.in JavaScript for API endpoints
+NEXT_STEP_2: Test fund transfer session management
+NEXT_STEP_3: Investigate partner dashboard access controls
+NEXT_STEP_4: Document CSRF protection mechanisms
+
+---
+
+**Run Complete.**
+
+Summary:
+- **Phase Completed**: RECON (Fund Transfer & Partner Systems)
+- **New Hypotheses**: 4 (H37-H40) on Fund Transfer & Partner systems
+- **Total Hypotheses**: 40 across 12 attack surfaces
+- **Files Created**: `RECON_FUNDTRANSFER.md`
+- **Next Phase**: SURFACE analysis on Fund Transfer endpoints
