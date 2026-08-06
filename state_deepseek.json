@@ -3,8 +3,8 @@
   "phase": "POC",
   "status": "HIGH_POTENTIAL",
   "next_steps": [
-    "Write the formal H1 PoC writeup (exact step-1 curl, victim-flow, direct-login body, the two success indicators, CVSS 6.1/8.1\u20139.0); flag as ready for authenticated confirmation. Optionally probe `/api/v2/direct-login` with dummy `user_id`/`auth` (spaced, read-only) to test whether `redirect_uri` is reflected/registry-bound pre-auth.",
-    "Static pass of the Windows MCP .exe (77 MB, assets.fyers.in) for FIA_TOKEN/OAuth scopes + local token storage \u2014 firm up H8.",
-    "Re-diff `indus/v1/config` for new hosts; enumerate `insights.fyers.in` / `savedcharts.fyers.in` widget surfaces for token-bearing endpoints (guest-created content IDOR)."
+    "Write the formal H1 PoC writeup (step-1 curl, victim-flow, direct-login body incl. the new v2 `-443`/`-17` and v3 `-441` gates, the two success indicators, CVSS 6.1/8.1\u20139.0) and flag READY FOR AUTHENTICATED CONFIRMATION of `data.Url` code delivery.",
+    "Crawl the `indus/v1/config` endpoint map for gallery/savechart object-id path patterns to design the H13 authenticated IDOR test (chart-settings / user-profile object keys).",
+    "Re-probe `mcp.fyers.in/mcp` SSE session binding with an authenticated FIA_TOKEN when available (H8 final confirmation); include `api-support@fyers.in` and the `fyers/claude-installer` auto-update channel in the disclosure report."
   ]
 }
