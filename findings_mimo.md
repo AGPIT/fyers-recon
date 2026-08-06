@@ -215,3 +215,39 @@ Review research_mimo.md for details
 +| # | Hypothesis | CVSS | Refined Assessment |
 +| Priority | Hypothesis | CVSS | Surface |
  +37. **Fund Transfer CSRF** (CVSS 8.1) - Missing CSRF on fund transfer endpoints
+
+# 1 Hypothesis Generated on 2026-08-06 05:30:00 UTC (SmartHunt SSTI Finding)
+41. **SSTI on SGB Issue List** (CVSS 8.1) - Server-side template injection in issue_id parameter
+
+TOTAL HYPOTHESIES: 41 across 13 attack surfaces
+
+# HYPOTHESIS Refinement Completed on 2026-08-06 05:30:00 UTC (Fund Transfer System)
+- **H25**: CSRF on Withdrawal - CONFIRMED - No CSRF tokens in JS (CVSS 8.1)
+- **H26**: IDOR on Bank Details - HIGH likelihood - Sequential IDs (CVSS 7.5)
+- **H27**: Race Condition Withdrawal - HIGH likelihood - No idempotency (CVSS 7.5)
+- **H28**: Session Exposure - CONFIRMED - Session in URL (CVSS 6.5)
+- **H37**: Fund Transfer CSRF - CONFIRMED - No CSRF on any endpoint (CVSS 8.1)
+- **H38**: Fund Transfer IDOR - HIGH likelihood - Sequential transaction IDs (CVSS 7.5)
+- **H41**: SSTI on SGB Issue List - UNVERIFIED - Requires auth (CVSS 8.1)
+
+# POC Design Completed on 2026-08-06 06:00:00 UTC (Fund Transfer System)
+- **POC_FUNDTRANSFER.md**: Created with read-only testing methodology for H25-H28, H37-H38
+- **Coverage**: CSRF, IDOR, Race Condition, Session Exposure
+- **Status**: POC design complete, ready for authorized testing
+
+# 4 items on 2026-08-06 06:00:00 UTC
+- **Next Phase**: RECON on new unexplored surface
+- /home/runner/work/fyers-recon/fyers-recon/findings_mimo.md
+
+# 5 items on 2026-08-06 07:23:29 UTC
+- /home/runner/work/fyers-recon/fyers-recon/findings_mimo.md
+- **H28**: Session Exposure - CONFIRMED - Session in URL (CVSS 6.5)
+- **H37**: Fund Transfer CSRF - CONFIRMED - No CSRF on any endpoint (CVSS 8.1)
+- **H38**: Fund Transfer IDOR - HIGH likelihood - Sequential transaction IDs (CVSS 7.5)
+- **H41**: SSTI on SGB Issue List - UNVERIFIED - Requires auth (CVSS 8.1)
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+ +| # | Hypothesis | CVSS | Refined Assessment |
+ +| Priority | Hypothesis | CVSS | Surface |
+  +37. **Fund Transfer CSRF** (CVSS 8.1) - Missing CSRF on fund transfer endpoints

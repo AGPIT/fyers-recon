@@ -3,9 +3,10 @@
   "phase": "HYPOTHESIS",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Formalize CSRF hypotheses with evidence from JS analysis",
-    "Document session exposure in withdrawal flow",
-    "Analyze IDOR potential on bank account endpoints",
-    "Design read-only PoC for CSRF testing"
+    "Create POC_FUNDTRANSFER.md with read-only testing methodology",
+    "Document CSRF test cases for fund transfer endpoints",
+    "Design IDOR testing methodology for bank details",
+    "Prepare SSTI verification test for api-i1.fyers.in",
+    "Explore api-y1.fyers.in (RHEL test page - investigate further)"
   ]
 }
