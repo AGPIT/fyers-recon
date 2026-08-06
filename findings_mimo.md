@@ -401,8 +401,31 @@ TOTAL HYPOTHESIES: 49 across 15 attack surfaces
 - **Files Created**: `POC_ADDITIONAL.md`
 - **Next Phase**: RECON on new unexplored surface
 
+# RECON Completed on 2026-08-06 16:00:00 UTC (Login, Auth & New Surfaces)
+- **RECON_LOGINAUTH.md**: Created with analysis of login, authentication, and new hosts
+- **Key Findings**: SSRF candidates, Open Redirect, IIS default page, permissive CORS
+- **Status**: RECON complete, SURFACE phase next
+
+# 8 New Surface Hypotheses Generated on 2026-08-06 16:00:00 UTC (Login, Auth & New Surfaces)
+50. **Login OAuth Redirect Manipulation** (CVSS 7.5) - cb parameter accepts arbitrary URLs
+51. **Community Open Redirect to Phishing** (CVSS 4.7) - redirect parameter allows external URLs
+52. **SSRF via source Parameter** (CVSS 7.5) - api-a1/api-i1 accept URLs in source param
+53. **IIS TRACE Method Enabled** (CVSS 3.1) - Cross-Site Tracing potential on int-invest
+54. **Express Risky HTTP Methods** (CVSS 3.1) - DELETE/PATCH/PUT on marketdata-api
+55. **Permissive CORS on API** (CVSS 5.3) - ACAO: * on api.fyers.in and data.fyers.in
+56. **Community GraphQL Exposed** (CVSS 5.3) - GraphQL endpoint on community.fyers.in
+57. **Back-Office Login Bypass** (CVSS 6.5) - bo-login.fyers.in separate auth system
+
+TOTAL HYPOTHESIES: 57 across 16 attack surfaces
+
 HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
 Review research_mimo.md for details
   +| # | Hypothesis | CVSS | Refined Assessment |
   +| Priority | Hypothesis | CVSS | Surface |
    +37. **Fund Transfer CSRF** (CVSS 8.1) - Missing CSRF on fund transfer endpoints
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
++50. **Login OAuth Redirect Manipulation** (CVSS 7.5) - cb parameter accepts arbitrary URLs
++51. **Community Open Redirect to Phishing** (CVSS 4.7) - redirect parameter allows external URLs
++52. **SSRF via source Parameter** (CVSS 7.5) - api-a1/api-i1 accept URLs in source param

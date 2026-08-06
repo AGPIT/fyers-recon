@@ -3,10 +3,9 @@
   "phase": "SURFACE",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Analyze mtfddpi.fyers.in JavaScript for DigiLock integration",
-    "Test api-i1.fyers.in SSTI with authenticated session",
-    "Investigate debt.fyers.in API endpoints",
-    "Document open-account.fyers.in form handling",
-    "Formalize H43 (SSTI) with authenticated testing methodology"
+    "Analyze login.fyers.in OAuth flow and callback validation",
+    "Test SSRF on api-a1.fyers.in source parameter",
+    "Investigate community.fyers.in open redirect exploitation",
+    "Document int-invest.fyers.in IIS attack surface"
   ]
 }
