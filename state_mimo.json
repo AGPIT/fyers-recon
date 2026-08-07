@@ -3,9 +3,9 @@
   "phase": "RECON",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Document API management security",
-    "Investigate alerts.fyers.in notification system",
-    "Explore Infrastructure security",
-    "Complete remaining surface analysis"
+    "Execute read-only tests for H95-H101",
+    "Explore remaining surfaces (Widgets, Status)",
+    "Complete final priority ranking",
+    "Generate comprehensive report"
   ]
 }

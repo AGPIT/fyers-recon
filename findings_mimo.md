@@ -1195,30 +1195,89 @@ Review research_mimo.md for details
 | `POC_AUTH.md` | POC for H90-H94 |
 
 ## Next Steps
-1. Document API management security
-2. Investigate alerts.fyers.in notification system
-3. Explore Infrastructure security
-4. Complete remaining surface analysis
+1. Execute read-only tests for H95-H101
+2. Document responses and validate hypotheses
+3. Explore remaining surfaces (Widgets, Status)
+4. Complete final priority ranking
 
-# 15 items on 2026-08-07 09:15:52 UTC
-- /home/runner/work/fyers-recon/fyers-recon/research_mimo.md
-- 1. Analyze Auth flow for session fixation
-- 2. Document API management security
-- 3. Investigate alerts.fyers.in notification system
-- 4. Complete WebSocket SURFACE analysis
-- rw-r--r-- 1 runner runner   4364 Aug  7 09:14 /home/runner/work/fyers-recon/fyers-recon/HYPOTHESIS_AUTH.md
-- rw-r--r-- 1 runner runner   3559 Aug  7 09:14 /home/runner/work/fyers-recon/fyers-recon/POC_AUTH.md
-- rw-r--r-- 1 runner runner   2836 Aug  7 09:13 /home/runner/work/fyers-recon/fyers-recon/RECON_AUTH.md
-- rw-r--r-- 1 runner runner   2901 Aug  7 09:14 /home/runner/work/fyers-recon/fyers-recon/SURFACE_AUTH.md
-- rw-r--r-- 1 runner runner  82334 Aug  7 09:12 /home/runner/work/fyers-recon/fyers-recon/findings_deepseek.md
-- rw-r--r-- 1 runner runner  62194 Aug  7 09:15 /home/runner/work/fyers-recon/fyers-recon/findings_mimo.md
-- rw-r--r-- 1 runner runner 600000 Aug  7 09:12 /home/runner/work/fyers-recon/fyers-recon/research_deepseek.md
-- rw-r--r-- 1 runner runner 603391 Aug  7 09:15 /home/runner/work/fyers-recon/fyers-recon/research_mimo.md
-- rw-r--r-- 1 runner runner      0 Aug  7 09:12 /home/runner/work/fyers-recon/fyers-recon/run-log.md
-- rw-r--r-- 1 runner runner   3986 Aug  7 09:12 /home/runner/work/fyers-recon/fyers-recon/surface-map-new-hosts.md
+# Infrastructure & Smart Orders Analysis Completed on 2026-08-07 10:15:00 UTC
+
+## Files Created
+| File | Description |
+|------|-------------|
+| `RECON_INFRASTRUCTURE.md` | RECON for Infrastructure & Smart Orders |
+| `SURFACE_INFRASTRUCTURE.md` | SURFACE analysis for Infrastructure |
+| `HYPOTHESIS_INFRASTRUCTURE.md` | HYPOTHESIS for H95-H101 |
+| `POC_INFRASTRUCTURE.md` | POC for H95-H101 |
+
+## Key Findings
+
+### H95: Order Placement CSRF (CVSS 8.1)
+- **Status**: UNVERIFIED - Requires authenticated testing
+- **Evidence**: No CSRF tokens on order endpoints
+- **Risk**: Unauthorized trade placement
+
+### H96: GTT Order IDOR (CVSS 8.1)
+- **Status**: UNVERIFIED - Requires authenticated testing
+- **Evidence**: Sequential GTT IDs in JavaScript
+- **Risk**: Cross-account GTT order access
+
+### H97: Position Data Exfiltration via CORS (CVSS 8.1)
+- **Status**: CONFIRMED - ACAO: * with ACAC: true
+- **Evidence**: CORS headers allow cross-origin reads
+- **Risk**: Position and holdings data exfiltration
+
+### H100: Dev Environment Info Disclosure (CVSS 5.3)
+- **Status**: CONFIRMED - Default pages exposed
+- **Evidence**: nginx welcome on dev.fyers.in, Apache test on api-y1.fyers.in
+- **Risk**: Technology stack disclosure
+
+### H101: WebSocket Token Leakage (CVSS 6.5)
+- **Status**: CONFIRMED - Token in URL
+- **Evidence**: `wss://socket.fyers.in/login?token=...`
+- **Risk**: Token leakage via logs/browser history
+
+## CURRENT STATE SUMMARY (2026-08-07 10:15:00 UTC)
+
+### Research Progress
+- **Total Hypotheses**: 101 across 26 attack surfaces
+- **POCs Completed**: 16 surfaces (Fund Transfer, Verified P&L, API Connect, New Surfaces, Additional, Login/Auth, Trading, Webhook, MCP, EDIS, Signup, Account, Partners, WebSocket, Auth, Infrastructure)
+- **POCs Remaining**: 3 surfaces (Status, Widgets, API)
+
+### High-Value Findings
+1. **H82: CORS Misconfiguration Data Exfiltration** (CVSS 9.1) - CONFIRMED - ACAO: * with ACAC: true
+2. **H95: Order Placement CSRF** (CVSS 8.1) - No CSRF on order endpoints
+3. **H96: GTT Order IDOR** (CVSS 8.1) - Sequential GTT IDs
+4. **H97: Position Data Exfiltration via CORS** (CVSS 8.1) - CONFIRMED
+5. **H100: Dev Environment Info Disclosure** (CVSS 5.3) - CONFIRMED
+
+### Files Created
+| File | Description |
+|------|-------------|
+| `RECON_INFRASTRUCTURE.md` | RECON for Infrastructure & Smart Orders |
+| `SURFACE_INFRASTRUCTURE.md` | SURFACE analysis for Infrastructure |
+| `HYPOTHESIS_INFRASTRUCTURE.md` | HYPOTHESIS for H95-H101 |
+| `POC_INFRASTRUCTURE.md` | POC for H95-H101 |
+
+## Next Steps
+1. Execute read-only tests for H95-H101
+2. Explore remaining surfaces (Widgets, Status)
+3. Complete final priority ranking
+4. Generate comprehensive report
 
 HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
 Review research_mimo.md for details
- ### H76: Order Placement CSRF (CVSS 8.1)
- ### H77: EDIS Authorization Bypass (CVSS 7.5)
- ### H78: Profile Modification CSRF (CVSS 7.5)
+ ### H95: Order Placement CSRF (CVSS 8.1)
+ ### H96: GTT Order IDOR (CVSS 8.1)
+ ### H97: Position Data Exfiltration via CORS (CVSS 8.1)
+
+# 3 items on 2026-08-07 10:20:16 UTC
+- ### H76: Order Placement CSRF (CVSS 8.1)
+- ### H77: EDIS Authorization Bypass (CVSS 7.5)
+- ### H78: Profile Modification CSRF (CVSS 7.5)
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
++### H95: Order Placement CSRF (CVSS 8.1)
++### H96: GTT Order IDOR (CVSS 8.1)
++### H97: Position Data Exfiltration via CORS (CVSS 8.1)
