@@ -3,9 +3,10 @@
   "phase": "RECON",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Investigate Account management CSRF vulnerabilities",
     "Document Partners dashboard security",
     "Explore WebSocket EDIS data exposure",
-    "Analyze Auth flow for session fixation"
+    "Analyze Auth flow for session fixation",
+    "Document API management security",
+    "Explore WebSocket EDIS data exposure"
   ]
 }

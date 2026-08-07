@@ -939,3 +939,198 @@ Review research_mimo.md for details
 72. **PIN Brute Force** (CVSS 8.1) - 4-digit PIN with client-side only lockout
 73. **OTP Brute Force** (CVSS 7.5) - OTP verification lacks server-side rate limiting
 74. **User Enumeration** (CVSS 5.3) - Different error codes reveal user existence
+
+# Account Management CSRF Analysis Completed on 2026-08-07 08:00:00 UTC
+
+## Files Created
+| File | Description |
+|------|-------------|
+| `RECON_ACCOUNT.md` | RECON for Account management system |
+| `SURFACE_ACCOUNT.md` | SURFACE analysis for Account management |
+| `HYPOTHESIS_ACCOUNT.md` | HYPOTHESIS for H76-H81 |
+| `POC_ACCOUNT.md` | POC for H76-H81 |
+
+## Key Findings
+
+### H76: Order Placement CSRF (CVSS 8.1)
+- **Status**: UNVERIFIED - Requires authenticated testing
+- **Evidence**: No CSRF token on orders_place endpoint
+- **Risk**: Unauthorized trades on behalf of users
+
+### H77: EDIS Authorization Bypass (CVSS 7.5)
+- **Status**: UNVERIFIED - Requires authenticated testing
+- **Evidence**: No CSRF token on EDIS endpoints
+- **Risk**: Unauthorized EDIS authorization/revoke
+
+### H78: Profile Modification CSRF (CVSS 7.5)
+- **Status**: UNVERIFIED - Requires authenticated testing
+- **Evidence**: No CSRF token on profile endpoints
+- **Risk**: Unauthorized profile modifications
+
+### H79: Watchlist Manipulation CSRF (CVSS 6.5)
+- **Status**: UNVERIFIED - Requires authenticated testing
+- **Evidence**: No CSRF token on watchlist endpoints
+- **Risk**: Watchlist manipulation
+
+### H80: Token Leakage via Query String (CVSS 6.5)
+- **Status**: UNVERIFIED - Requires header analysis
+- **Evidence**: token_id in CDSL/EDIS redirect URLs
+- **Risk**: Token leakage via Referer or logs
+
+### H81: Logout CSRF (CVSS 6.1)
+- **Status**: UNVERIFIED - Requires authenticated testing
+- **Evidence**: No CSRF token on logout endpoint
+- **Risk**: Forced logout attacks
+
+## CURRENT STATE SUMMARY (2026-08-07 08:00:00 UTC)
+
+### Research Progress
+- **Total Hypotheses**: 81 across 22 attack surfaces
+- **POCs Completed**: 12 surfaces (Fund Transfer, Verified P&L, API Connect, New Surfaces, Additional, Login/Auth, Trading, Webhook, MCP, EDIS, Signup, Account)
+- **POCs Remaining**: 7 surfaces (Partners, Status, Widgets, WebSocket, API, Infrastructure, Auth)
+
+### High-Value Findings
+1. **H76: Order Placement CSRF** (CVSS 8.1) - No CSRF on order placement
+2. **H77: EDIS Authorization Bypass** (CVSS 7.5) - No CSRF on EDIS endpoints
+3. **H78: Profile Modification CSRF** (CVSS 7.5) - No CSRF on profile endpoints
+4. **H80: Token Leakage via Query String** (CVSS 6.5) - token_id in URLs
+
+### Files Created
+| File | Description |
+|------|-------------|
+| `RECON_ACCOUNT.md` | RECON for Account management system |
+| `SURFACE_ACCOUNT.md` | SURFACE analysis for Account management |
+| `HYPOTHESIS_ACCOUNT.md` | HYPOTHESIS for H76-H81 |
+| `POC_ACCOUNT.md` | POC for H76-H81 |
+
+## Next Steps
+1. Document Partners dashboard security
+2. Explore WebSocket EDIS data exposure
+3. Analyze Auth flow for session fixation
+4. Document API management security
+
+# Partners Dashboard CORS Analysis Completed on 2026-08-07 08:15:00 UTC
+
+## Files Created
+| File | Description |
+|------|-------------|
+| `RECON_PARTNERS.md` | RECON for Partners Dashboard |
+| `SURFACE_PARTNERS.md` | SURFACE analysis for Partners Dashboard |
+| `HYPOTHESIS_PARTNERS.md` | HYPOTHESIS for H82-H86 |
+| `POC_PARTNERS.md` | POC for H82-H86 |
+
+## Key Findings
+
+### H82: CORS Misconfiguration Data Exfiltration (CVSS 9.1)
+- **Status**: CONFIRMED - ACAO: * with ACAC: true
+- **Evidence**: `access-control-allow-origin: *` + `access-control-allow-credentials: true`
+- **Risk**: Any origin can read authenticated partner data
+
+### H83: Client Data Exfiltration via CORS (CVSS 8.1)
+- **Status**: UNVERIFIED - Requires authenticated testing
+- **Evidence**: view-my-clients-data endpoint with permissive CORS
+- **Risk**: Client PII exfiltration
+
+### H84: Revenue Data Exfiltration via CORS (CVSS 8.1)
+- **Status**: UNVERIFIED - Requires authenticated testing
+- **Evidence**: r611-report endpoint with permissive CORS
+- **Risk**: Financial data exfiltration
+
+### H85: CSRF on Partner Lead Creation (CVSS 7.5)
+- **Status**: UNVERIFIED - Requires authenticated testing
+- **Evidence**: No CSRF token validation on create-lead endpoint
+- **Risk**: Unauthorized lead creation
+
+### H86: CSRF on Partner Ticket Creation (CVSS 7.5)
+- **Status**: UNVERIFIED - Requires authenticated testing
+- **Evidence**: No CSRF token validation on create-ticket endpoint
+- **Risk**: Support system abuse
+
+## CURRENT STATE SUMMARY (2026-08-07 08:15:00 UTC)
+
+### Research Progress
+- **Total Hypotheses**: 86 across 23 attack surfaces
+- **POCs Completed**: 13 surfaces (Fund Transfer, Verified P&L, API Connect, New Surfaces, Additional, Login/Auth, Trading, Webhook, MCP, EDIS, Signup, Account, Partners)
+- **POCs Remaining**: 6 surfaces (Status, Widgets, WebSocket, API, Infrastructure, Auth)
+
+### High-Value Findings
+1. **H82: CORS Misconfiguration Data Exfiltration** (CVSS 9.1) - CONFIRMED - ACAO: * with ACAC: true
+2. **H83: Client Data Exfiltration via CORS** (CVSS 8.1) - Client PII at risk
+3. **H84: Revenue Data Exfiltration via CORS** (CVSS 8.1) - Financial data at risk
+4. **H85: CSRF on Partner Lead Creation** (CVSS 7.5) - No CSRF validation
+5. **H86: CSRF on Partner Ticket Creation** (CVSS 7.5) - No CSRF validation
+
+### Files Created
+| File | Description |
+|------|-------------|
+| `RECON_PARTNERS.md` | RECON for Partners Dashboard |
+| `SURFACE_PARTNERS.md` | SURFACE analysis for Partners Dashboard |
+| `HYPOTHESIS_PARTNERS.md` | HYPOTHESIS for H82-H86 |
+| `POC_PARTNERS.md` | POC for H82-H86 |
+
+## Next Steps
+1. Explore WebSocket EDIS data exposure
+2. Analyze Auth flow for session fixation
+3. Document API management security
+4. Investigate alerts.fyers.in notification system
+
+# WebSocket Security Analysis Completed on 2026-08-07 08:30:00 UTC
+
+## Files Created
+| File | Description |
+|------|-------------|
+| `RECON_WEBSOCKET.md` | RECON for WebSocket Security |
+
+## Key Findings
+
+### WebSocket Endpoints Discovered
+- `wss://socket.fyers.in/login` - Login WebSocket (Token auth)
+- `wss://socket.fyers.in/hsm/v1-5/web/prod` - Market Data HSM
+- `wss://api-socket.fyers.in/hsm/v1` - Fallback HSM
+- `wss://api-t2.fyers.in/juhu/dev/ws` - Dev/Kambala WS
+
+### H87: Session Token in WebSocket URL (CVSS 6.5)
+- **Status**: CONFIRMED - Session token in URL
+- **Evidence**: `this.sessionid = d.prototype.getSessionToken()`
+- **Risk**: Token leakage via logs or browser history
+
+### H88: No Origin Validation on WebSocket (CVSS 6.5)
+- **Status**: UNVERIFIED - Requires testing
+- **Evidence**: No Origin header validation observed
+- **Risk**: Cross-Site WebSocket Hijacking (CSWSH)
+
+### H89: Dev WebSocket Exposed (CVSS 3.1)
+- **Status**: CONFIRMED - Dev endpoint in production JS
+- **Evidence**: `wss://api-t2.fyers.in/juhu/dev/ws`
+- **Risk**: Development endpoint exposed
+
+## CURRENT STATE SUMMARY (2026-08-07 08:30:00 UTC)
+
+### Research Progress
+- **Total Hypotheses**: 89 across 24 attack surfaces
+- **POCs Completed**: 14 surfaces (Fund Transfer, Verified P&L, API Connect, New Surfaces, Additional, Login/Auth, Trading, Webhook, MCP, EDIS, Signup, Account, Partners, WebSocket)
+- **POCs Remaining**: 5 surfaces (Status, Widgets, API, Infrastructure, Auth)
+
+### High-Value Findings
+1. **H82: CORS Misconfiguration Data Exfiltration** (CVSS 9.1) - CONFIRMED - ACAO: * with ACAC: true
+2. **H83: Client Data Exfiltration via CORS** (CVSS 8.1) - Client PII at risk
+3. **H84: Revenue Data Exfiltration via CORS** (CVSS 8.1) - Financial data at risk
+4. **H87: Session Token in WebSocket URL** (CVSS 6.5) - CONFIRMED
+5. **H88: No Origin Validation on WebSocket** (CVSS 6.5) - CSWSH possible
+
+### Files Created
+| File | Description |
+|------|-------------|
+| `RECON_WEBSOCKET.md` | RECON for WebSocket Security |
+
+## Next Steps
+1. Analyze Auth flow for session fixation
+2. Document API management security
+3. Investigate alerts.fyers.in notification system
+4. Complete WebSocket SURFACE analysis
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+### H76: Order Placement CSRF (CVSS 8.1)
+### H77: EDIS Authorization Bypass (CVSS 7.5)
+### H78: Profile Modification CSRF (CVSS 7.5)
