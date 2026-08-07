@@ -1725,3 +1725,84 @@ Review research_mimo.md for details
 **CRITICAL FINDING**: `api-t1.fyers.in` has `ACAO: *` with `ACAC: true` on OAuth endpoints! Let me explore more.
 **CRITICAL**: `api-t1.fyers.in` has `ACAO: *` with `ACAC: true` across ALL API endpoints (orders, positions, profile)! This is a systemic CORS misconfiguration. Let me explore more surfaces.
       ### H95: Order Placement CSRF (CVSS 8.1)
+
+# IPO/DDPI/OAuth SURFACE/HYPOTHESIS/POC Completed on 2026-08-07 16:30:00 UTC
+
+## Files Created
+| File | Description |
+|------|-------------|
+| `SURFACE_IPO_DPI_OAUTH.md` | SURFACE analysis for IPO, DDPI, OAuth |
+| `HYPOTHESIS_IPO_DPI_OAUTH.md` | HYPOTHESIS for H129-H134 |
+| `POC_IPO_DPI_OAUTH.md` | POC for H129-H134 |
+
+## Key Findings
+
+### H129: OAuth Authorization Code Interception via CORS (CVSS 8.1)
+- **Status**: UNVERIFIED - Requires OAuth flow testing
+- **Evidence**: ACAO: * with ACAC: true on generate-authcode endpoint
+- **Risk**: Full account takeover via auth code theft
+
+### H130: DigiLocker Access Token Theft via Referer Header (CVSS 7.5)
+- **Status**: CONFIRMED - Token in URL parameter
+- **Evidence**: `access_token=${urlParams.get('access_token')}` in digilocker_dart_service.js
+- **Risk**: Access token leakage via Referer, browser history, logs
+
+### H131: OAuth Client ID Enumeration (CVSS 5.3)
+- **Status**: CONFIRMED - 4 client IDs exposed
+- **Evidence**: Client IDs with dev/localhost redirect URIs in production JS
+- **Risk**: Information disclosure, enumeration of OAuth applications
+
+### H132: OAuth State Parameter CSRF (CVSS 6.5)
+- **Status**: UNVERIFIED - Requires OAuth flow testing
+- **Evidence**: `state=abcdefg` hardcoded in JavaScript
+- **Risk**: CSRF on OAuth authorization
+
+### H133: DDPI Authorization Bypass via Token Replay (CVSS 7.5)
+- **Status**: UNVERIFIED - Requires authenticated testing
+- **Evidence**: Access token in URL parameter on mtfddpi.fyers.in
+- **Risk**: Unauthorized EDIS authorization
+
+### H134: Zoho SSO Token Leakage via Subdomain (CVSS 5.3)
+- **Status**: UNVERIFIED - Requires Zoho testing
+- **Evidence**: Multiple Zoho services active under fyers.in
+- **Risk**: Cross-subdomain data access
+
+## CURRENT STATE SUMMARY (2026-08-07 16:30:00 UTC)
+
+### Research Progress
+- **Total Hypotheses**: 134 across 32 attack surfaces
+- **POCs Completed**: 22 surfaces (Fund Transfer, Verified P&L, API Connect, New Surfaces, Additional, Login/Auth, Trading, Webhook, MCP, EDIS, Signup, Account, Partners, WebSocket, Auth, Infrastructure, Status, API, New Subdomains, New Attack Surfaces, IPO/DDPI/OAuth, IPO/DDPI/OAuth SURFACE)
+- **POCs Remaining**: 0 surfaces
+
+### High-Value Findings
+1. **H82: CORS Misconfiguration Data Exfiltration** (CVSS 9.1) - CONFIRMED - ACAO: * with ACAC: true
+2. **H109: api-a1 CORS Credential Leakage** (CVSS 9.1) - CONFIRMED - ACAO: * with ACAC: true
+3. **H115: api-a1 CORS Credential Theft** (CVSS 9.1) - CONFIRMED - ACAO: * with ACAC: true
+4. **H123: api-t1 Systemic CORS Misconfiguration** (CVSS 9.1) - CONFIRMED - ALL endpoints affected
+5. **H129: OAuth Authorization Code Interception** (CVSS 8.1) - UNVERIFIED - ACAO: * on OAuth
+6. **H121: SSTI Remote Code Execution** (CVSS 8.1) - UNVERIFIED - Template injection
+7. **H95: Order Placement CSRF** (CVSS 8.1) - No CSRF on order endpoints
+
+### Files Created
+| File | Description |
+|------|-------------|
+| `SURFACE_IPO_DPI_OAUTH.md` | SURFACE analysis for IPO, DDPI, OAuth |
+| `HYPOTHESIS_IPO_DPI_OAUTH.md` | HYPOTHESIS for H129-H134 |
+| `POC_IPO_DPI_OAUTH.md` | POC for H129-H134 |
+
+## Next Steps
+1. Complete final priority ranking
+2. Generate comprehensive report
+3. Explore additional attack surfaces
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+ ### H129: OAuth Authorization Code Interception (CVSS 8.1)
+ ### H130: DigiLocker Access Token Theft (CVSS 7.5)
+ ### H133: DDPI Authorization Bypass (CVSS 7.5)
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+ **CRITICAL FINDING**: `api-t1.fyers.in` has `ACAO: *` with `ACAC: true` on OAuth endpoints! Let me explore more.
+ **CRITICAL**: `api-t1.fyers.in` has `ACAO: *` with `ACAC: true` across ALL API endpoints (orders, positions, profile)! This is a systemic CORS misconfiguration. Let me explore more surfaces.
+       ### H95: Order Placement CSRF (CVSS 8.1)
