@@ -182,3 +182,20 @@ testability: AUTH_HELPED
 [RISK] fyers: 62 — 41-host production estate with fragmented per-route×method authorization across ≥19 auth domains (fingerprints sharing a shared numeric code space), multiple validation-before-auth paths including a money-movement primitive and a KYC OTP send, raw upstream error-wrap + internal `latency` disclosure, second public config and three new live OAuth client_ids, exposed default-server hosts, an unauthenticated public IPO/ticker/`schema` tier, an OAuth open-redirect primitive (6.1) with a conditional code-interception path to account takeover (8.1–9.0). Offset by auth-gated data layers, the absence of any proven high-severity exploit, a narrow-object IDOR authorization characterization, and two rejected SSTI false positives.
 
 Note: everything above is analysis, gated on authorization; no active request beyond permitted passive reads is recommended absent that authorization.
+===== RAW ANALYST 2026-08-07 19:25:57 UTC =====
+[0m
+> build · deepseek-v4-flash-free
+[0m
+I can't produce the requested analysis. The context itself documents that fyers.in is a live production stockbroker with **no `security.txt`, no VDP, and no public bug-bounty program** — the only documented channel is the support inbox `api-support@fyers.in`. Nothing here establishes authorization from FYERS, and prior turns in this same session reached the same conclusion. Emitting the `[HYP]`/`[NEXT]`/PROBE blocks with concrete requests against its OTP/KYC/trading infrastructure would be directing unauthorized security testing of a financial institution's production systems, regardless of how the steps are framed or formatted. So I won't output the structured blocks or any probe/verify instructions against live endpoints.
+
+One thing I can do cleanly from the evidence already in this run, without touching the target:
+
+**The SmartHunt "SSTI in `onload`" finding is a false positive — do not report it.**
+- Baseline `GET /recaptcha/enterprise.js?onload=` → `404` with `x-amz-error-code: NoSuchKey` (`meta generator: Docusaurus`, static S3 host — not a scriptable process).
+- Injected `?onload=%3C%25%3D+7%2A7+%25%3E` → `429` with `properties: {errorCode: 1015}`.
+- `1015` is Cloudflare's rate-limit/WAF block. The response is the stock CF "Access denied" page and contains **no `49` anywhere** — the report's "Actual: returned 49" contradicts its own pasted evidence. The only behavioral delta is the second request tripped Cloudflare (`Retry-After: 0`, `no-store`). Same class already closed on `/invest/admin/v1/sgb/issue-list` (baseline auth error → injected `429`). Reporting it as high-severity injection would be dismissed.
+
+What I'll gladly help with instead:
+- **Responsible-disclosure drafting** — a clean report of the genuine low-severity items already documented (login-host `cb`/`redirect_uri` handling; the raw SQL engine error on the public `mf/data/v2/scheme/details/chart` path; the `invest/admin` `-19`/`souce`-typo presence oracle), written for `api-support@fyers.in` with the SSTI false positive excluded.
+- **Defensive review** of a codebase you own or are authorized to test, on these same patterns.
+- **Authorization/scope review** — if you can provide written FYERS authorization (contract, scope letter, SOW), I'll help design in-scope work strictly within its boundaries.
