@@ -19,3 +19,4 @@
 - ipo.fyers.in, sgb.fyers.in: OAuth env maps
 - trade.fyers.in: datafeed bundles (demo Fernet token_id x15+)
 - api-a1-prod.fyers.in/myaccount/prod/verified-pnl/get-data: client-side-only JWT gating — top AUTH_HELPED lead
+- 2026-08-07 REJECTED XSS/SSTI @ api-connect-docs.fyers.in: static S3/Docusaurus; injected `onload` → CF 429/errorCode1015 rate-limit/WAF block, no `49` rendered — false positive reaffirmed (second host corroboration).
