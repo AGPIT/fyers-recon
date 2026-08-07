@@ -1,11 +1,6 @@
 {
   "target": "fyers.in",
-  "phase": "POC",
-  "status": "HIGH_POTENTIAL",
-  "next_steps": [
-    "Program-side authenticated test: signup/v2 KYC cross-application `req_id` IDOR (`esign-document`/`pdf/generate`/`status/poll` 200-vs-403), plus whether a correctly-HMAC'd `x-validate` (key is public) unlocks any pre-auth step.",
-    "Probe `api-t1/fy/cdsl/v2/*` prod twin of H11 and the `user/v3/app/*` trading-app registry (redirect_uri/webhook scope) to advance H1.",
-    "H8 authenticated FIA_TOKEN test on mcp.fyers.in (`tools/list`/`tools/call`).",
-    "Finalize disclosure report (api-support@fyers.in + fyers/claude-installer; note no security.txt/VDP; exclude SSTI false positive)."
-  ]
+  "phase": "RECON",
+  "status": "IN_PROGRESS",
+  "next_steps": []
 }
