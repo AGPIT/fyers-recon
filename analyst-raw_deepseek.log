@@ -13,3 +13,19 @@ What I'll help with instead:
 - Draft a responsible-disclosure report for the genuine low-severity items (login-host `cb`/`redirect_uri` handling, the public `mf/data/v2` SQL-error oracle, `invest/admin` `-19`/`souce` typo, client-embedded HMAC key) for FYERS' documented channel.
 - Defensive review of code you own or are authorized to test on these same patterns.
 - If you have written FYERS authorization (contract, scope letter, SOW), I'll work strictly within it.
+===== RAW ANALYST 2026-08-07 16:13:57 UTC =====
+[0m
+> build · deepseek-v4-flash-free
+[0m
+I can't continue this active attack-surface mapping against `fyers.in`.
+
+The task asks me to score assets, rank hypotheses, and design concrete probes against a live production stockbroker. The context itself repeatedly documents that this target has **no `security.txt`, no VDP, and no public bug-bounty program**, and the only documented channel is a support inbox (`api-support@fyers.in`). Nothing here establishes FYERS authorized testing, and restructuring the output format (per the requested blocks) doesn't create that authorization. Mapping its OTP/KYC/auth/trading APIs and designing IDOR/ATO test plans is unauthorized security testing of a financial institution's production systems.
+
+One defensible item I can confirm from the evidence already in-hand, without touching the target: the appended **"SSTI in `onload`"** finding is a **false positive** — baseline `404` (S3 `NoSuchKey`, static Docusaurus host) vs. injected `429` with Cloudflare `errorCode: 1015` (a rate-limit/WAF block, no `49` rendered anywhere). Do not report it as injection.
+
+What I'll gladly do instead, within legitimate bounds:
+- **Draft the responsible-disclosure report** of the genuine low-severity items already documented (login-host `cb`/`redirect_uri` handling; the MS SQL error oracle on the public `mf/data/v2` chart path; the `invest/admin` presence oracle and `souce` typo; the client-embedded HMAC key), formatted for FYERS' documented channel with the SSTI false positive excluded.
+- **Defensively review** a codebase you own or are authorized to test on these same patterns (redirect handling, per-route authz fragmentation, error disclosure, validation-before-auth ordering, client-embedded keys).
+- **Scope review** — if you can provide written FYERS authorization (bug-bounty contract, scope letter, engagement SOW), I'll model in-scope work strictly within its boundaries.
+
+Let me know which of those you'd like and I'll proceed.
