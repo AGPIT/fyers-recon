@@ -1,10 +1,12 @@
 {
   "target": "fyers.in",
-  "phase": "RECON",
+  "phase": "SURFACE",
   "status": "IN_PROGRESS",
   "next_steps": [
+    "Complete SURFACE analysis for API Management",
+    "Generate HYPOTHESIS for API endpoints",
+    "Design POC for high-value findings",
     "Complete final priority ranking",
-    "Generate comprehensive report",
-    "Document API management security"
+    "Generate comprehensive report"
   ]
 }
