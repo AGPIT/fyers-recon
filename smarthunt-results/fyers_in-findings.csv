@@ -4,12 +4,20 @@ critical,accounts.zoho.in,Possible SSH private key exposed,https://accounts.zoho
 critical,accounts.zoho.in,Possible SSH private key exposed,https://accounts.zoho.in/signin?hide_signup=true&stop_mredirect=true&portal_id=60008074919&hide_secure=true&hide_gsignup=true&servicename=ZohoPulse&serviceurl=https%3A%2F%2Fconnect.fyers.in%2Fmyfeed/id_rsa,builtin
 critical,accounts.zoho.in,Possible SSH private key exposed,https://accounts.zoho.in/signin?servicename=null&serviceurl=https%3A%2F%2Fprojects.zoho.in/id_rsa,builtin
 critical,accounts.zoho.in,Possible SSH private key exposed,https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/id_rsa,builtin
-critical,api-i1.fyers.in,Server-side template injection in 'issue_id','issue_id' containing ${7*7} returns 49.,owasp
+critical,api-dashboard.fyers.in,Server-side template injection in 'theme','theme' containing {{7*7}} returns 49.,owasp
+critical,api-connect-docs.fyers.in,Server-side template injection in 'onload','onload' containing <%= 7*7 %> returns 49.,owasp
+critical,fundtransfer.fyers.in,Server-side template injection in 'onload','onload' containing {{7*7}} returns 49.,owasp
+critical,marketsmith.fyers.in,Server-side template injection in 'theme','theme' containing {{7*7}} returns 49.,owasp
+critical,savedcharts.fyers.in,Server-side template injection in 'theme','theme' containing <%= 7*7 %> returns 49.,owasp
+high,fyers.in,Exposed .env file,https://fyers.in/web/.env.local,builtin
+high,fyers.in,Exposed .env file,https://fyers.in/web/.env.production,builtin
+high,fyers.in,Adminer database console exposed,https://fyers.in/web/adminer.php,builtin
+high,fyers.in,Spring Actuator env exposed,https://fyers.in/web/actuator/env,builtin
 high,accounts.zoho.in,Exposed .git repository,https://accounts.zoho.in/signin?servicename=ZohoAssist&serviceurl=https%3A%2F%2Fassist.fyers.in%3A443%2Fapp/.git/HEAD,builtin
 high,accounts.zoho.in,Exposed .git repository,https://accounts.zoho.in/signin?servicename=ZohoAssist&serviceurl=https%3A%2F%2Fassist.fyers.in%3A443%2Fapp/.git/config,builtin
 high,accounts.zoho.in,Exposed .env file,https://accounts.zoho.in/signin?servicename=ZohoAssist&serviceurl=https%3A%2F%2Fassist.fyers.in%3A443%2Fapp/.env,builtin
-high,accounts.zoho.in,Exposed .env file,https://accounts.zoho.in/signin?servicename=ZohoAssist&serviceurl=https%3A%2F%2Fassist.fyers.in%3A443%2Fapp/.env.production,builtin
 high,accounts.zoho.in,Exposed .env file,https://accounts.zoho.in/signin?servicename=ZohoAssist&serviceurl=https%3A%2F%2Fassist.fyers.in%3A443%2Fapp/.env.local,builtin
+high,accounts.zoho.in,Exposed .env file,https://accounts.zoho.in/signin?servicename=ZohoAssist&serviceurl=https%3A%2F%2Fassist.fyers.in%3A443%2Fapp/.env.production,builtin
 high,accounts.zoho.in,Adminer database console exposed,https://accounts.zoho.in/signin?servicename=ZohoAssist&serviceurl=https%3A%2F%2Fassist.fyers.in%3A443%2Fapp/adminer.php,builtin
 high,accounts.zoho.in,Spring Actuator env exposed,https://accounts.zoho.in/signin?servicename=ZohoAssist&serviceurl=https%3A%2F%2Fassist.fyers.in%3A443%2Fapp/actuator/env,builtin
 high,accounts.zoho.in,Exposed .htpasswd,https://accounts.zoho.in/signin?servicename=ZohoAssist&serviceurl=https%3A%2F%2Fassist.fyers.in%3A443%2Fapp/.htpasswd,builtin
@@ -21,23 +29,22 @@ high,accounts.zoho.in,Exposed .env file,https://accounts.zoho.in/signin?serviceu
 high,accounts.zoho.in,Adminer database console exposed,https://accounts.zoho.in/signin?serviceurl=https://cliq.fyers.in&servicename=ZohoChat&zsrc=fromproduct/adminer.php,builtin
 high,accounts.zoho.in,Spring Actuator env exposed,https://accounts.zoho.in/signin?serviceurl=https://cliq.fyers.in&servicename=ZohoChat&zsrc=fromproduct/actuator/env,builtin
 high,accounts.zoho.in,Exposed .htpasswd,https://accounts.zoho.in/signin?serviceurl=https://cliq.fyers.in&servicename=ZohoChat&zsrc=fromproduct/.htpasswd,builtin
-high,fyers.in,Exposed .env file,https://fyers.in/community/.env.local,builtin
 high,fyers.in,Exposed .env file,https://fyers.in/community/.env.production,builtin
+high,fyers.in,Exposed .env file,https://fyers.in/community/.env.local,builtin
 high,fyers.in,Adminer database console exposed,https://fyers.in/community/adminer.php,builtin
 high,fyers.in,Spring Actuator env exposed,https://fyers.in/community/actuator/env,builtin
 high,accounts.zoho.in,Exposed .git repository,https://accounts.zoho.in/signin?hide_signup=true&stop_mredirect=true&portal_id=60008074919&hide_secure=true&hide_gsignup=true&servicename=ZohoPulse&serviceurl=https%3A%2F%2Fconnect.fyers.in%2Fmyfeed/.git/HEAD,builtin
 high,accounts.zoho.in,Exposed .env file,https://accounts.zoho.in/signin?hide_signup=true&stop_mredirect=true&portal_id=60008074919&hide_secure=true&hide_gsignup=true&servicename=ZohoPulse&serviceurl=https%3A%2F%2Fconnect.fyers.in%2Fmyfeed/.env,builtin
 high,accounts.zoho.in,Exposed .git repository,https://accounts.zoho.in/signin?hide_signup=true&stop_mredirect=true&portal_id=60008074919&hide_secure=true&hide_gsignup=true&servicename=ZohoPulse&serviceurl=https%3A%2F%2Fconnect.fyers.in%2Fmyfeed/.git/config,builtin
-high,accounts.zoho.in,Exposed .env file,https://accounts.zoho.in/signin?hide_signup=true&stop_mredirect=true&portal_id=60008074919&hide_secure=true&hide_gsignup=true&servicename=ZohoPulse&serviceurl=https%3A%2F%2Fconnect.fyers.in%2Fmyfeed/.env.local,builtin
 high,accounts.zoho.in,Exposed .env file,https://accounts.zoho.in/signin?hide_signup=true&stop_mredirect=true&portal_id=60008074919&hide_secure=true&hide_gsignup=true&servicename=ZohoPulse&serviceurl=https%3A%2F%2Fconnect.fyers.in%2Fmyfeed/.env.production,builtin
+high,accounts.zoho.in,Exposed .env file,https://accounts.zoho.in/signin?hide_signup=true&stop_mredirect=true&portal_id=60008074919&hide_secure=true&hide_gsignup=true&servicename=ZohoPulse&serviceurl=https%3A%2F%2Fconnect.fyers.in%2Fmyfeed/.env.local,builtin
 high,accounts.zoho.in,Adminer database console exposed,https://accounts.zoho.in/signin?hide_signup=true&stop_mredirect=true&portal_id=60008074919&hide_secure=true&hide_gsignup=true&servicename=ZohoPulse&serviceurl=https%3A%2F%2Fconnect.fyers.in%2Fmyfeed/adminer.php,builtin
 high,accounts.zoho.in,Spring Actuator env exposed,https://accounts.zoho.in/signin?hide_signup=true&stop_mredirect=true&portal_id=60008074919&hide_secure=true&hide_gsignup=true&servicename=ZohoPulse&serviceurl=https%3A%2F%2Fconnect.fyers.in%2Fmyfeed/actuator/env,builtin
 high,accounts.zoho.in,Exposed .htpasswd,https://accounts.zoho.in/signin?hide_signup=true&stop_mredirect=true&portal_id=60008074919&hide_secure=true&hide_gsignup=true&servicename=ZohoPulse&serviceurl=https%3A%2F%2Fconnect.fyers.in%2Fmyfeed/.htpasswd,builtin
-high,fyers.in,Spring Actuator env exposed,https://fyers.in/web/portfolio/holdings?holdingType=pledge&holdingSubTab=pledgeable/actuator/env,builtin
 high,accounts.zoho.in,Exposed .git repository,https://accounts.zoho.in/signin?servicename=null&serviceurl=https%3A%2F%2Fprojects.zoho.in/.git/HEAD,builtin
-high,accounts.zoho.in,Exposed .env file,https://accounts.zoho.in/signin?servicename=null&serviceurl=https%3A%2F%2Fprojects.zoho.in/.env,builtin
-high,accounts.zoho.in,Exposed .env file,https://accounts.zoho.in/signin?servicename=null&serviceurl=https%3A%2F%2Fprojects.zoho.in/.env.local,builtin
 high,accounts.zoho.in,Exposed .git repository,https://accounts.zoho.in/signin?servicename=null&serviceurl=https%3A%2F%2Fprojects.zoho.in/.git/config,builtin
+high,accounts.zoho.in,Exposed .env file,https://accounts.zoho.in/signin?servicename=null&serviceurl=https%3A%2F%2Fprojects.zoho.in/.env.local,builtin
+high,accounts.zoho.in,Exposed .env file,https://accounts.zoho.in/signin?servicename=null&serviceurl=https%3A%2F%2Fprojects.zoho.in/.env,builtin
 high,accounts.zoho.in,Exposed .env file,https://accounts.zoho.in/signin?servicename=null&serviceurl=https%3A%2F%2Fprojects.zoho.in/.env.production,builtin
 high,accounts.zoho.in,Adminer database console exposed,https://accounts.zoho.in/signin?servicename=null&serviceurl=https%3A%2F%2Fprojects.zoho.in/adminer.php,builtin
 high,accounts.zoho.in,Spring Actuator env exposed,https://accounts.zoho.in/signin?servicename=null&serviceurl=https%3A%2F%2Fprojects.zoho.in/actuator/env,builtin
@@ -50,6 +57,16 @@ high,accounts.zoho.in,Exposed .env file,https://accounts.zoho.in/signin?servicen
 high,accounts.zoho.in,Adminer database console exposed,https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/adminer.php,builtin
 high,accounts.zoho.in,Spring Actuator env exposed,https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/actuator/env,builtin
 high,accounts.zoho.in,Exposed .htpasswd,https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/.htpasswd,builtin
+medium,fyers.in,Secret in JS: Generic Password Assignment,ResetPassword  (https://app.t-assets.net/neo/4.148.1-17214/assets/client.entry-bTV4nJr0.js),jsrecon
+medium,fyers.in,Secret in JS: Generic Password Assignment,default::forgot-password  (https://app.t-assets.net/neo/4.148.1-17214/assets/client.entry-bTV4nJr0.js),jsrecon
+medium,fyers.in,Secret in JS: Generic Password Assignment,default::reset-password  (https://app.t-assets.net/neo/4.148.1-17214/assets/client.entry-bTV4nJr0.js),jsrecon
+medium,fyers.in,Possible backup file exposed,https://fyers.in/web/backup.zip,builtin
+medium,fyers.in,Possible backup file exposed,https://fyers.in/web/backup.tar.gz,builtin
+medium,fyers.in,Possible backup file exposed,https://fyers.in/web/backup.sql,builtin
+medium,fyers.in,Apache server-status exposed,https://fyers.in/web/server-status,builtin
+medium,fyers.in,phpMyAdmin exposed,https://fyers.in/web/phpmyadmin,builtin
+medium,fyers.in,Spring Actuator exposed,https://fyers.in/web/actuator/health,builtin
+medium,fyers.in,Spring Actuator exposed,https://fyers.in/web/actuator,builtin
 medium,accounts.zoho.in,Possible backup file exposed,https://accounts.zoho.in/signin?servicename=ZohoAssist&serviceurl=https%3A%2F%2Fassist.fyers.in%3A443%2Fapp/backup.zip,builtin
 medium,accounts.zoho.in,Possible backup file exposed,https://accounts.zoho.in/signin?servicename=ZohoAssist&serviceurl=https%3A%2F%2Fassist.fyers.in%3A443%2Fapp/backup.tar.gz,builtin
 medium,accounts.zoho.in,Possible backup file exposed,https://accounts.zoho.in/signin?servicename=ZohoAssist&serviceurl=https%3A%2F%2Fassist.fyers.in%3A443%2Fapp/backup.sql,builtin
@@ -67,25 +84,23 @@ medium,accounts.zoho.in,Spring Actuator exposed,https://accounts.zoho.in/signin?
 medium,accounts.zoho.in,Spring Actuator exposed,https://accounts.zoho.in/signin?serviceurl=https://cliq.fyers.in&servicename=ZohoChat&zsrc=fromproduct/actuator/health,builtin
 medium,accounts.zoho.in,phpinfo() exposed,https://accounts.zoho.in/signin?serviceurl=https://cliq.fyers.in&servicename=ZohoChat&zsrc=fromproduct/phpinfo.php,builtin
 medium,fyers.in,Possible backup file exposed,https://fyers.in/community/backup.zip,builtin
-medium,fyers.in,Possible backup file exposed,https://fyers.in/community/backup.sql,builtin
 medium,fyers.in,Possible backup file exposed,https://fyers.in/community/backup.tar.gz,builtin
+medium,fyers.in,Possible backup file exposed,https://fyers.in/community/backup.sql,builtin
 medium,fyers.in,phpMyAdmin exposed,https://fyers.in/community/phpmyadmin,builtin
 medium,fyers.in,Apache server-status exposed,https://fyers.in/community/server-status,builtin
 medium,fyers.in,Spring Actuator exposed,https://fyers.in/community/actuator,builtin
 medium,fyers.in,Spring Actuator exposed,https://fyers.in/community/actuator/health,builtin
+medium,accounts.zoho.in,Possible backup file exposed,https://accounts.zoho.in/signin?hide_signup=true&stop_mredirect=true&portal_id=60008074919&hide_secure=true&hide_gsignup=true&servicename=ZohoPulse&serviceurl=https%3A%2F%2Fconnect.fyers.in%2Fmyfeed/backup.tar.gz,builtin
 medium,accounts.zoho.in,Possible backup file exposed,https://accounts.zoho.in/signin?hide_signup=true&stop_mredirect=true&portal_id=60008074919&hide_secure=true&hide_gsignup=true&servicename=ZohoPulse&serviceurl=https%3A%2F%2Fconnect.fyers.in%2Fmyfeed/backup.zip,builtin
 medium,accounts.zoho.in,Possible backup file exposed,https://accounts.zoho.in/signin?hide_signup=true&stop_mredirect=true&portal_id=60008074919&hide_secure=true&hide_gsignup=true&servicename=ZohoPulse&serviceurl=https%3A%2F%2Fconnect.fyers.in%2Fmyfeed/backup.sql,builtin
-medium,accounts.zoho.in,Possible backup file exposed,https://accounts.zoho.in/signin?hide_signup=true&stop_mredirect=true&portal_id=60008074919&hide_secure=true&hide_gsignup=true&servicename=ZohoPulse&serviceurl=https%3A%2F%2Fconnect.fyers.in%2Fmyfeed/backup.tar.gz,builtin
 medium,accounts.zoho.in,phpMyAdmin exposed,https://accounts.zoho.in/signin?hide_signup=true&stop_mredirect=true&portal_id=60008074919&hide_secure=true&hide_gsignup=true&servicename=ZohoPulse&serviceurl=https%3A%2F%2Fconnect.fyers.in%2Fmyfeed/phpmyadmin,builtin
 medium,accounts.zoho.in,Apache server-status exposed,https://accounts.zoho.in/signin?hide_signup=true&stop_mredirect=true&portal_id=60008074919&hide_secure=true&hide_gsignup=true&servicename=ZohoPulse&serviceurl=https%3A%2F%2Fconnect.fyers.in%2Fmyfeed/server-status,builtin
 medium,accounts.zoho.in,Spring Actuator exposed,https://accounts.zoho.in/signin?hide_signup=true&stop_mredirect=true&portal_id=60008074919&hide_secure=true&hide_gsignup=true&servicename=ZohoPulse&serviceurl=https%3A%2F%2Fconnect.fyers.in%2Fmyfeed/actuator,builtin
 medium,accounts.zoho.in,Spring Actuator exposed,https://accounts.zoho.in/signin?hide_signup=true&stop_mredirect=true&portal_id=60008074919&hide_secure=true&hide_gsignup=true&servicename=ZohoPulse&serviceurl=https%3A%2F%2Fconnect.fyers.in%2Fmyfeed/actuator/health,builtin
 medium,accounts.zoho.in,phpinfo() exposed,https://accounts.zoho.in/signin?hide_signup=true&stop_mredirect=true&portal_id=60008074919&hide_secure=true&hide_gsignup=true&servicename=ZohoPulse&serviceurl=https%3A%2F%2Fconnect.fyers.in%2Fmyfeed/phpinfo.php,builtin
-medium,fyers.in,Spring Actuator exposed,https://fyers.in/web/portfolio/holdings?holdingType=pledge&holdingSubTab=pledgeable/actuator/health,builtin
-medium,fyers.in,Spring Actuator exposed,https://fyers.in/web/portfolio/holdings?holdingType=pledge&holdingSubTab=pledgeable/actuator,builtin
 medium,accounts.zoho.in,Possible backup file exposed,https://accounts.zoho.in/signin?servicename=null&serviceurl=https%3A%2F%2Fprojects.zoho.in/backup.zip,builtin
-medium,accounts.zoho.in,Possible backup file exposed,https://accounts.zoho.in/signin?servicename=null&serviceurl=https%3A%2F%2Fprojects.zoho.in/backup.tar.gz,builtin
 medium,accounts.zoho.in,Possible backup file exposed,https://accounts.zoho.in/signin?servicename=null&serviceurl=https%3A%2F%2Fprojects.zoho.in/backup.sql,builtin
+medium,accounts.zoho.in,Possible backup file exposed,https://accounts.zoho.in/signin?servicename=null&serviceurl=https%3A%2F%2Fprojects.zoho.in/backup.tar.gz,builtin
 medium,accounts.zoho.in,phpMyAdmin exposed,https://accounts.zoho.in/signin?servicename=null&serviceurl=https%3A%2F%2Fprojects.zoho.in/phpmyadmin,builtin
 medium,accounts.zoho.in,Apache server-status exposed,https://accounts.zoho.in/signin?servicename=null&serviceurl=https%3A%2F%2Fprojects.zoho.in/server-status,builtin
 medium,accounts.zoho.in,Spring Actuator exposed,https://accounts.zoho.in/signin?servicename=null&serviceurl=https%3A%2F%2Fprojects.zoho.in/actuator,builtin
@@ -99,27 +114,31 @@ medium,accounts.zoho.in,Apache server-status exposed,https://accounts.zoho.in/si
 medium,accounts.zoho.in,Spring Actuator exposed,https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/actuator,builtin
 medium,accounts.zoho.in,Spring Actuator exposed,https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/actuator/health,builtin
 medium,accounts.zoho.in,phpinfo() exposed,https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/phpinfo.php,builtin
+low,fyers.in,Secret in JS: Internal Hostname,http://localhost:8083  (https://app.digio.in/sdk/v11/digio.js),jsrecon
+low,fyers.in,Secret in JS: Internal Hostname,http://localhost  (https://app.t-assets.net/neo/4.148.1-17214/assets/client.entry-bTV4nJr0.js),jsrecon
+low,fyers.in,Secret in JS: Internal Hostname,http://localhost:8082  (https://app.digio.in/sdk/v9/digio.js),jsrecon
 low,algofox.fyers.in,Missing security headers,Content-Security-Policy,builtin
 low,alerts.fyers.in,Missing security headers,Content-Security-Policy,builtin
 low,api-connect-docs.fyers.in,Missing security headers,Content-Security-Policy,builtin
 low,api-dashboard.fyers.in,Missing security headers,Content-Security-Policy,builtin
 low,api-docs.fyers.in,Missing security headers,Content-Security-Policy,builtin
+low,api-t1-cdn.fyers.in,Missing security headers,Content-Security-Policy,builtin
 low,api-t1.fyers.in,Missing security headers,Content-Security-Policy,builtin
+low,api.fyers.in,Missing security headers,"Content-Security-Policy, Strict-Transport-Security, X-Frame-Options, X-Content-Type-Options, Referrer-Policy",builtin
 low,app.fyers.in,Missing security headers,Content-Security-Policy,builtin
 low,assets.fyers.in,Missing security headers,Content-Security-Policy,builtin
-low,api.fyers.in,Missing security headers,"Content-Security-Policy, Strict-Transport-Security, X-Frame-Options, X-Content-Type-Options, Referrer-Policy",builtin
 low,bo-login.fyers.in,Missing security headers,Content-Security-Policy,builtin
 low,cdn.fyers.in,Missing security headers,Content-Security-Policy,builtin
+low,assist.fyers.in,Missing security headers,Referrer-Policy,builtin
 low,charts.fyers.in,Missing security headers,Content-Security-Policy,builtin
 low,clib.fyers.in,Missing security headers,Content-Security-Policy,builtin
-low,assist.fyers.in,Missing security headers,Referrer-Policy,builtin
 low,cliq.fyers.in,Missing security headers,Referrer-Policy,builtin
 low,community.fyers.in,Missing security headers,Content-Security-Policy,builtin
 low,connect.fyers.in,Missing security headers,Referrer-Policy,builtin
 low,data.fyers.in,Missing security headers,Content-Security-Policy,builtin
 low,debt.fyers.in,Missing security headers,Content-Security-Policy,builtin
-low,direct.fyers.in,Missing security headers,Content-Security-Policy,builtin
 low,dev.fyers.in,Missing security headers,Content-Security-Policy,builtin
+low,direct.fyers.in,Missing security headers,Content-Security-Policy,builtin
 low,fiagpt.fyers.in,Missing security headers,X-Frame-Options,builtin
 low,forms.fyers.in,Missing security headers,"X-Frame-Options, Referrer-Policy",builtin
 low,fundtransfer.fyers.in,Missing security headers,Content-Security-Policy,builtin
@@ -130,8 +149,8 @@ low,int-invest.fyers.in,Missing security headers,"Content-Security-Policy, Stric
 low,ipo.fyers.in,Missing security headers,Content-Security-Policy,builtin
 low,journal.fyers.in,Missing security headers,Content-Security-Policy,builtin
 low,learn.fyers.in,Missing security headers,Content-Security-Policy,builtin
-low,mail.fyers.in,Missing security headers,Content-Security-Policy,builtin
 low,login.fyers.in,Missing security headers,Content-Security-Policy,builtin
+low,mail.fyers.in,Missing security headers,Content-Security-Policy,builtin
 low,marketdata-api-instaoptions.fyers.in,Missing security headers,"Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, Referrer-Policy",builtin
 low,marketsmith.fyers.in,Missing security headers,"Content-Security-Policy, X-Frame-Options, Referrer-Policy",builtin
 low,meeting.fyers.in,Missing security headers,Referrer-Policy,builtin
@@ -160,19 +179,14 @@ low,accounts.zoho.in,Exposed .DS_Store,https://accounts.zoho.in/signin?serviceur
 low,accounts.zoho.in,Exposed .DS_Store,https://accounts.zoho.in/signin?hide_signup=true&stop_mredirect=true&portal_id=60008074919&hide_secure=true&hide_gsignup=true&servicename=ZohoPulse&serviceurl=https%3A%2F%2Fconnect.fyers.in%2Fmyfeed/.DS_Store,builtin
 low,accounts.zoho.in,Exposed .DS_Store,https://accounts.zoho.in/signin?servicename=null&serviceurl=https%3A%2F%2Fprojects.zoho.in/.DS_Store,builtin
 low,accounts.zoho.in,Exposed .DS_Store,https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/.DS_Store,builtin
-low,community.fyers.in,Open redirect via 'redirect',Location: https://fyers.in/community/?auto_login=1&redirect=https://smarthunt-probe.invalid/,owasp
-low,community.fyers.in,Open redirect via 'redirect',Location: https://fyers.in/community/auth/login?redirect=https://smarthunt-probe.invalid/,owasp
-low,community.fyers.in,Open redirect via 'redirect',Location: https://fyers.in/community/auth/signup?redirect=https://smarthunt-probe.invalid/,owasp
-low,community.fyers.in,Open redirect via 'redirect',Location: https://fyers.in/community/forgot?redirect=https://smarthunt-probe.invalid/,owasp
-low,community.fyers.in,Open redirect via 'redirect',Location: https://fyers.in/community/login?redirect=https://smarthunt-probe.invalid/,owasp
 low,fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
-low,myapi.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
+low,myapi.fyers.in,Third-party script without Subresource Integrity,https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js,owasp
 low,api-connect-docs.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
-low,api-dashboard.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
-low,fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
-low,assets.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,api-t1.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
+low,assets.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
+low,fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
+low,api-t1-cdn.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,bo-login.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,cdn.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,charts.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
@@ -180,48 +194,48 @@ low,clib.fyers.in,Third-party script without Subresource Integrity,https://perfo
 low,fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,data.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,debt.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
-low,fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,dev.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
+low,fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,fundtransfer.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
+low,accounts.zoho.in,Third-party script without Subresource Integrity,https://static.zohocdn.com/iam/v2/components/tp_pkg/jquery-3.7.1.min.2c872dbe60f4ba70fb85356113d8b35e.js,owasp
 low,insights.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
+low,accounts.zoho.in,Third-party script without Subresource Integrity,https://static.zohocdn.com/iam/v2/components/tp_pkg/jquery-3.7.1.min.2c872dbe60f4ba70fb85356113d8b35e.js,owasp
 low,instaoptions.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,accounts.zoho.in,Third-party script without Subresource Integrity,https://static.zohocdn.com/iam/v2/components/tp_pkg/jquery-3.7.1.min.2c872dbe60f4ba70fb85356113d8b35e.js,owasp
 low,ipo.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
-low,journal.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,learn.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
-low,mail.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
+low,journal.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,login.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
-low,accounts.zoho.in,Third-party script without Subresource Integrity,https://static.zohocdn.com/iam/v2/components/tp_pkg/jquery-3.7.1.min.2c872dbe60f4ba70fb85356113d8b35e.js,owasp
 low,marketsmith.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
+low,mail.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,myapi.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,ofs.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
-low,open-account.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
-low,partners.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
+low,int-invest.fyers.in,Risky HTTP methods enabled: TRACE,"Allow: OPTIONS, TRACE, GET, HEAD, POST",owasp
 low,partners.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,people.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
-low,int-invest.fyers.in,Risky HTTP methods enabled: TRACE,"Allow: OPTIONS, TRACE, GET, HEAD, POST",owasp
-low,fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
+low,accounts.zoho.in,Third-party script without Subresource Integrity,https://static.zohocdn.com/iam/v2/components/tp_pkg/jquery-3.7.1.min.2c872dbe60f4ba70fb85356113d8b35e.js,owasp
+low,partners.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,public-docs.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,public.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
+low,open-account.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
+low,fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,marketdata-api-instaoptions.fyers.in,"Risky HTTP methods enabled: DELETE, PATCH, PUT","Allow: GET,HEAD,PUT,PATCH,POST,DELETE",owasp
-low,accounts.zoho.in,Third-party script without Subresource Integrity,https://static.zohocdn.com/iam/v2/components/tp_pkg/jquery-3.7.1.min.2c872dbe60f4ba70fb85356113d8b35e.js,owasp
 low,savedcharts.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
-low,accounts.zoho.in,Third-party script without Subresource Integrity,https://static.zohocdn.com/iam/v2/components/tp_pkg/jquery-3.7.1.min.2c872dbe60f4ba70fb85356113d8b35e.js,owasp
-low,signup.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,socket.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
+low,signup.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,support.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,supportdesk.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,trade.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,verifiedpnldocs.fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
-low,fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,status.fyers.in,Third-party script without Subresource Integrity,https://dka575ofm4ao0.cloudfront.net/assets/jquery-3.5.1.min-729e416557a365062a8a20f0562f18aa171da57298005d392312670c706c68de.js,owasp
 low,accounts.zoho.in,Third-party script without Subresource Integrity,https://static.zohocdn.com/iam/v2/components/tp_pkg/jquery-3.7.1.min.2c872dbe60f4ba70fb85356113d8b35e.js,owasp
+low,fyers.in,Third-party script without Subresource Integrity,https://performance.radar.cloudflare.com/beacon.js,owasp
 low,accounts.zoho.in,Third-party script without Subresource Integrity,https://static.zohocdn.com/iam/v2/components/tp_pkg/jquery-3.7.1.min.2c872dbe60f4ba70fb85356113d8b35e.js,owasp
-info,assets.fyers.in,Permissive CORS (ACAO: *),https://assets.fyers.in/,builtin
 info,api.fyers.in,Permissive CORS (ACAO: *),https://api.fyers.in/,builtin
 info,api.fyers.in,Server version disclosed,awselb/2.0,builtin
+info,assets.fyers.in,Permissive CORS (ACAO: *),https://assets.fyers.in/,builtin
 info,int-invest.fyers.in,Server version disclosed,Microsoft-IIS/10.0,builtin
 info,int-invest.fyers.in,Technology disclosed via x-powered-by,ASP.NET,builtin
 info,marketdata-api-instaoptions.fyers.in,Permissive CORS (ACAO: *),https://marketdata-api-instaoptions.fyers.in/,builtin
@@ -230,6 +244,9 @@ info,public.fyers.in,Permissive CORS (ACAO: *),https://public.fyers.in/,builtin
 info,status.fyers.in,Permissive CORS (ACAO: *),https://status.fyers.in/,builtin
 info,trade.fyers.in,Permissive CORS (ACAO: *),https://trade.fyers.in/,builtin
 info,www.fyers.in,Technology disclosed via x-powered-by,Next.js,builtin
+info,fyers.in,GraphQL endpoint exposed,https://fyers.in/web/graphql,builtin
+info,fyers.in,API documentation exposed,https://fyers.in/web/swagger,builtin
+info,fyers.in,API documentation exposed,https://fyers.in/web/swagger.json,builtin
 info,accounts.zoho.in,GraphQL endpoint exposed,https://accounts.zoho.in/signin?servicename=ZohoAssist&serviceurl=https%3A%2F%2Fassist.fyers.in%3A443%2Fapp/graphql,builtin
 info,accounts.zoho.in,API documentation exposed,https://accounts.zoho.in/signin?servicename=ZohoAssist&serviceurl=https%3A%2F%2Fassist.fyers.in%3A443%2Fapp/swagger,builtin
 info,accounts.zoho.in,API documentation exposed,https://accounts.zoho.in/signin?servicename=ZohoAssist&serviceurl=https%3A%2F%2Fassist.fyers.in%3A443%2Fapp/swagger.json,builtin
@@ -248,15 +265,4 @@ info,accounts.zoho.in,API documentation exposed,https://accounts.zoho.in/signin?
 info,accounts.zoho.in,GraphQL endpoint exposed,https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/graphql,builtin
 info,accounts.zoho.in,API documentation exposed,https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/swagger,builtin
 info,accounts.zoho.in,API documentation exposed,https://accounts.zoho.in/signin?servicename=TeamDrive&hide_gsignup=true&hide_signup=true&serviceurl=https%3A%2F%2Fworkdrive.zoho.in%2F/swagger.json,builtin
-info,api-a1.fyers.in,SSRF candidate parameter 'source','source' takes a URL. Proving SSRF requires a collaborator host to observe the callback — re-run with --collaborator.,owasp
-info,api-i1.fyers.in,SSRF candidate parameter 'source','source' takes a URL. Proving SSRF requires a collaborator host to observe the callback — re-run with --collaborator.,owasp
-info,community.fyers.in,SSRF candidate parameter 'redirect','redirect' takes a URL. Proving SSRF requires a collaborator host to observe the callback — re-run with --collaborator.,owasp
-info,community.fyers.in,SSRF candidate parameter 'redirect','redirect' takes a URL. Proving SSRF requires a collaborator host to observe the callback — re-run with --collaborator.,owasp
-info,community.fyers.in,SSRF candidate parameter 'redirect','redirect' takes a URL. Proving SSRF requires a collaborator host to observe the callback — re-run with --collaborator.,owasp
-info,community.fyers.in,SSRF candidate parameter 'redirect','redirect' takes a URL. Proving SSRF requires a collaborator host to observe the callback — re-run with --collaborator.,owasp
-info,community.fyers.in,SSRF candidate parameter 'redirect','redirect' takes a URL. Proving SSRF requires a collaborator host to observe the callback — re-run with --collaborator.,owasp
 info,fyers.in,SSRF candidate parameter 'url','url' takes a URL. Proving SSRF requires a collaborator host to observe the callback — re-run with --collaborator.,owasp
-info,fyers.in,SSRF candidate parameter 'url','url' takes a URL. Proving SSRF requires a collaborator host to observe the callback — re-run with --collaborator.,owasp
-info,fyers.in,SSRF candidate parameter 'redirect','redirect' takes a URL. Proving SSRF requires a collaborator host to observe the callback — re-run with --collaborator.,owasp
-info,fyers.in,SSRF candidate parameter 'redirect','redirect' takes a URL. Proving SSRF requires a collaborator host to observe the callback — re-run with --collaborator.,owasp
-info,fyers.in,SSRF candidate parameter 'redirect','redirect' takes a URL. Proving SSRF requires a collaborator host to observe the callback — re-run with --collaborator.,owasp
