@@ -3,9 +3,9 @@
   "phase": "POC",
   "status": "HIGH_POTENTIAL",
   "next_steps": [
-    "Authenticated tests (program-side): api-a1-prod authz fragmentation incl. withdraw-fund; marina/v1/ddpi cross-account instruction-object IDOR (eSign PDF download); utility email-preference schema-valid unauth access.",
-    "H8 authenticated FIA_TOKEN test on mcp.fyers.in (tools/list/call) for tool-level least-privilege.",
-    "Re-probe api-t1/api/v3/toggle-alert + api/nps/* spaced after rate-limit clears; re-diff both config.fyers.in/config/config.gz and indus/v1/config for new hosts each run.",
-    "Finalize disclosure report (api-support@fyers.in + fyers/claude-installer channel; note missing security.txt/VDP; include SSTI false-positive exclusion)."
+    "Program-side authenticated test: signup/v2 KYC cross-application `req_id` IDOR (`esign-document`/`pdf/generate`/`status/poll` 200-vs-403), plus whether a correctly-HMAC'd `x-validate` (key is public) unlocks any pre-auth step.",
+    "Probe `api-t1/fy/cdsl/v2/*` prod twin of H11 and the `user/v3/app/*` trading-app registry (redirect_uri/webhook scope) to advance H1.",
+    "H8 authenticated FIA_TOKEN test on mcp.fyers.in (`tools/list`/`tools/call`).",
+    "Finalize disclosure report (api-support@fyers.in + fyers/claude-installer; note no security.txt/VDP; exclude SSTI false positive)."
   ]
 }
