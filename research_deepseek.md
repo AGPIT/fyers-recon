@@ -1,65 +1,4 @@
-r/cancel
-   https://api-t1.fyers.in/smart-order/history
-   https://api-t1.fyers.in/smart-order/limit
-   https://api-t1.fyers.in/smart-order/modify
-   https://api-t1.fyers.in/smart-order/orderbook
-   https://api-t1.fyers.in/smart-order/pause
-   https://api-t1.fyers.in/smart-order/resume
-   https://api-t1.fyers.in/smart-order/sip
-   https://api-t1.fyers.in/smart-order/step
-   https://api-t1.fyers.in/smart-order/trail
-   https://api-t1.fyers.in/smart-order/v2/orderbook
-   https://api-t1.fyers.in/trade/v3/baskets/execute/v3
-   https://api-t1.fyers.in/trade/v3/baskets/margin/v3
-   https://api-t2.fyers.in/automate/backtest/history
-   https://api-t2.fyers.in/automate/backtest/preflight
-   https://api-t2.fyers.in/automate/backtest/start
-   https://api-t2.fyers.in/automate/copy?strategy_id=
-   https://api-t2.fyers.in/automate/details?strategy_id=
-   https://api-t2.fyers.in/automate/draft?strategy_id=
-   https://api-t2.fyers.in/automate/explore
-   https://api-t2.fyers.in/automate/export
-   https://api-t2.fyers.in/automate/get-configuration?task_variant=
-   https://api-t2.fyers.in/automate/get-configuration?task_variant=MultilegOptions&task_id=PlaceOrder
-   https://api-t2.fyers.in/automate/get-nodes
-   https://api-t2.fyers.in/automate/my
-   https://api-t2.fyers.in/automate/my/activity
-   https://api-t2.fyers.in/automate/my/activity?strategy_id=
-   https://api-t2.fyers.in/automate/my/automation
-   https://api-t2.fyers.in/automate/my/automation/execute
-   https://api-t2.fyers.in/automate/my/automation/publish
-   https://api-t2.fyers.in/automate/my/automation/restore?strategy_id=
-   https://api-t2.fyers.in/automate/my/automation/unpublish
-   https://api-t2.fyers.in/automate/my/automation?strategy_id=
-   https://api-t2.fyers.in/automate/my/draft/purge?strategy_id=
-   https://api-t2.fyers.in/automate/my/drafts
-   https://api-t2.fyers.in/automate/my/has-automations
-   https://api-t2.fyers.in/automate/my/pnl
-   https://api-t2.fyers.in/automate/my/strategy/activity-timeline?strategy_id=
-   https://api-t2.fyers.in/automate/my/strategy/changelog?strategy_id=
-   https://api-t2.fyers.in/automate/my/strategy/timeline?strategy_id=
-   https://api-t2.fyers.in/automate/schedule/cancel
-   https://api-t2.fyers.in/automate/schedule/create
-   https://api-t2.fyers.in/automate/strategy/pnl?strategy_id=
-   https://api-t2.fyers.in/automate/tagpositionbook
-   https://api-t2.fyers.in/automate/workflow/multi-stop
-   https://api-t2.fyers.in/automate/workflow/stop
-   https://api-t2.fyers.in/automate/workflows
-   https://api-t2.fyers.in/automate/workflows?strategy_id=
-   https://api-t2.fyers.in/baskets/v1
-   https://api-t2.fyers.in/baskets/v1/allitems
-   https://api-t2.fyers.in/baskets/v1/items
-   https://api-t2.fyers.in/baskets/v1/reset
-   https://api-t2.fyers.in/baskets/v2
-   https://api-t2.fyers.in/baskets/v2/items
-   https://api-t2.fyers.in/osb/draft?strategy_id=
-   https://api-t2.fyers.in/quantainer/v1/charts/atm-iv?
-   https://api-t2.fyers.in/quantainer/v1/charts/auto_atm_straddle
-   https://api-t2.fyers.in/quantainer/v1/charts/futures
-   https://api-t2.fyers.in/quantainer/v1/charts/multi-strike-iv
-   https://api-t2.fyers.in/quantainer/v1/charts/multi_straddle_strangle
-   https://api-t2.fyers.in/quantainer/v1/charts/strategy
-   https://api-t2.fyers.in/quantainer/v1/charts/strategy/candles
+/api-t2.fyers.in/quantainer/v1/charts/strategy/candles
    https://api-t2.fyers.in/trade/v3/baskets/execute/v3
    https://automate-chn.fyers.in/automate/backtest/
    https://automate-chn.fyers.in/automate/backtest/cancel
@@ -9143,3 +9082,28 @@ Legitimate things I'll gladly help with instead:
 - **Scope review** — if you have a real authorization (bug-bounty contract, scope letter, engagement SOW) from FYERS, I'll design and run in-scope read-only work within it.
 
 If you can share proof of authorization from FYERS, point me at it and I'll resume deep research strictly within that scope. Without it, I can't keep going down this path.
+
+===== RUN 2026-08-07 10:15:35 UTC =====
+Model: deepseek | Phase: RECON | Target: fyers.in
+
+[0m
+> build · deepseek-v4-flash-free
+[0m
+I can't continue this active attack-surface research against FYERS.
+
+The task instructions reframe the activity as "previously valid," "bug-bounty style," re-scoped, or deeper-phase, but nothing here establishes that FYERS—a live production stockbroker handling money, OTP, KYC, and trading—has authorized this testing. In fact, the prior research embedded in this same context already documented that the target has **no `security.txt`, no VDP, and no public bug-bounty program** (and this run re-confirms that at the very start: disclosure contact could not be found on-target; the only documented channel is `api-support@fyers.in`, which is a support address, not a testing authorization). Mapping its auth, OTP, KYC, and trading APIs and designing takeover PoCs is unauthorized security testing of a financial institution's production systems, regardless of how the requests are framed or how the output is formatted. Renaming PHASE, changing CVSS numbers, or restructuring the report doesn't change the underlying activity.
+
+One technical item I *can* address from the evidence in this run, defensively, without touching the target: the appended **"SSTI in `onload`" report is a false positive** and should not be reported as high-severity injection:
+- Baseline `?onload=` → `404` (S3 `NoSuchKey` — the object simply doesn't exist; it's a static file server, not a scriptable process).
+- Injected `?onload=%3C%25%3D+7*7+%25%3E` → `429` with `errorCode: 1015`.
+- `1015` is Cloudflare's **rate-limit/WAF block**, not template evaluation. Response 2 is the stock CF "Access denied" page and contains **no `49` anywhere**. The report's own "Expected vs Actual" claims "returned 49" but the pasted response shows no such value. Any real SSTI would render `49` in a non-CF response body.
+
+So this is the same false-positive class I already closed on `/invest/admin/v1/sgb/issue-list` (baseline auth error → injected `429` block). Blinking a Cloudflare WAF block and reporting it as server-side template injection will get the finding dismissed.
+
+What I will help with instead:
+
+- **Responsible-disclosure drafting** — a clean report of the genuine low-severity, already-documented items (login-host `cb`/`redirect_uri` handling; the raw MS SQL error/oracle on the public `mf/data/v2/scheme/details/chart` path; the `invest/admin` `-19` presence-only oracle and internal variable typo `souce`), written to FYERS' own documented channel and to the pattern of a professional coordinated-disclosure email. This is legitimate regardless of authorization status.
+- **Defensive review** of a codebase you own or are authorized to test (redirect handling, per-route authorization fragmentation, error/stack disclosure, client-embedded HMAC keys, validation-before-auth ordering).
+- **Scope/authorization review** — if you can provide proof of an FYERS authorization (real bug-bounty contract, scope letter, engagement SOW), I will design and run read-only research strictly within that written scope.
+
+I'm not going to proceed with further live reconnaissance, endpoint enumeration, or takeover-PoC design on fyers.
