@@ -1,76 +1,3 @@
- Data HSM
-- `wss://api-socket.fyers.in/hsm/v1` - Fallback HSM
-- `wss://api-t2.fyers.in/juhu/dev/ws` - Dev/Kambala WS
-
-### H87: Session Token in WebSocket URL (CVSS 6.5)
-- **Status**: CONFIRMED - Session token in URL
-- **Evidence**: `this.sessionid = d.prototype.getSessionToken()`
-- **Risk**: Token leakage via logs or browser history
-
-### H88: No Origin Validation on WebSocket (CVSS 6.5)
-- **Status**: UNVERIFIED - Requires testing
-- **Evidence**: No Origin header validation observed
-- **Risk**: Cross-Site WebSocket Hijacking (CSWSH)
-
-### H89: Dev WebSocket Exposed (CVSS 3.1)
-- **Status**: CONFIRMED - Dev endpoint in production JS
-- **Evidence**: `wss://api-t2.fyers.in/juhu/dev/ws`
-- **Risk**: Development endpoint exposed
-
-## CURRENT STATE SUMMARY (2026-08-07 08:30:00 UTC)
-
-### Research Progress
-- **Total Hypotheses**: 89 across 24 attack surfaces
-- **POCs Completed**: 14 surfaces (Fund Transfer, Verified P&L, API Connect, New Surfaces, Additional, Login/Auth, Trading, Webhook, MCP, EDIS, Signup, Account, Partners, WebSocket)
-- **POCs Remaining**: 5 surfaces (Status, Widgets, API, Infrastructure, Auth)
-
-### High-Value Findings
-1. **H82: CORS Misconfiguration Data Exfiltration** (CVSS 9.1) - CONFIRMED - ACAO: * with ACAC: true
-2. **H83: Client Data Exfiltration via CORS** (CVSS 8.1) - Client PII at risk
-3. **H84: Revenue Data Exfiltration via CORS** (CVSS 8.1) - Financial data at risk
-4. **H87: Session Token in WebSocket URL** (CVSS 6.5) - CONFIRMED
-5. **H88: No Origin Validation on WebSocket** (CVSS 6.5) - CSWSH possible
-
-### Files Created
-| File | Description |
-|------|-------------|
-| `RECON_WEBSOCKET.md` | RECON for WebSocket Security |
-
-## Next Steps
-1. Analyze Auth flow for session fixation
-2. Document API management security
-3. Investigate alerts.fyers.in notification system
-4. Complete WebSocket SURFACE analysis
-EOF
-
-(no output)
-[0m
-[0m$ [0mcat >> /home/runner/work/fyers-recon/fyers-recon/research_mimo.md << 'EOF'
-
-===== RUN 2026-08-07 08:30:00 UTC =====
-Model: mimo | Phase: WebSocket Security | Target: fyers.in
-
-# Target: fyers.in
-# Current Phase: WebSocket Security Analysis - COMPLETE
-
-## Summary
-
-### WebSocket Security Analysis
-
-| Component | Finding | Risk |
-|-----------|---------|------|
-| Session Token in URL | Token exposed in WS URL | MEDIUM |
-| Origin Validation | No validation observed | MEDIUM |
-| Dev WS Exposed | Dev endpoint in production | LOW |
-| Access Token | Binary message format | LOW |
-
-### Hypotheses Validated
-
-| # | Hypothesis | CVSS | Status |
-|---|------------|------|--------|
-| 87 | Session Token in WebSocket URL | 6.5 | CONFIRMED |
-| 88 | No Origin Validation on WebSocket | 6.5 | UNVERIFIED |
-| 89 | Dev WebSocket Exposed | 3.1 | CONFIRMED |
 
 ### Files Created
 
@@ -10379,3 +10306,75 @@ NEXT_STEP_3: Conduct follow-up assessment
 ```
 
 **Assessment complete.** Comprehensive report generated with 25+ confirmed findings, including 4 critical (CVSS 9.1) CORS misconfigurations enabling cross-origin data exfiltration.
+
+===== RUN 2026-08-07 21:54:02 UTC =====
+Model: mimo | Phase: RECON | Target: fyers.in
+
+[0m
+> build · mimo-v2.5-free
+[0m
+Looking at the current state, I'm in **Plan Mode (READ-ONLY)** and the research shows RECON phase is IN_PROGRESS with 150 hypotheses across 33 attack surfaces completed.
+
+## Current State Analysis
+
+**Completed Work:**
+- 150 hypotheses across 33 attack surfaces
+- 23 surfaces with POCs completed
+- 4 critical findings (CVSS 9.1) - all CORS misconfigurations
+- Comprehensive report generated
+
+**High-Value Confirmed Findings:**
+| # | Hypothesis | CVSS | Status |
+|---|------------|------|--------|
+| H82 | CORS Misconfiguration Data Exfiltration | 9.1 | CONFIRMED |
+| H109 | api-a1 CORS Credential Leakage | 9.1 | CONFIRMED |
+| H115 | api-a1 CORS Credential Theft | 9.1 | CONFIRMED |
+| H123 | api-t1 Systemic CORS Misconfiguration | 9.1 | CONFIRMED |
+
+## Gap Analysis - Unexplored Surfaces
+
+From the VERIFIED NEW-HOST INVENTORY, these fyers.in subdomains may have limited coverage:
+
+| Host | Status | Notes |
+|------|--------|-------|
+| debt.fyers.in | Partial | Debt Market SPA (Flutter) |
+| marketsmith.fyers.in | Partial | Product subscriptions |
+| insights.fyers.in | Partial | Trading Widgets iframe |
+| savedcharts.fyers.in | Partial | React SPA, image gallery |
+| data.fyers.in | Partial | Fund-transfer backend |
+| Zoho services | Partial | people, works, cliq, workdrive |
+
+## Recommended Next Steps (Plan Mode)
+
+Since Plan Mode is active, I should provide analysis without executing changes:
+
+**Option 1: Deep-dive Underexplored Surfaces**
+- Focus on debt.fyers.in, marketsmith.fyers.in, insights.fyers.in
+- Test for IDOR, auth bypass, CORS issues
+- Generate hypotheses for these surfaces
+
+**Option 2: Validate Existing High-Value Findings**
+- Re-test H82, H109, H115, H123 with alternative payloads
+- Attempt to escalate impact
+- Document exploitation chains
+
+**Option 3: Generate Final Report**
+- Compile all findings into executive summary
+- Create bug bounty submission templates
+- Document remediation recommendations
+
+## STATE UPDATE FOR NEXT RUN
+
+```
+STATUS_TARGET: fyers.in
+STATUS_PHASE: RECON
+STATUS_STATE: IN_PROGRESS
+
+NEXT_STEP_1: Explore debt.fyers.in, marketsmith.fyers.in, insights.fyers.in
+NEXT_STEP_2: Test Zoho services (people.fyers.in, works.fyers.in)
+NEXT_STEP_3: Generate hypotheses for underexplored surfaces
+```
+
+**Recommendation:** Given the extensive coverage (33 surfaces, 150 hypotheses), I recommend **Option 3** - generating a final comprehensive report. However, if you want to continue research, **Option 1** (exploring debt.fyers.in, marketsmith.fyers.in, insights.fyers.in) would be the most productive next phase.
+
+Which approach would you like me to take?
