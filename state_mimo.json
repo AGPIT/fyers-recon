@@ -3,10 +3,9 @@
   "phase": "RECON",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Analyze Signup/Registration flow for brute force",
     "Investigate Account management CSRF vulnerabilities",
     "Document Partners dashboard security",
     "Explore WebSocket EDIS data exposure",
-    "Analyze Signup/Registration flow for brute force (Vagator OTP API)"
+    "Analyze Auth flow for session fixation"
   ]
 }

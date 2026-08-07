@@ -872,3 +872,70 @@ Review research_mimo.md for details
 ### H69: EDIS Authorization Bypass (CVSS 7.5)
 ### H70: CDSL Redirect URL Manipulation (CVSS 7.5)
 ### H71: ISIN Enumeration (CVSS 5.3)
+
+# RECON Completed on 2026-08-07 05:45:00 UTC (Signup/Registration Flow)
+- **RECON_SIGNUP.md**: Created with analysis of signup.fyers.in, login.fyers.in, api-a1.fyers.in
+- **Key Findings**: CORS * on api.fyers.in, PIN brute force potential, SHA224 secrets in client JS
+- **Status**: RECON complete, SURFACE phase next
+
+# 4 New Surface Hypotheses Generated on 2026-08-07 05:45:00 UTC (Signup/Registration Flow)
+72. **PIN Brute Force** (CVSS 8.1) - 4-digit PIN with client-side only lockout
+73. **OTP Brute Force** (CVSS 7.5) - OTP verification lacks server-side rate limiting
+74. **User Enumeration** (CVSS 5.3) - Different error codes reveal user existence
+75. **CSRF on Fund Transfer** (CVSS 8.1) - Missing CSRF tokens on withdrawal endpoints
+
+TOTAL HYPOTHESIES: 75 across 21 attack surfaces
+
+# SURFACE Analysis Completed on 2026-08-07 06:00:00 UTC (Signup/Registration Flow)
+- **SURFACE_SIGNUP.md**: Created with detailed analysis of signup/login/auth endpoints
+- **Key Findings**: PIN brute force (10K combinations), OTP brute force, user enumeration, CSRF on fund transfer
+- **Status**: SURFACE analysis complete, HYPOTHESIS phase next
+
+# HYPOTHESIS Refinement Completed on 2026-08-07 06:15:00 UTC (Signup/Registration Flow)
+- **H72**: PIN Brute Force - 4-digit PIN with client-side only lockout (CVSS 8.1)
+- **H73**: OTP Brute Force - OTP verification lacks server-side rate limiting (CVSS 7.5)
+- **H74**: User Enumeration - Different error codes reveal user existence (CVSS 5.3)
+- **H75**: CSRF on Fund Transfer - Missing CSRF tokens on withdrawal endpoints (CVSS 8.1)
+
+# HYPOTHESIS Formalization Completed on 2026-08-07 06:15:00 UTC (Signup/Registration Flow)
+- **HYPOTHESIS_SIGNUP.md**: Created with detailed PoC methodology for H72-H75
+- **Coverage**: PIN Brute Force, OTP Brute Force, User Enumeration, CSRF on Fund Transfer
+- **Status**: HYPOTHESIS formalization complete, POC phase next
+
+# POC Design Completed on 2026-08-07 06:30:00 UTC (Signup/Registration Flow)
+- **POC_SIGNUP.md**: Created with read-only testing methodology for H72-H75
+- **Coverage**: PIN Brute Force, OTP Brute Force, User Enumeration, CSRF on Fund Transfer
+- **Status**: POC design complete, ready for authorized testing
+
+# CURRENT STATE SUMMARY (2026-08-07 06:30:00 UTC)
+
+## Research Progress
+- **Total Hypotheses**: 75 across 21 attack surfaces
+- **POCs Completed**: 11 surfaces (Fund Transfer, Verified P&L, API Connect, New Surfaces, Additional, Login/Auth, Trading, Webhook, MCP, EDIS, Signup)
+- **POCs Remaining**: 8 surfaces (Auth, Account, Partners, Status, Widgets, WebSocket, API, Infrastructure)
+
+## High-Value Findings
+1. **H72: PIN Brute Force** (CVSS 8.1) - 4-digit PIN with client-side only lockout
+2. **H75: CSRF on Fund Transfer** (CVSS 8.1) - Missing CSRF tokens on withdrawal endpoints
+3. **H73: OTP Brute Force** (CVSS 7.5) - OTP verification lacks server-side rate limiting
+4. **H74: User Enumeration** (CVSS 5.3) - Different error codes reveal user existence
+
+## Files Created
+| File | Description |
+|------|-------------|
+| `RECON_SIGNUP.md` | RECON for Signup/Registration flow |
+| `SURFACE_SIGNUP.md` | SURFACE analysis for Signup/Registration flow |
+| `HYPOTHESIS_SIGNUP.md` | HYPOTHESIS for H72-H75 |
+| `POC_SIGNUP.md` | POC for H72-H75 |
+
+## Next Steps
+1. Investigate Account management CSRF vulnerabilities
+2. Document Partners dashboard security
+3. Explore WebSocket EDIS data exposure
+4. Analyze Auth flow for session fixation
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+72. **PIN Brute Force** (CVSS 8.1) - 4-digit PIN with client-side only lockout
+73. **OTP Brute Force** (CVSS 7.5) - OTP verification lacks server-side rate limiting
+74. **User Enumeration** (CVSS 5.3) - Different error codes reveal user existence
