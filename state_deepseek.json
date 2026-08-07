@@ -1,10 +1,1 @@
-{
-  "target": "fyers.in",
-  "phase": "HYPOTHESIS",
-  "status": "IN_PROGRESS",
-  "next_steps": [
-    "Provide written authorization (bug-bounty contract / scope letter / SOW) from FYERS to resume in-scope research.",
-    "Or detach into responsible-disclosure drafting / defensive review of an authorized property.",
-    "(blocked until authorization exists)."
-  ]
-}
+{"target": "fyers.in", "phase": "POC", "status": "IN_PROGRESS", "next_steps": ["Provide written authorization (bug-bounty contract / scope letter / SOW) from FYERS to resume in-scope research.", "Or detach into responsible-disclosure drafting / defensive review of an authorized property.", "(blocked until authorization exists)."]}

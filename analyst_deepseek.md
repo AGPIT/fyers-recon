@@ -78,3 +78,35 @@ testability: AUTH_HELPED
 [RISK] fyers: 62 — 41-host production estate with fragmented per-route×method authorization across ≥19 auth domains (fingerprints sharing a shared numeric code space), multiple validation-before-auth paths including a money-movement primitive and a KYC OTP send, raw upstream error-wrap + internal `latency` disclosure, second public config and three new live OAuth client_ids, exposed default-server hosts, an unauthenticated public IPO/ticker/`schema` tier, an OAuth open-redirect primitive (6.1) with a conditional code-interception path to account takeover (8.1–9.0). Offset by auth-gated data layers, the absence of any proven high-severity exploit, a narrow-object IDOR authorization characterization, and two rejected SSTI false positives.
 
 ===== ANALYST 2026-08-07 19:25:57 UTC =====
+
+===== ANALYST 2026-08-07 21:06:13 UTC =====
+[HYP] signup/v2 KYC cross-application IDOR via `req_id`
+class: IDOR
+asset: api-a1.fyers.in/signup/v2/user/{esign-document,pdf/generate,status/poll,esign/accept-name-mismatch}
+confidence: 45
+reasoning: account-creation objects are keyed by application `req_id`, threaded via `digio_doc_id` through eSign/PDF/KYC-status flows (`live-verification?source={verification|pan|esign|edit_address}&req_id=`). Pre-auth gate is validation-before-auth only (`1050`/`1500`, OTP dispatch is the auth-gated action), so data-layer authorization scoping is unproven. If `req_id` is the sole object key and authz is applicant-session-scoped, a second application's `req_id` yields cross-app KYC PII/eSign docs/PDFs.
+evidence_needed: 200 vs 403/404 when the same endpoints are requested with a second applicant's `req_id` under one authenticated applicant session; whether a correctly-HMAC'd `x-validate` (client-embedded constant, attacker-computable) unlocks any pre-auth step.
+verify_steps: AUTH_HELPED: (ONLY after authorization confirmed) with an authenticated applicant session, request `/user/esign-document`, `/user/pdf/generate`, `/user/status/poll` with own `req_id` then a foreign `req_id`, diff codes. No OTP dispatch / no real-number submission pre-authorization. Passive-only re-fetch of `signup.fyers.in/main.dart.js` (drift) allowed.
+impact: cross-application read of KYC PII, PAN, eSign documents, generated PDFs (5.3–7.5 conditional).
+testability: AUTH_HELPED
+[HYP] `api-a1-prod` funds tier — validation-before-auth on a money path + per-route×method authorization fragmentation
+class: MISCONFIG
+asset: api-a1-prod.fyers.in/myaccount/prod/{withdraw-fund,realtime-funds,user-withdrawal-history,my-funds}
+confidence: 50
+reasoning: `withdraw-fund` POST rejects missing `amount` (HTTP 400) before any token check — validation-before-auth on a fund-withdrawal primitive; `user-withdrawal-history` is GET `-374`/POST `-17` (method-dependent gate); `realtime-funds` returns HTTP 200 wrapping raw upstream trade-core `-16` JSON plus internal `latency`, proving the gateway chain and leaking internal timing. Fragmented gate map across routes×methods may permit cross-account funds reads.
+evidence_needed: whether any no-token request on the tier reaches a data operation; whether `amount` present + no auth passes validation into the data layer; whether a low-priv session crosses account isolation.
+verify_steps: AUTH_HELPED: (ONLY after authorization confirmed) walk the route×method gate matrix with (a) no token and (b) a low-privilege session, recording the gate code per cell; re-test `withdraw-fund` with `amount` present and no auth to see if validation passes into the data path. Pre-auth passive re-fetch of the error-wrap body is allowed.
+impact: authorization confusion on fund withdrawal/report surfaces → unauthorized fund operations or cross-account funds disclosure (5.3–6.5 conditional).
+testability: AUTH_HELPED
+[HYP] `indus/user` saved-chart gallery object-keyed IDOR behind auth
+class: IDOR
+asset: api-t1.fyers.in/indus/user/v1/gallery + savedcharts.fyers.in
+confidence: 42
+reasoning: `savedcharts.fyers.in` authenticates via `_FYERS` cookie, extracts `tokenHash` from JWT `at_hash`, and GET/DELETEs `indus/user/v1/gallery`; `data.fyers.in/dev-fyers/savechart/1.2/{charts,study_templates}` is object-keyed (TradingView 1.2 protocol) with content-type-sensitive method gate, no user data reachable pre-auth. If chart objects are keyed by `chartId` without owner-scope checks, cross-account chart/study read succeeds.
+evidence_needed: 200 vs 403 when a second account's `chartId`/study-template id is requested under one authenticated session; whether gallery DELETE accepts any `token_id`.
+verify_steps: AUTH_HELPED: (ONLY after authorization confirmed) list own charts via `GET /savechart/1.2/charts` with `_FYERS` session, then request a second account's `chartId`/study-template id and diff response codes. No pre-auth contact beyond the previously recorded 500 method-gate.
+impact: cross-account read/deletion of saved charts and study templates (5.3–7.5 conditional).
+testability: AUTH_HELPED
+[FINAL] survivors re-ranked:
+[NEXT] HUMAN: confirm written authorization with FYERS (documented channel `api-support@fyers.in` per v3.1 SEBI spec; GitHub `fyers/claude-installer` for issue reporting; no security.txt/VDP on-target) before any active auth/OTP/KYC/trading probing. All three live hypotheses are AUTH_HELPED and unexecuted pending that. Passive continuation meanwhile: re-fetch `config.fyers.in/config/config.gz` vs `indus/v1/config` for drift (new OAuth client_ids/URLs) and re-fetch `signup.fyers.in/main.dart.js`/`login.min.js?v=1.3` for bundle drift — no auth touched.
+[RISK] fyers: 62 — 41+ host production estate with fragmented per-route×method authorization across ≥19 auth domains (shared numeric code space `-15/-16/-17/-27/-374/-441`, Pydantic `#15`, `1050/1500`), multiple validation-before-auth paths including a fund-withdrawal primitive and a KYC OTP send, raw upstream error-wrap + internal `latency` disclosure, exposed default test/dev hosts, second public config and multiple live OAuth client_ids, an unauthenticated public IPO/ticker tier, and a confirmed OAuth open-redirect primitive (6.1) with a conditional auth-code-interception path to account takeover (8.1–9.0). Offset by auth-gated data layers, absence of any proven high-severity exploit, and two rejected SSTI false positives.
