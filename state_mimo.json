@@ -3,9 +3,8 @@
   "phase": "RECON",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Execute read-only tests for H95-H101",
-    "Explore remaining surfaces (Widgets, Status)",
     "Complete final priority ranking",
-    "Generate comprehensive report"
+    "Generate comprehensive report",
+    "Document API management security"
   ]
 }
