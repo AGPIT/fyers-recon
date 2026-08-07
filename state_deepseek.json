@@ -1,1 +1,10 @@
-{"target": "fyers.in", "phase": "SURFACE", "status": "IN_PROGRESS", "next_steps": []}
+{
+  "target": "fyers.in",
+  "phase": "HYPOTHESIS",
+  "status": "HIGH_POTENTIAL",
+  "next_steps": [
+    "Draft the official-form submission package (H17 primary, as reproducible-description + FYERS-side validation request) and the informational/hardening items (H1 redirect handling, H12 `souce`/presence oracle, H14 error-wrap, H10 error oracle).",
+    "Send a scope-confirmation query to the program contact for borderline in-scope hosts (signup.fyers.in KYC, mcp.fyers.in, `/invest/admin/*`, `/cdsl/dev/*`) before any further active work.",
+    "(blocked on scope confirmation / FYERS-side validation) advance to POC phase only for items the program confirms in scope and permits own-account testing on."
+  ]
+}

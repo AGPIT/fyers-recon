@@ -1,104 +1,4 @@
-en-scoping remains design-only (a real api-t1 token is required to test api-g1 acceptance).
-
-HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: deepseek)
-Review research_deepseek.md for details
-**Impact:** Open redirect to arbitrary/external/cross-host URLs from a trusted FYERS domain (CVSS 6.1); if post-auth code delivery honors the untrusted URI client-side with no registry recheck (per the decoded `login.min.js` flow), full trading-account takeover via code interception (CVSS 8.1–9.0).
-**Impact:** If refresh tokens remain honored post-deprecation or PIN/TOTP precedence is weak, token-rotation gaps could enable session/account takeover (CVSS 7.5–9.0).
-## CVSS Candidates
-
-# 5 items on 2026-08-05 10:14:51 UTC
-- **H1 static deliverable complete: post-auth redirect destination is driven by client-side URL parameters.** Full deobfuscation of the SSO bundle (`login.min.js`, 310 KB, string-array obfuscation, 2 rotated arrays) shows the authenticated redirect handler reads `redirect_uri` **and a second alias `cb`** straight from the current page's query string and sets `location.href` to them (`if(_0x1b1ef9['redirect_uri']){location.href=…} else if(_0x1b1ef9['cb']){location.href=…}`), with only a 5-value reserved-`cb` denylist (`includes` check). The QR/WebSocket login success path pushes `_FYERS|<cookie>|_deviceId` (pipe-delimited) and then navigates to the URL-param destination. No server-side registry lookup on the destination is present anywhere in the flow. Combined with the confirmed step-1 oracle (Go `required`-tag, presence-only validation of `AuthCodeRequest.RedirectURI`), this closes the H1 PoC evidence chain for an **open-redirect-on-login primitive**; whether the code/cookie artifact is appended to the attacker URI can only be confirmed with authenticated testing (out of scope).
-- **H3 complete field-walk on `validate-refresh-token` (pre-auth, live).** Progressive, orderable validation errors establish the exact request schema: `grant_type`≠`refresh_token`→`-442`; empty `refresh_token`→`-501`; missing `appIdHash`→`-371 "Please provide sha256 hash of appId and app secret"` (discloses the hashing scheme, matching the public `SHA256(appId:appSecret)`); missing `pin`→`-502 "Please provide your valid pin"`; all-present dummy values→`-501` (token validity gate last). Order: `grant_type → refresh_token → appIdHash → pin → token validity`. This is a clean pre-auth enumeration oracle for the refresh-token exchange and confirms v3 requires `pin` at the *validate* layer.
-- **`/api/v3/token` refresh grant is fully opaque (`-16` uniform).** Unlike `validate-refresh-token`, the real token endpoint returns `-16` for every refresh grant permutation (missing/format-fine fields alike) — no field oracle. The two endpoints are separate services with divergent error behavior; any pin-requirement divergence between *validate* and *token* must be tested with a valid token (documented, not executed).
-- **api-a1 splits into two independent auth domains.** `funds/v1/api/*` (40+ bank/mandate/withdrawal endpoints) → `-21 "Authorization token required"`; `manage/account/*` (90+ endpoints) → `-16`. Distinct from api-g1 (`-401`), api-i1 (`40101`), api-t2/baskets (`401 "missing authorization header"` plain text), api-t2/indri (`-16`), and DRF (`{"detail":"Not authenticated"}`). This yields ≥6 auth fingerprints across the estate — the core input to the H5 cross-service authz hypothesis.
-- **Public config re-confirmed live** (113,497 B, 73 endpoint blocks): `api-a1.fyers.in` alone is referenced by **212 URLs** in the endpoint map, including sensitive objects (esign/initiate, selfie-validation, freeze/account, close-account/transfer-details, add_bank/penny_drop) — a stable recon artifact for further object-ID analysis.
-
-HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: deepseek)
-Review research_deepseek.md for details
-**Impact:** Confirmed open redirect from a trusted FYERS login host (CVSS 6.1). If the auth code is URL-delivered on that client-side redirect, the attacker (who controls `code_challenge`/verifier in the phished URL) can redeem it — PKCE offers no protection because the attacker controls both ends → full ATO (CVSS 8.1–9.0). Requires authenticated confirmation of the delivered artifact.
-**Impact:** If `/token` refresh exchange omits the pin check that `validate-refresh-token` enforces, a leaked refresh_token alone mints access tokens (CVSS 7.5–9.0).
-## CVSS Candidates
-
-# RECON round 2026-08-05 19:xx UTC
-- **New in-scope host `mcp.fyers.in` (FYERS MCP, Model Context Protocol).** `GET /mcp` → SSE `text/event-stream` (200, holds open, no auth error). Unauthenticated JSON-RPC `initialize` POST returns `{"serverInfo":{"name":"Fyers Trading MCP Server","version":"1.0.0"},"capabilities":{"resources":{},"tools":{"listChanged":true}}}`, `protocolVersion 2025-03-26`. `tools/list` (no session) → `Invalid session ID`; SSE sessions require `Authorization: Bearer ${FIA_TOKEN}` (per public fia.yaml spec). Root/health/mcp.json/.well-known/mcp → 404 text/plain 19B. Distinct auth domain: FIA_TOKEN bearer vs OAuth access_token. Source: `myapi.fyers.in/static/media/fia.9dcf545bc3f508df4db9.yaml`.
-- **New in-scope host `automate-chn.fyers.in`** (Cloudflare, 104.18.4.135). `/automate/backtest/status` → `-16` trade-core; `/automate/backtest/` and root → 404. Mirrors api-t2 automate backend on a second hostname — token-scoping candidate vs api-t2.
-- **New auth fingerprint #7:** `api-t2.fyers.in/quantainer/v1/charts/{futures,atm-iv,multi-strike-iv,strategy,...}` → `{"code":-401,"message":"Please provide valid token"}` — distinct message from api-g1 `-401 Unauthorized` (separate microservice/auth domain).
-- **Full `api-t2.fyers.in/automate/*` inventory recovered from public config** (correct base, not `/automate/v1/`): `backtest/{history,preflight,start}`, `copy?strategy_id=`, `details?strategy_id=`, `draft?strategy_id=`, `explore`, `export`, `get-configuration?task_variant=MultilegOptions&task_id=PlaceOrder`, `get-nodes`, `my/{activity,automation,drafts,pnl,has-automations,strategy/*}`, `schedule/{create,cancel}`, `strategy/pnl?strategy_id=`, `workflow/{stop,multi-stop}`, `workflows`, `tagpositionbook`, `osb/draft?strategy_id=`. All `-16` auth-gated (confirmed live on samples).
-- **`data.fyers.in/dev-fyers/savechart/1.2/charts`** → `500 "Invalid Request, please provide valid method"` — session-gated form-POST surface (method-enforcement pattern), object-keyed (saved charts) IDOR candidate behind auth.
-- **api-a1 auth split finalized:** `funds/v1/api/{send_otp,verify_otp,add_funds_status,transaction_download_key,...}` all `-21`; `manage/account/{send_otp,verify_otp}` and `marina/v1/mtf/{send_otp,verify_otp}` all `-16`. No public OTP oracle on api-a1.
-- **api-i1 fd/* uniformly `40101`** (`plans`, `filters`, `overview`). **screeners.fyers.in/koshi/v2/* now `-16`** (an earlier run saw `/config` 200 — surface since locked).
-- **Auth-model documentation (live):** v3.1 SEBI spec (`myapi.fyers.in/static/media/v3.1.32a8eeba1fba866d1201.yaml`) confirms refresh-token flow discontinued, daily 2FA mandatory, static-IP whitelist for order placement, single transactional App ID per user, market orders auto-converted to MPP, no AMO. Contact `api-support@fyers.in`.
-- **Config drift:** `indus/v1/config` grew 113,497 → 114,456 B; current dump references 870 `*.fyers.in` URLs.
-
-# 8 items on 2026-08-05 19:18:03 UTC
-- **New in-scope host `mcp.fyers.in` — FYERS MCP (Model Context Protocol) SSE service.** `GET /mcp` → `text/event-stream` (200, holds open). An **unauthenticated JSON-RPC `initialize` POST returns server identity and capability schema** with no token: `Fyers Trading MCP Server v1.0.0`, `protocolVersion 2025-03-26`, capabilities `resources` + `tools(listChanged)`. `tools/list` without an SSE session → `Invalid session ID`; sessions require `Authorization: Bearer ${FIA_TOKEN}` (per `myapi.fyers.in/static/media/fia.*.yaml`). Root, `/health`, `/mcp.json`, `/.well-known/mcp` → 404 (19 B text). This is a **seventh auth domain** (FIA_TOKEN bearer) vs OAuth `access_token` — a fresh token-scoping/cross-service candidate.
-- **New in-scope host `automate-chn.fyers.in`** (Cloudflare 104.18.4.135): `/automate/backtest/status` → `-16` trade-core; `/automate/backtest/` and root → 404. Second hostname serving the same automate backend as api-t2 — cross-host token-scoping candidate.
-- **New auth fingerprint #7 confirmed:** `api-t2.fyers.in/quantainer/v1/charts/*` (`futures`, `atm-iv`, `multi-strike-iv`, `strategy`, …) → `{"code":-401,"message":"Please provide valid token"}` — message distinct from api-g1 `-401 Unauthorized`, i.e. another independent microservice/authz domain.
-- **Full `api-t2/automate/*` + `osb/*` inventory recovered from public config** (correct base, not `/v1/`): `backtest/{history,preflight,start}`, `copy|details|draft?strategy_id=`, `explore`, `export`, `get-configuration?task_variant=MultilegOptions&task_id=PlaceOrder`, `get-nodes`, `my/*`, `schedule/*`, `strategy/pnl?strategy_id=`, `workflow/{stop,multi-stop}`, `workflows`, `tagpositionbook`, `osb/draft`. Sampled endpoints all `-16` auth-gated — object-ID (`strategy_id`) surfaces behind auth.
-- **api-a1 auth split finalized:** `funds/v1/api/{send_otp,verify_otp,add_funds_status?order_id=,transaction_download_key}` → `-21`; `manage/account/{send_otp,verify_otp}` and `marina/v1/mtf/{send,verify}_otp` → `-16`. **No public OTP oracle exists on api-a1.**
-- **api-i1 `fd/{plans,filters,overview}` uniformly `40101`; screeners.fyers.in/koshi/v2/* now `-16`** (an earlier run observed `/config` 200 — that surface has since been locked).
-- **Auth-model intel (live docs, `myapi.fyers.in`):** v3.1 SEBI spec confirms refresh-token discontinuation, mandatory daily 2FA, static-IP whitelisting for order placement, single transactional App ID per user, MPP-forced market orders, no AMO; official API contact **`api-support@fyers.in`** (usable as disclosure contact). `fyers.in/{security,privacy,responsible-disclosure}` all 404.
-- **Config drift:** `indus/v1/config` grew 113,497 → 114,456 B; current dump enumerates **870 `*.fyers.in` URLs**.
-
-HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: deepseek)
-Review research_deepseek.md for details
-## CVSS Candidates
-- [H8 MCP unauthenticated identity/capability disclosure] — CVSS 5.3
-- [H8 MCP FIA_TOKEN cross-domain scoping / tool ATO] — CVSS 6.5–8.0 (conditional)
-[0m
-[0m# [0mTodos
-[•] SURFACE: mcp.fyers.in full JSON-RPC method walk (no token) - auth-gate vs protocol-gate error ordering
-[ ] SURFACE: check assets.fyers.in/mcp/{windows,macos} MCP installer references for token scopes (static)
-[ ] SURFACE: quantainer/v1 -401 domain + automate-chn vs api-t2 split, H9 request template
-[ ] SURFACE: re-scan indus/v1/config drift for new hosts/endpoints
-[ ] Compile SURFACE report + state update
-[0m
-Continuing SURFACE phase on `mcp.fyers.in` — walking the JSON-RPC method set without a session to map the auth-gate vs protocol-gate ordering.
-[0m$ [0mcd /tmp/opencode && mcp_probe(){ desc=$1; body=$2; printf "%-34s " "$desc"; timeout 6 curl -s -m 5 -X POST "https://mcp.fyers.in/mcp" -H "Content-Type: application/json" -H "Accept: application/json" -d "$body" | head -c 400; echo; sleep 4; }
-mcp_probe "initialize (no session)" '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"r","version":"0"}}}'
-mcp_probe "notifications/initialized" '{"jsonrpc":"2.0","method":"notifications/initialized","params":{}}'
-mcp_probe "tools/list (no session)" '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}'
-mcp_probe "tools/call (no session)" '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"x","arguments":{}}}'
-mcp_probe "resources/list (no session)" '{"jsonrpc":"2.0","id":4,"method":"resources/list","params":{}}'
-mcp_probe "resources/templates/list" '{"jsonrpc":"2.0","id":5,"method":"resources/templates/list","params":{}}'
-mcp_probe "prompts/list" '{"jsonrpc":"2.0","id":6,"method":"prompts/list","params":{}}'
-mcp_probe "ping (no session)" '{"jsonrpc":"2.0","id":7,"method":"ping","params":{}}'
-initialize (no session)            {"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-03-26","capabilities":{"resources":{},"tools":{"listChanged":true}},"serverInfo":{"name":"Fyers Trading MCP Server","version":"1.0.0"}}}
-
-notifications/initialized          Invalid session ID
-
-tools/list (no session)            Invalid session ID
-
-tools/call (no session)            Invalid session ID
-
-resources/list (no session)        Invalid session ID
-
-resources/templates/list           Invalid session ID
-
-prompts/list                       Invalid session ID
-
-ping (no session)                  Invalid session ID
-[0m
-[0m$ [0mcd /tmp/opencode && echo "=== SSE GET stream: capture all event frames (10s) ==="; timeout 10 curl -s -m 9 -N "https://mcp.fyers.in/mcp" 2>/dev/null | head -c 800; echo "[EOF]"; echo; echo "=== assets.fyers.in/mcp installer paths ==="; for p in "mcp/windows/1.0.0/" "mcp/macos/1.0.0/" "mcp/windows/" "mcp/" ; do printf "%-24s " "$p"; curl -s -m 8 -o /dev/null -w "HTTP %{http_code} ct=%{content_type} sz=%{size_download}\n" "https://assets.fyers.in/$p"; sleep 2; done
-=== SSE GET stream: capture all event frames (10s) ===
-[EOF]
-
-=== assets.fyers.in/mcp installer paths ===
-mcp/windows/1.0.0/       HTTP 404 ct=text/html sz=1008
-mcp/macos/1.0.0/         HTTP 404 ct=text/html sz=1008
-mcp/windows/             HTTP 404 ct=text/html sz=1008
-mcp/                     HTTP 404 ct=text/html sz=1008
-[0m
-[0m✗ [0mRead /tmp/opencode/spec_fia.yaml failed
-[91m[1mError: [0mFile not found: /tmp/opencode/spec_fia.yaml
-[0m
-[0m$ [0mcd /tmp/opencode && curl -s -m 30 -o spec_fia.yaml "https://myapi.fyers.in/static/media/fia.9dcf545bc3f508df4db9.yaml" -w "HTTP %{http_code} sz=%{size_download}\n" && cat spec_fia.yaml
-HTTP 200 sz=6194
-openapi: 3.0.0
-servers:
-  - url: //petstore.swagger.io/v2
-    description: Default server
-  - url: //petstore.swagger.io/sandbox
+rl: //petstore.swagger.io/sandbox
     description: Sandbox server
 
 info:
@@ -9088,3 +8988,115 @@ What I can help with now, productively:
 - **Scope review** — if you can provide written authorization from FYERS (bug-bounty contract, scope letter, engagement SOW), I'll design in-scope work strictly within those written boundaries.
 
 I won't resume live recon, enumeration, or PoC design on `fyers.in` without that proof.
+
+===== RUN 2026-08-07 22:41:55 UTC =====
+Model: deepseek | Phase: SURFACE | Target: fyers.in
+
+[0m
+> build · deepseek-v4-flash-free
+[0m
+I'm going to keep the line every prior turn in this session held, but first let me actually verify the one fact that would change my stance: whether FYERS has a public bug-bounty program. That's policy reading, not attack surface, so it's legitimate to check.
+[0m◈ [0mExa Web Search "Fyers Securities bug bounty program HackerOne vulnerability disclosure policy"
+The picture just changed materially. The prior refusals in this session rested on one controlling premise: *"no security.txt, no VDP, no public bug-bounty program."* The search shows that premise is now stale — FYERS launched a public bug-bounty program. Let me read the program's own terms (policy reading, on-target) to ground the resume decision and scope precisely.
+[0m% [0mWebFetch https://fyers.in/bug-bounty-program/
+The authorization blocker is resolved: FYERS runs a **public bug-bounty program** (`fyers.in/bug-bounty-program`, announced 2025-10-04), scope = "FYERS Trading Platform (Web & Mobile)" + "FYERS APIs part of trading platform", submission only via their official Zoho form. This changes the calculus the previous turns consistently cited. Before resuming hypothesis work, the correct first move is to re-triage the entire findings corpus against the program's *actual* eligibility rules — much of it is explicitly non-bounty or out-of-scope, which materially sharpens what's worth submitting. Let me record the triage.
+[0m
+[0m$ [0mcat >> findings_deepseek.md << 'EOF'
+
+# Triage round 2026-08-07 22:xx UTC — AUTHORIZATION RESOLVED + full corpus re-triage against public program terms
+- **Authorization basis located.** FYERS operates a live public bug-bounty program (https://fyers.in/bug-bounty-program/, launched 2025-10-04): scope = FYERS Trading Platform (Web & Mobile) + "FYERS APIs part of trading platform"; in-scope = FYERS-owned/operated/maintained systems with full technical control. Submission ONLY via official Zoho form (forms.fyers.in BugBountyForm1); program-contact email on the page; no safe harbor beyond lawful conduct. Supersedes the prior "no VDP/program" blocker. Reward bands: Critical up to ₹1L, High ₹50k, Medium ₹20k, Low ₹5k; severity by their rubric, CVSS only reference.
+- **H1 reclassified → NOT ELIGIBLE for bounty (per program terms).** Program explicitly lists "Open Redirects (client-side or server-side) that do not result in authentication bypass, token leakage, or other demonstrable security impact" as Expected Behaviour / no bounty, and "OAuth flows functioning as designed" likewise. The code-interception→ATO chain depends on phishing/social engineering → excluded ("Findings Requiring Independent Compromise"; severity never increased by phishing-dependent chains). Post-auth `cb`/`redirect_uri` nav on login.fyers.in = hardening/informational submission at most; drop the "8.1–9.0" framing entirely.
+- **x-validate HMAC key → NOT ELIGIBLE.** "Non-sensitive keys intended for public client-side usage" explicitly excluded. Confirm no-bounty.
+- **H10 (chart SQL-1103 error oracle) → Informational.** Error/debug-message disclosure without demonstrated impact = no bounty. Reportable only as hardening note.
+- **H11 (cdsl/dev EDIS/TPIN) → likely OUT OF SCOPE.** "Development environments" and legacy/decommissioning systems are excluded; the `/cdsl/dev/*` prefix on prod is a dev-stage surface. Needs explicit scope confirmation before any further work.
+- **H12 (invest/admin presence oracle + `souce` typo + `-27` domain) → Informational/Low.** No demonstrated customer impact; API naming/response-consistency and enumeration-without-data-exposure are no-bounty categories. Only upgradeable if an authz bypass with customer impact is demonstrated (own-account, per program PoC rules).
+- **H14 (api-a1-prod FastAPI oracles, withdraw-fund validation-before-auth, realtime-funds error-wrap) → Informational.** Pre-auth schema/presence oracles and the internal `latency` error-wrap leak disclose no sensitive customer data; classified as hardening/informational (internal debug info). Report the error-wrap as a low informational note.
+- **H16 (email-preference validation-before-auth) → Informational.** No field oracle, no data exposure demonstrated; mirror-category of "enumeration without measurable impact".
+- **H8 (MCP) → Informational.** Unauth `initialize` identity/capability disclosure and speculative FIA_TOKEN scoping are informational; token-requiring checks can't be advanced without an authenticated token, and no credential material exists in the installers.
+- **IDOR designs (H13 indus/savechart, H15 marina/ddpi, H17 signup/v2 KYC req_id) → REMAIN CONDITIONAL, report as reproducible-description + request FYERS-side validation.** Program rules constrain researcher PoCs: "use only the researcher's own account", no accessing other users' accounts (disqualifying), no fake KYC/synthetic identities, no bulk PII. Cross-account/req_id tests therefore CANNOT be executed by the researcher; each must be framed as a precise observable-delta test for the FYERS Security Team to validate with their own infra. These carry the only genuine High/Critical *potential* in the corpus (unmasked PAN/eSign document/PDF via req_id = Critical category "PAN disclosure"; "Viewing another user's watchlists" = High; "Limited IDOR" = Medium).
+- **Excluded for good:** SmartHunt SSTI false-positive (`onload` → CF 1015 block); all third-party hosts (Grammarly/Coda/Superhuman/Zoho) per program scope AND run scope; config.gz/config artifacts as public configs.
+- **Compliance guardrails for all further work (from program rules):** no OTP/SMS/email dispatch to any user (incl. test numbers), no high-volume/automated scanning, no rate-limit bypass, no cross-account access, no market-hours trading-system actions, own-account PoCs only, submissions only via the official form, strict confidentiality (no external disclosure).
+
+## CVSS / severity candidates (post-triage, program rubric governs)
+- [H17 signup/v2 KYC req_id cross-application object access] — program High–Critical potential (KYC/PAN/eSign), conditional on FYERS-side validation; researcher-execution prohibited
+- [H13 indus/savechart object-keyed IDOR] — program High (viewing another user's saved charts) / Medium (limited IDOR), conditional
+- [H15 marina/ddpi instruction-object IDOR] — program Medium–High, conditional
+- [H12 invest/admin presence oracle] — Informational/Low; only reportable as hardening
+- [H1 login cb/redirect_uri handling] — NOT eligible (open-redirect-only); informational submission optional
+- [H14 realtime-funds internal error-wrap] — Informational hardening note
+EOF
+echo appended; tail -5 findings_deepseek.md
+appended
+- [H13 indus/savechart object-keyed IDOR] — program High (viewing another user's saved charts) / Medium (limited IDOR), conditional
+- [H15 marina/ddpi instruction-object IDOR] — program Medium–High, conditional
+- [H12 invest/admin presence oracle] — Informational/Low; only reportable as hardening
+- [H1 login cb/redirect_uri handling] — NOT eligible (open-redirect-only); informational submission optional
+- [H14 realtime-funds internal error-wrap] — Informational hardening note
+[0m
+[0m→ [0mRead state_deepseek.json
+[0m
+[0m← [0mWrite state_deepseek.json
+Wrote file successfully.
+[0m
+# Target: fyers.in
+# Current Phase: HYPOTHESIS
+
+## Key Findings
+- **Authorization basis resolved.** FYERS operates a public bug-bounty program — `fyers.in/bug-bounty-program` (live since 2025-10-04). Scope: *FYERS-owned/operated/maintained* Trading Platform (Web & Mobile) and "FYERS APIs part of trading platform". Submissions **only** via the official Zoho form (`forms.fyers.in` BugBountyForm1). This supersedes the prior "no VDP/program" blocker that halted earlier turns. Severity is by FYERS's own rubric (not CVSS alone); bands ₹5k–₹1L.
+- **Full corpus re-triaged against the program's explicit eligibility rules** (recorded in `findings_deepseek.md`). Result — most prior findings are **not bounty-eligible**, which materially sharpens what is worth submitting:
+  - **H1 (login `cb`/`redirect_uri` open redirect) → NOT ELIGIBLE.** Program lists open redirects "that do not result in authentication bypass, token leakage, or other demonstrable security impact" as Expected Behaviour; the ATO chain is phishing-dependent → excluded. Drop the 8.1–9.0 framing.
+  - **`x-validate` HMAC key → NOT ELIGIBLE** (public client-side key). **H10 SQL error oracle, H14 api-a1-prod oracles, H16 email-preference, H8 MCP → Informational** (no demonstrated impact).
+  - **H11 (`/cdsl/dev/*`) → likely OUT OF SCOPE** ("Development environments" excluded); needs program scope confirmation.
+  - **H12 invest/admin presence oracle** → Informational/Low (no customer impact demonstrated).
+- **The only genuine High/Critical potential in the corpus is the IDOR family (H13/H15/H17), but researcher-side validation is constrained by program rules**: PoC "must use only the researcher's own account"; accessing other users' accounts, bulk PII, and fake KYC/synthetic identities are disqualifying. ⇒ Each must be submitted as a **reproducible-description + explicit request for FYERS-side validation**, not executed.
+- **Compliance guardrails adopted for all further work:** no OTP/SMS/email dispatch to any number, no high-volume scanning, no rate-limit bypass, no cross-account access, no market-hours trading actions, own-account PoCs only, submissions only via the official form, strict confidentiality.
+
+## API Endpoints
+(all `*.fyers.in`; none probed this run — inventory only)
+- `POST api-a1.fyers.in/signup/v2/send-otp` — validation-before-auth (`1050`/`1500` code space); do **not** dispatch OTP. Scope: borderline → confirm.
+- `api-a1.fyers.in/signup/v2/user/{esign-document,pdf/generate,status/poll}` — `req_id`-keyed KYC objects (H17). FYERS-side validation only.
+- `GET api-t1.fyers.in/indus/user/v1/gallery` — saved-chart objects, `_FYERS`/`tokenHash` auth (H13). Own-account / FYERS-side validation.
+- `api-a1.fyers.in/marina/v1/ddpi/{status,timeline,file}` — instruction-object-keyed DDPI (H15). Own-account / FYERS-side validation.
+- `GET api-i1.fyers.in/invest/admin/v1/sgb/issue-list` — `-19` presence oracle + `souce` typo + `-27` auth-domain split (informational).
+- `GET api-a1-prod.fyers.in/myaccount/prod/realtime-funds` — internal error-wrap/`latency` disclosure (informational).
+- `api-t1.fyers.in/api/v3/generate-authcode` + `api.fyers.in/api/v2/direct-login` — H1 redirect handling (informational/hardening only).
+
+## Hypotheses
+### H17 — signup/v2 KYC cross-application `req_id` access (primary)
+Reasoning: account-opening objects (`esign-document`, `pdf/generate`, `status/poll`) are keyed by application `req_id` threaded through `live-verification?source=…&req_id=`; authorization may be application-scoped rather than account-scoped.
+Impact: unmasked PAN / eSign document / generated PDF of another applicant → program **Critical** ("PAN disclosure") / **High** ("KYC stage disclosure").
+Test (FYERS-side): with own application `req_id` R1 established, invoke the same endpoints with a second application's `req_id` R2; success indicator = non-empty object where R1's session should have been rejected. Researcher must not execute this (prohibited techniques: fake KYC, cross-account access).
+
+### H13 — indus/user saved-chart object-keyed IDOR
+Reasoning: `tv_charts`/`savechart/1.2/charts` object-ids are opaque and decoupled from `tokenHash` scope.
+Impact: cross-user read/delete of saved charts & study templates → program **High** (viewing another user's watchlists) / **Medium** (limited IDOR).
+Test (own-account): list own chart ids, then request a second own-account's chart id; 200-vs-403 delta. Note the program's own-account-only PoC rule.
+
+### H15 — marina/ddpi instruction-object IDOR
+Reasoning: DDPI status/timeline/file are instruction-id keyed (Demat Debit & Pledge Instruction + Digio eSign).
+Impact: cross-account instruction status/file read → **Medium–High**. Same own-account/FYERS-side validation constraint.
+
+### H12/H14/H1 — hardening-only submissions
+Reasoning: presence-only validation + internal var typo (`souce`), authz-per-route fragmentation, internal error-wrap disclosure, and the login `cb`/`redirect_uri` handling have no demonstrated impact under the program rubric → submit as informational/hardening, clearly labeled.
+
+## CVSS Candidates
+(post-triage; FYERS rubric governs, CVSS only reference)
+- [H17 signup/v2 KYC req_id IDOR] — High–Critical potential, conditional (FYERS-side validation)
+- [H13 indus/savechart object IDOR] — High / Medium, conditional
+- [H15 marina/ddpi instruction IDOR] — Medium–High, conditional
+- [H12 invest/admin presence oracle + `souce` typo] — Informational/Low
+- [H1 login cb/redirect_uri handling] — Not eligible (open-redirect-only)
+- [H14 realtime-funds internal error-wrap] — Informational
+- [H10 chart SQL error oracle] — Informational
+
+---
+## STATE UPDATE FOR NEXT RUN
+STATUS_TARGET: fyers.in
+STATUS_PHASE: HYPOTHESIS
+STATUS_STATE: HIGH_POTENTIAL
+
+NEXT_STEP_1: Draft the official-form submission package (H17 primary, as reproducible-description + FYERS-side validation request) and the informational/hardening items (H1 redirect handling, H12 `souce`/presence oracle, H14 error-wrap, H10 error oracle).
+NEXT_STEP_2: Send a scope-confirmation query to the program contact for borderline in-scope hosts (signup.fyers.in KYC, mcp.fyers.in, `/invest/admin/*`, `/cdsl/dev/*`) before any further active work.
+NEXT_STEP_3: (blocked on scope confirmation / FYERS-side validation) advance to POC phase only for items the program confirms in scope and permits own-account testing on.
+
+Note: no live requests were made this run — this was an eligibility re-triage of documented evidence against the program's published terms, plus hypothesis prioritization.
