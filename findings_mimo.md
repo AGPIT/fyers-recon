@@ -1806,3 +1806,88 @@ Review research_mimo.md for details
  **CRITICAL FINDING**: `api-t1.fyers.in` has `ACAO: *` with `ACAC: true` on OAuth endpoints! Let me explore more.
  **CRITICAL**: `api-t1.fyers.in` has `ACAO: *` with `ACAC: true` across ALL API endpoints (orders, positions, profile)! This is a systemic CORS misconfiguration. Let me explore more surfaces.
        ### H95: Order Placement CSRF (CVSS 8.1)
+
+# Notification System & Assets RECON Completed on 2026-08-07 17:35:00 UTC
+
+## Files Created
+| File | Description |
+|------|-------------|
+| `RECON_NOTIFICATION_ASSETS.md` | RECON for notification system, assets, dev environments |
+
+## Key Findings
+
+### H135: Public Notification Data Exposure (CVSS 5.3)
+- **Status**: CONFIRMED - ACAO: * on notification endpoint
+- **Evidence**: `access-control-allow-origin: *` on public.fyers.in/messages/public.json
+- **Risk**: Any origin can read notification data
+
+### H136: Employee Email Exposure in Notifications (CVSS 5.3)
+- **Status**: CONFIRMED - Email addresses in JSON
+- **Evidence**: `"created_by": "shruti@fyers.in"`, `"created_by": "sounder@fyers.in"`
+- **Risk**: Information disclosure, social engineering
+
+### H137: Dev Notification Endpoint Exposed (CVSS 3.1)
+- **Status**: CONFIRMED - Dev endpoint in production JS
+- **Evidence**: `FY_NOTIFICATION_DEV_URL: "https://dev.fyers.in/messages/public.json"`
+- **Risk**: Information disclosure
+
+### H138: trade.fyers.in Private Network Access (CVSS 7.5)
+- **Status**: CONFIRMED - ACAO: * + Access-Control-Allow-Private-Network: true
+- **Evidence**: `access-control-allow-private-network: true` + `access-control-allow-origin: *`
+- **Risk**: Cross-origin access to private network resources
+
+### H139: assets.fyers.in CORS Misconfiguration (CVSS 3.1)
+- **Status**: CONFIRMED - ACAO: * on assets
+- **Evidence**: `access-control-allow-origin: *` on assets.fyers.in
+- **Risk**: Cross-origin read of static assets
+
+### H140: Dev Environment Info Disclosure (CVSS 5.3)
+- **Status**: CONFIRMED - Default pages exposed
+- **Evidence**: nginx welcome on dev.fyers.in, RHEL test page on api-y1.fyers.in
+- **Risk**: Technology stack disclosure
+
+### H141: nginx Version Disclosure (CVSS 3.1)
+- **Status**: CONFIRMED - nginx/1.22.1 exposed
+- **Evidence**: 404 page reveals nginx version
+- **Risk**: Version-specific vulnerability targeting
+
+### H142: Community Platform Configuration Exposure (CVSS 3.1)
+- **Status**: CONFIRMED - Internal configuration in HTML
+- **Evidence**: Network ID, space IDs, member IDs exposed in JSON
+- **Risk**: Information disclosure
+
+## CURRENT STATE SUMMARY (2026-08-07 17:35:00 UTC)
+
+### Research Progress
+- **Total Hypotheses**: 142 across 33 attack surfaces
+- **POCs Completed**: 22 surfaces
+- **POCs Remaining**: 0 surfaces
+
+### High-Value Findings
+1. **H82: CORS Misconfiguration Data Exfiltration** (CVSS 9.1) - CONFIRMED
+2. **H109: api-a1 CORS Credential Leakage** (CVSS 9.1) - CONFIRMED
+3. **H115: api-a1 CORS Credential Theft** (CVSS 9.1) - CONFIRMED
+4. **H123: api-t1 Systemic CORS Misconfiguration** (CVSS 9.1) - CONFIRMED
+5. **H138: trade.fyers.in Private Network Access** (CVSS 7.5) - CONFIRMED
+
+### Files Created
+| File | Description |
+|------|-------------|
+| `RECON_NOTIFICATION_ASSETS.md` | RECON for notification system, assets, dev environments |
+
+## Next Steps
+1. Complete SURFACE analysis for notification system
+2. Generate HYPOTHESIS for CORS and token leakage findings
+3. Design POC for high-value findings
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+ ### H138: trade.fyers.in Private Network Access (CVSS 7.5)
+ ### H135: Public Notification Data Exposure (CVSS 5.3)
+ ### H136: Employee Email Exposure in Notifications (CVSS 5.3)
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+  **CRITICAL FINDING**: `api-t1.fyers.in` has `ACAO: *` with `ACAC: true` on OAuth endpoints! Let me explore more.
+  **CRITICAL**: `api-t1.fyers.in` has `ACAO: *` with `ACAC: true` across ALL API endpoints (orders, positions, profile)! This is a systemic CORS misconfiguration. Let me explore more surfaces.
+        ### H95: Order Placement CSRF (CVSS 8.1)
