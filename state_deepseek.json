@@ -1,6 +1,1 @@
-{
-  "target": "fyers.in",
-  "phase": "RECON",
-  "status": "IN_PROGRESS",
-  "next_steps": []
-}
+{"target": "fyers.in", "phase": "SURFACE", "status": "IN_PROGRESS", "next_steps": []}
