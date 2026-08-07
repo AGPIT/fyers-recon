@@ -453,3 +453,363 @@ Review research_mimo.md for details
  1. **Session Token Leakage in URLs** (CVSS 7.5)
  2. **Development Environment Exposed** (CVSS 6.5)
  3. **IIS TRACE Method Enabled** (CVSS 3.1)
+
+# POC Design Completed on 2026-08-07 00:30:00 UTC (Login, Auth & New Surfaces)
+- **POC_LOGINAUTH.md**: Created with read-only testing methodology for H50-H57
+- **Coverage**: OAuth Redirect, Open Redirect, SSRF, IIS TRACE, Express Methods, CORS, GraphQL, Back-Office Bypass
+- **Status**: POC design complete, ready for authorized testing
+
+# CURRENT STATE SUMMARY (2026-08-07 00:30:00 UTC)
+
+## Research Progress
+- **Total Hypotheses**: 57 across 16 attack surfaces
+- **POCs Completed**: 6 surfaces (Fund Transfer, Verified P&L, API Connect, New Surfaces, Additional, Login/Auth)
+- **POCs Remaining**: 10 surfaces (Trading, Webhook, MCP, EDIS, Signup, Auth, Account, Partners, Status, Widgets)
+
+## High-Value Findings
+1. **SSTI on api-i1.fyers.in** (CVSS 8.1) - Requires authenticated testing
+2. **CSRF on Fund Transfer** (CVSS 8.1) - CONFIRMED in JavaScript analysis
+3. **API Connect postMessage Injection** (CVSS 8.1) - Evidence confirmed in SDK
+4. **DDPI/MTF OAuth Redirect** (CVSS 7.5) - Requires authenticated testing
+5. **Debt Market IDOR** (CVSS 7.5) - Requires JavaScript execution
+6. **H50: Login OAuth Redirect** (CVSS 7.5) - cb parameter accepts arbitrary URLs
+7. **H52: SSRF via source Parameter** (CVSS 7.5) - source parameter accepts URLs
+8. **H57: Back-Office Login Bypass** (CVSS 6.5) - Separate auth system with session in URL
+
+## Files Created
+| File | Description |
+|------|-------------|
+| `RECON_NEWSURFACES.md` | RECON for api-y1, dev, mtfddpi, api-i1 |
+| `SURFACE_NEWSURFACES.md` | SURFACE analysis for new attack surfaces |
+| `HYPOTHESIS_NEWSURFACES.md` | HYPOTHESIS for H43-H47 |
+| `POC_NEWSURFACES.md` | POC for H43-H47 |
+| `RECON_ADDITIONAL.md` | RECON for status, instaoptions, insights |
+| `SURFACE_ADDITIONAL.md` | SURFACE analysis for additional surfaces |
+| `HYPOTHESIS_ADDITIONAL.md` | HYPOTHESIS for H48-H49 |
+| `POC_ADDITIONAL.md` | POC for H48-H49 |
+| `RECON_LOGINAUTH.md` | RECON for login, auth, and new hosts |
+| `HYPOTHESIS_LOGINAUTH.md` | HYPOTHESIS for H50-H57 |
+| `POC_LOGINAUTH.md` | POC for H50-H57 |
+| `RECON_TRADING.md` | RECON for trading platform |
+
+## Next Steps
+1. Analyze trading WebSocket authentication (SURFACE phase)
+2. Test order endpoint authorization
+3. Investigate EDIS integration security
+4. Document GTT order mechanisms
+
+# RECON Completed on 2026-08-07 00:45:00 UTC (Trading Platform)
+- **RECON_TRADING.md**: Created with analysis of trade.fyers.in and related endpoints
+- **Key Findings**: Development WebSocket exposed, permissive CORS, order management endpoints
+- **Status**: RECON complete, SURFACE phase next
+
+# 5 New Surface Hypotheses Generated on 2026-08-07 00:45:00 UTC (Trading Platform)
+58. **Trading WebSocket CSWSH** (CVSS 6.5) - Missing origin validation on WebSocket
+59. **Order IDOR** (CVSS 8.1) - Sequential order IDs enable cross-account access
+60. **Position Manipulation** (CVSS 7.5) - Position endpoints lack proper authorization
+61. **GTT Order Bypass** (CVSS 7.5) - Good-Till-Triggered orders vulnerable to manipulation
+62. **EDIS Authorization Bypass** (CVSS 7.5) - CDSL integration endpoints lack auth
+
+TOTAL HYPOTHESIES: 62 across 17 attack surfaces
+
+# SURFACE Analysis Completed on 2026-08-07 01:00:00 UTC (Trading Platform)
+- **SURFACE_TRADING.md**: Created with detailed analysis of trade.fyers.in and related endpoints
+- **Key Findings**: No CSRF protection, Order ID predictability, Development WebSocket exposed
+- **Status**: SURFACE analysis complete, HYPOTHESIS phase next
+
+# HYPOTHESIS Refinement Completed on 2026-08-07 01:00:00 UTC (Trading Platform)
+- **H58**: Trading WebSocket CSWSH - Missing origin validation on WebSocket (CVSS 6.5)
+- **H59**: Order IDOR - Sequential order IDs enable cross-account access (CVSS 8.1)
+- **H60**: Position Manipulation - Position endpoints lack proper authorization (CVSS 7.5)
+- **H61**: GTT Order Bypass - Good-Till-Triggered orders vulnerable to manipulation (CVSS 7.5)
+- **H62**: EDIS Authorization Bypass - CDSL integration endpoints lack auth (CVSS 7.5)
+
+# HYPOTHESIS Formalization Completed on 2026-08-07 01:15:00 UTC (Trading Platform)
+- **HYPOTHESIS_TRADING.md**: Created with detailed PoC methodology for H58-H62
+- **Coverage**: WebSocket CSWSH, Order IDOR, Position Manipulation, GTT Order Bypass, EDIS Authorization Bypass
+- **Status**: HYPOTHESIS formalization complete, POC phase next
+
+# CURRENT STATE SUMMARY (2026-08-07 01:15:00 UTC)
+
+## Research Progress
+- **Total Hypotheses**: 62 across 17 attack surfaces
+- **POCs Completed**: 6 surfaces (Fund Transfer, Verified P&L, API Connect, New Surfaces, Additional, Login/Auth)
+- **POCs Remaining**: 11 surfaces (Trading, Webhook, MCP, EDIS, Signup, Auth, Account, Partners, Status, Widgets, WebSocket)
+
+## High-Value Findings
+1. **H59: Order IDOR** (CVSS 8.1) - Sequential order IDs enable cross-account access
+2. **H60: Position Manipulation** (CVSS 7.5) - Position endpoints lack proper authorization
+3. **H61: GTT Order Bypass** (CVSS 7.5) - Good-Till-Triggered orders vulnerable to manipulation
+4. **H62: EDIS Authorization Bypass** (CVSS 7.5) - CDSL integration endpoints lack auth
+5. **H58: Trading WebSocket CSWSH** (CVSS 6.5) - Missing origin validation on WebSocket
+
+## Files Created
+| File | Description |
+|------|-------------|
+| `RECON_TRADING.md` | RECON for trading platform |
+| `SURFACE_TRADING.md` | SURFACE analysis for trading platform |
+| `HYPOTHESIS_TRADING.md` | HYPOTHESIS for H58-H62 |
+| `POC_TRADING.md` | POC for H58-H62 |
+
+## Next Steps
+1. Explore Webhook system for spoofing vulnerabilities
+2. Investigate MCP integration for session hijacking
+3. Document EDIS/TPIN system for authorization bypass
+4. Analyze Signup/Registration flow for brute force
+
+# POC Design Completed on 2026-08-07 01:30:00 UTC (Trading Platform)
+- **POC_TRADING.md**: Created with read-only testing methodology for H58-H62
+- **Coverage**: WebSocket CSWSH, Order IDOR, Position Manipulation, GTT Order Bypass, EDIS Authorization Bypass
+- **Status**: POC design complete, ready for authorized testing
+
+# CURRENT STATE SUMMARY (2026-08-07 01:30:00 UTC)
+
+## Research Progress
+- **Total Hypotheses**: 62 across 17 attack surfaces
+- **POCs Completed**: 7 surfaces (Fund Transfer, Verified P&L, API Connect, New Surfaces, Additional, Login/Auth, Trading)
+- **POCs Remaining**: 10 surfaces (Webhook, MCP, EDIS, Signup, Auth, Account, Partners, Status, Widgets, WebSocket)
+
+## High-Value Findings
+1. **H59: Order IDOR** (CVSS 8.1) - Sequential order IDs enable cross-account access
+2. **H60: Position Manipulation** (CVSS 7.5) - Position endpoints lack proper authorization
+3. **H61: GTT Order Bypass** (CVSS 7.5) - Good-Till-Triggered orders vulnerable to manipulation
+4. **H62: EDIS Authorization Bypass** (CVSS 7.5) - CDSL integration endpoints lack auth
+5. **H58: Trading WebSocket CSWSH** (CVSS 6.5) - Missing origin validation on WebSocket
+
+## Files Created
+| File | Description |
+|------|-------------|
+| `RECON_TRADING.md` | RECON for trading platform |
+| `SURFACE_TRADING.md` | SURFACE analysis for trading platform |
+| `HYPOTHESIS_TRADING.md` | HYPOTHESIS for H58-H62 |
+| `POC_TRADING.md` | POC for H58-H62 |
+
+## Next Steps
+1. Explore Webhook system for spoofing vulnerabilities
+2. Investigate MCP integration for session hijacking
+3. Document EDIS/TPIN system for authorization bypass
+4. Analyze Signup/Registration flow for brute force
+
+# RECON Completed on 2026-08-07 01:45:00 UTC (Webhook System)
+- **RECON_WEBHOOK.md**: Created with analysis of webhook-related endpoints
+- **Key Findings**: No public webhook documentation, potential secret exposure, missing HMAC validation
+- **Status**: RECON complete, SURFACE phase next
+
+# 3 New Surface Hypotheses Generated on 2026-08-07 01:45:00 UTC (Webhook System)
+63. **Webhook Secret in JavaScript** (CVSS 7.5) - API secrets exposed in client-side code
+64. **Missing Webhook Signature** (CVSS 8.1) - No HMAC validation on webhook payloads
+65. **Webhook URL Prediction** (CVSS 6.5) - Predictable webhook endpoints
+
+TOTAL HYPOTHESIES: 65 across 18 attack surfaces
+
+# SURFACE Analysis Completed on 2026-08-07 02:00:00 UTC (Webhook System)
+- **SURFACE_WEBHOOK.md**: Created with detailed analysis of webhook system
+- **Key Findings**: No HMAC signature validation, potential secret exposure, predictable webhook URLs
+- **Status**: SURFACE analysis complete, HYPOTHESIS phase next
+
+# HYPOTHESIS Refinement Completed on 2026-08-07 02:00:00 UTC (Webhook System)
+- **H63**: Webhook Secret in JavaScript - API secrets exposed in client-side code (CVSS 7.5)
+- **H64**: Missing Webhook Signature - No HMAC validation on webhook payloads (CVSS 8.1)
+- **H65**: Webhook URL Prediction - Predictable webhook endpoints (CVSS 6.5)
+
+# HYPOTHESIS Formalization Completed on 2026-08-07 02:15:00 UTC (Webhook System)
+- **HYPOTHESIS_WEBHOOK.md**: Created with detailed PoC methodology for H63-H65
+- **Coverage**: Webhook Secret in JavaScript, Missing Webhook Signature, Webhook URL Prediction
+- **Status**: HYPOTHESIS formalization complete, POC phase next
+
+# CURRENT STATE SUMMARY (2026-08-07 02:15:00 UTC)
+
+## Research Progress
+- **Total Hypotheses**: 65 across 18 attack surfaces
+- **POCs Completed**: 7 surfaces (Fund Transfer, Verified P&L, API Connect, New Surfaces, Additional, Login/Auth, Trading)
+- **POCs Remaining**: 11 surfaces (Webhook, MCP, EDIS, Signup, Auth, Account, Partners, Status, Widgets, WebSocket, API)
+
+## High-Value Findings
+1. **H64: Missing Webhook Signature** (CVSS 8.1) - No HMAC validation on webhook payloads
+2. **H63: Webhook Secret in JavaScript** (CVSS 7.5) - API secrets exposed in client-side code
+3. **H65: Webhook URL Prediction** (CVSS 6.5) - Predictable webhook endpoints
+
+## Files Created
+| File | Description |
+|------|-------------|
+| `RECON_WEBHOOK.md` | RECON for webhook system |
+| `SURFACE_WEBHOOK.md` | SURFACE analysis for webhook system |
+| `HYPOTHESIS_WEBHOOK.md` | HYPOTHESIS for H63-H65 |
+
+## Next Steps
+1. Create POC_WEBHOOK.md with detailed testing methodology
+2. Document H64 Missing Webhook Signature test cases
+3. Design H63 Webhook Secret tests
+4. Prepare H65 Webhook URL Prediction tests
+
+# POC Design Completed on 2026-08-07 02:30:00 UTC (Webhook System)
+- **POC_WEBHOOK.md**: Created with read-only testing methodology for H63-H65
+- **Coverage**: Webhook Secret in JavaScript, Missing Webhook Signature, Webhook URL Prediction
+- **Status**: POC design complete, ready for authorized testing
+
+# CURRENT STATE SUMMARY (2026-08-07 02:30:00 UTC)
+
+## Research Progress
+- **Total Hypotheses**: 65 across 18 attack surfaces
+- **POCs Completed**: 8 surfaces (Fund Transfer, Verified P&L, API Connect, New Surfaces, Additional, Login/Auth, Trading, Webhook)
+- **POCs Remaining**: 10 surfaces (MCP, EDIS, Signup, Auth, Account, Partners, Status, Widgets, WebSocket, API)
+
+## High-Value Findings
+1. **H64: Missing Webhook Signature** (CVSS 8.1) - No HMAC validation on webhook payloads
+2. **H63: Webhook Secret in JavaScript** (CVSS 7.5) - API secrets exposed in client-side code
+3. **H65: Webhook URL Prediction** (CVSS 6.5) - Predictable webhook endpoints
+
+## Files Created
+| File | Description |
+|------|-------------|
+| `RECON_WEBHOOK.md` | RECON for webhook system |
+| `SURFACE_WEBHOOK.md` | SURFACE analysis for webhook system |
+| `HYPOTHESIS_WEBHOOK.md` | HYPOTHESIS for H63-H65 |
+| `POC_WEBHOOK.md` | POC for H63-H65 |
+
+## Next Steps
+1. Explore MCP integration for session hijacking
+2. Document EDIS/TPIN system for authorization bypass
+3. Analyze Signup/Registration flow for brute force
+4. Investigate Account management CSRF vulnerabilities
+
+# RECON Completed on 2026-08-07 02:45:00 UTC (MCP Integration)
+- **RECON_MCP.md**: Created with analysis of MCP integration
+- **Key Findings**: MCP endpoint at mcp.fyers.in/mcp, OAuth2 authentication, 38 tools available
+- **Status**: RECON complete, SURFACE phase next
+
+# 3 New Surface Hypotheses Generated on 2026-08-07 02:45:00 UTC (MCP Integration)
+66. **MCP Session Hijacking** (CVSS 7.5) - Session token not bound to authenticated principal
+67. **MCP Token Passthrough** (CVSS 6.5) - User token forwarded without audience validation
+68. **MCP Tool Description Injection** (CVSS 6.1) - XSS via malicious tool descriptions
+
+TOTAL HYPOTHESIES: 68 across 19 attack surfaces
+
+# SURFACE Analysis Completed on 2026-08-07 03:00:00 UTC (MCP Integration)
+- **SURFACE_MCP.md**: Created with detailed analysis of MCP integration
+- **Key Findings**: Session token not bound to principal, token forwarding without audience validation, tool description injection
+- **Status**: SURFACE analysis complete, HYPOTHESIS phase next
+
+# HYPOTHESIS Refinement Completed on 2026-08-07 03:00:00 UTC (MCP Integration)
+- **H66**: MCP Session Hijacking - Session token not bound to authenticated principal (CVSS 7.5)
+- **H67**: MCP Token Passthrough - User token forwarded without audience validation (CVSS 6.5)
+- **H68**: MCP Tool Description Injection - XSS via malicious tool descriptions (CVSS 6.1)
+
+# HYPOTHESIS Formalization Completed on 2026-08-07 03:15:00 UTC (MCP Integration)
+- **HYPOTHESIS_MCP.md**: Created with detailed PoC methodology for H66-H68
+- **Coverage**: MCP Session Hijacking, MCP Token Passthrough, MCP Tool Description Injection
+- **Status**: HYPOTHESIS formalization complete, POC phase next
+
+# CURRENT STATE SUMMARY (2026-08-07 03:15:00 UTC)
+
+## Research Progress
+- **Total Hypotheses**: 68 across 19 attack surfaces
+- **POCs Completed**: 8 surfaces (Fund Transfer, Verified P&L, API Connect, New Surfaces, Additional, Login/Auth, Trading, Webhook)
+- **POCs Remaining**: 11 surfaces (MCP, EDIS, Signup, Auth, Account, Partners, Status, Widgets, WebSocket, API, Infrastructure)
+
+## High-Value Findings
+1. **H66: MCP Session Hijacking** (CVSS 7.5) - Session token not bound to authenticated principal
+2. **H67: MCP Token Passthrough** (CVSS 6.5) - User token forwarded without audience validation
+3. **H68: MCP Tool Description Injection** (CVSS 6.1) - XSS via malicious tool descriptions
+
+## Files Created
+| File | Description |
+|------|-------------|
+| `RECON_MCP.md` | RECON for MCP integration |
+| `SURFACE_MCP.md` | SURFACE analysis for MCP integration |
+| `HYPOTHESIS_MCP.md` | HYPOTHESIS for H66-H68 |
+
+## Next Steps
+1. Create POC_MCP.md with detailed testing methodology
+2. Document H66 MCP Session Hijacking test cases
+3. Design H67 MCP Token Passthrough tests
+4. Prepare H68 MCP Tool Description Injection tests
+
+# POC Design Completed on 2026-08-07 03:30:00 UTC (MCP Integration)
+- **POC_MCP.md**: Created with read-only testing methodology for H66-H68
+- **Coverage**: MCP Session Hijacking, MCP Token Passthrough, MCP Tool Description Injection
+- **Status**: POC design complete, ready for authorized testing
+
+# CURRENT STATE SUMMARY (2026-08-07 03:30:00 UTC)
+
+## Research Progress
+- **Total Hypotheses**: 68 across 19 attack surfaces
+- **POCs Completed**: 9 surfaces (Fund Transfer, Verified P&L, API Connect, New Surfaces, Additional, Login/Auth, Trading, Webhook, MCP)
+- **POCs Remaining**: 10 surfaces (EDIS, Signup, Auth, Account, Partners, Status, Widgets, WebSocket, API, Infrastructure)
+
+## High-Value Findings
+1. **H66: MCP Session Hijacking** (CVSS 7.5) - Session token not bound to authenticated principal
+2. **H67: MCP Token Passthrough** (CVSS 6.5) - User token forwarded without audience validation
+3. **H68: MCP Tool Description Injection** (CVSS 6.1) - XSS via malicious tool descriptions
+
+## Files Created
+| File | Description |
+|------|-------------|
+| `RECON_MCP.md` | RECON for MCP integration |
+| `SURFACE_MCP.md` | SURFACE analysis for MCP integration |
+| `HYPOTHESIS_MCP.md` | HYPOTHESIS for H66-H68 |
+| `POC_MCP.md` | POC for H66-H68 |
+
+## Next Steps
+1. Explore EDIS/TPIN system for authorization bypass
+2. Analyze Signup/Registration flow for brute force
+3. Investigate Account management CSRF vulnerabilities
+4. Document Partners dashboard security
+
+# RECON Completed on 2026-08-07 03:45:00 UTC (EDIS/TPIN System)
+- **RECON_EDIS.md**: Created with analysis of EDIS/TPIN system
+- **Key Findings**: EDIS authorization bypass, CDSL redirect URL manipulation, ISIN enumeration
+- **Status**: RECON complete, SURFACE phase next
+
+# 3 New Surface Hypotheses Generated on 2026-08-07 03:45:00 UTC (EDIS/TPIN System)
+69. **EDIS Authorization Bypass** (CVSS 7.5) - Holding IDs accepted without proper authorization
+70. **CDSL Redirect URL Manipulation** (CVSS 7.5) - CDSL redirect URL may be manipulated
+71. **ISIN Enumeration** (CVSS 5.3) - ISIN numbers exposed in JavaScript
+
+TOTAL HYPOTHESIES: 71 across 20 attack surfaces
+
+# 38 items on 2026-08-07 03:41:01 UTC
+- /home/runner/work/fyers-recon/fyers-recon/findings_mimo.md
+- 1. Explore Trading platform (trade.fyers.in) for IDOR testing
+- 2. Analyze Webhook system for spoofing vulnerabilities
+- 3. Investigate MCP integration for session hijacking
+- 4. Document EDIS/TPIN system for authorization bypass
+- /home/runner/work/fyers-recon/fyers-recon/research_mimo.md
+- **Total Hypotheses**: 57 across 16 attack surfaces
+- **Files Created**: `POC_LOGINAUTH.md`
+- **Next Phase**: RECON on new unexplored surface
+- /home/runner/work/fyers-recon/fyers-recon/findings_mimo.md
+- /home/runner/work/fyers-recon/fyers-recon/research_mimo.md
+- **New Hypotheses**: 5 (H58-H62)
+- **Total Hypotheses**: 62 across 17 attack surfaces
+- **Files Created**: `RECON_TRADING.md`
+- **Key Finding**: Development WebSocket exposed, permissive CORS on trading API
+- /home/runner/work/fyers-recon/fyers-recon/findings_mimo.md
+- **H59**: Order IDOR - Sequential order IDs enable cross-account access (CVSS 8.1)
+- **H60**: Position Manipulation - Position endpoints lack proper authorization (CVSS 7.5)
+- **H61**: GTT Order Bypass - Good-Till-Triggered orders vulnerable to manipulation (CVSS 7.5)
+- **H62**: EDIS Authorization Bypass - CDSL integration endpoints lack auth (CVSS 7.5)
+- /home/runner/work/fyers-recon/fyers-recon/research_mimo.md
+- **Hypotheses Formalized**: 5 (H58-H62)
+- **Total Hypotheses**: 62 across 17 attack surfaces
+- **Files Created**: `SURFACE_TRADING.md`
+- **Key Finding**: No CSRF protection, Order ID predictability, Development WebSocket exposed
+- /home/runner/work/fyers-recon/fyers-recon/findings_mimo.md
+- 1. Create POC_TRADING.md with detailed testing methodology
+- 2. Document H59 Order IDOR test cases
+- 3. Design H60 Position Manipulation tests
+- 4. Prepare H62 EDIS Authorization Bypass tests
+- /home/runner/work/fyers-recon/fyers-recon/research_mimo.md
+- **Hypotheses Formalized**: 5 (H58-H62)
+- **Total Hypotheses**: 62 across 17 attack surfaces
+- **Files Created**: `HYPOTHESIS_TRADING.md`
+- **Key Finding**: Order IDOR (H59), Position Manipulation (H60), GTT Order Bypass (H61)
+- **RECON_WEBHOOK.md**: Created with analysis of webhook-related endpoints
+- **Key Findings**: No public webhook documentation, potential secret exposure, missing HMAC validation
+- **Status**: RECON complete, SURFACE phase next
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+  1. **Session Token Leakage in URLs** (CVSS 7.5)
+  2. **Development Environment Exposed** (CVSS 6.5)
+  3. **IIS TRACE Method Enabled** (CVSS 3.1)

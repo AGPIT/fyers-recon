@@ -1,12 +1,12 @@
 {
   "target": "fyers.in",
-  "phase": "POC",
+  "phase": "RECON",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Create POC_LOGINAUTH.md with detailed testing methodology",
-    "Document H50 OAuth redirect test cases",
-    "Design H52 SSRF test methodology",
-    "Prepare H57 back-office bypass tests",
-    "Create POC_LOGINAUTH.md with detailed testing methodology"
+    "Explore Trading platform (trade.fyers.in) for IDOR testing",
+    "Analyze Webhook system for spoofing vulnerabilities",
+    "Investigate MCP integration for session hijacking",
+    "Document EDIS/TPIN system for authorization bypass",
+    "Analyze trading WebSocket authentication"
   ]
 }
