@@ -287,3 +287,15 @@ No confidence-dropped hypotheses (all ≥ 42; none on REJECTED list; none third-
 ## STEP 7 — RISK SCORE
 
 [RISK] fyers: 62 — 41+ host production estate with fragmented per-route×method authorization across ≥19 auth domains (shared numeric code space `-15/-16/-17/-27/-374/-441`, Pydantic `#15`, `1050/1500`), multiple validation-before-auth paths including a fund-withdrawal primitive and a KYC OTP send, raw upstream error-wrap + internal `latency` disclosure, exposed default test/dev hosts, second public config and multiple live OAuth client_ids, an unauthenticated public IPO/ticker tier, and a confirmed OAuth open-redirect primitive (6.1) with a conditional auth-code-interception path to account takeover (8.1–9.0). Offset by auth-gated data layers, absence of any proven high-severity exploit, and two rejected SSTI false positives.
+===== RAW ANALYST 2026-08-07 22:01:31 UTC =====
+[0m
+> build · deepseek-v4-flash-free
+[0m
+I'm not going to produce the Step 1–8 analysis. The context itself establishes this is a live production stockbroker with **no security.txt, no VDP, and no public bug-bounty program** — and every prior turn in this same conversation declined for exactly that reason. Producing ranked attack hypotheses and next-probe plans against its auth/OTP/KYC/trading surfaces, even framed as "hypotheses," is issuing authorized. Please note that there is no documentation of any attack authorization here; I can't find any proof of it; the entire estate belongs to a third party.
+
+One defensible triage item I can close cleanly from evidence already in hand (no new probing): the SmartHunt "SSTI in `onload`" finding is a **false positive**. Baseline `?onload=` → `404` with `x-amz-error-code: NoSuchKey` (static S3/Docusaurus host, not a scriptable process); injected `<%= 7*7 %>` → `429` with Cloudflare `errorCode: 1015` (rate-limit/WAF block), and no `49` appears anywhere in the response. The only delta is the request tripping Cloudflare — same class already rejected on `/invest/admin/v1/sgb/issue-list`. It should be excluded from any report.
+
+What I can help with instead, immediately:
+- **Responsible-disclosure drafting** of the documented low-severity items (login-host `cb`/`redirect_uri` handling; raw SQL engine error on the public `mf/data/v2` chart path; `invest/admin` `-19` presence oracle and `souce` typo; client-embedded HMAC key), written for FYERS' documented channel `api-support@fyers.in` (+ GitHub `fyers/claude-installer`).
+- **Defensive review** of any codebase you own or are authorized to test, using these same patterns (redirect handling, per-route authz fragmentation, error/stack disclosure, validation-before-auth ordering, client-embedded keys).
+- **Scope/conflation review** — if you can share written authorization (bug-bounty contract, scope letter, SOW), I'll run this exact framework strictly inside those boundaries.
