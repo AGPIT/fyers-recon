@@ -1,63 +1,4 @@
-← [0mWrite SURFACE_PARTNERS.md
-Wrote file successfully.
-[0m
-[0m← [0mWrite HYPOTHESIS_PARTNERS.md
-Wrote file successfully.
-[0m
-[0m← [0mWrite POC_PARTNERS.md
-Wrote file successfully.
-[0m
-[0m← [0mWrite state_mimo.json
-Wrote file successfully.
-[0m
-[0m$ [0mcat >> /home/runner/work/fyers-recon/fyers-recon/findings_mimo.md << 'EOF'
-
-# Partners Dashboard CORS Analysis Completed on 2026-08-07 08:15:00 UTC
-
-## Files Created
-| File | Description |
-|------|-------------|
-| `RECON_PARTNERS.md` | RECON for Partners Dashboard |
-| `SURFACE_PARTNERS.md` | SURFACE analysis for Partners Dashboard |
-| `HYPOTHESIS_PARTNERS.md` | HYPOTHESIS for H82-H86 |
-| `POC_PARTNERS.md` | POC for H82-H86 |
-
-## Key Findings
-
-### H82: CORS Misconfiguration Data Exfiltration (CVSS 9.1)
-- **Status**: CONFIRMED - ACAO: * with ACAC: true
-- **Evidence**: `access-control-allow-origin: *` + `access-control-allow-credentials: true`
-- **Risk**: Any origin can read authenticated partner data
-
-### H83: Client Data Exfiltration via CORS (CVSS 8.1)
-- **Status**: UNVERIFIED - Requires authenticated testing
-- **Evidence**: view-my-clients-data endpoint with permissive CORS
-- **Risk**: Client PII exfiltration
-
-### H84: Revenue Data Exfiltration via CORS (CVSS 8.1)
-- **Status**: UNVERIFIED - Requires authenticated testing
-- **Evidence**: r611-report endpoint with permissive CORS
-- **Risk**: Financial data exfiltration
-
-### H85: CSRF on Partner Lead Creation (CVSS 7.5)
-- **Status**: UNVERIFIED - Requires authenticated testing
-- **Evidence**: No CSRF token validation on create-lead endpoint
-- **Risk**: Unauthorized lead creation
-
-### H86: CSRF on Partner Ticket Creation (CVSS 7.5)
-- **Status**: UNVERIFIED - Requires authenticated testing
-- **Evidence**: No CSRF token validation on create-ticket endpoint
-- **Risk**: Support system abuse
-
-## CURRENT STATE SUMMARY (2026-08-07 08:15:00 UTC)
-
-### Research Progress
-- **Total Hypotheses**: 86 across 23 attack surfaces
-- **POCs Completed**: 13 surfaces (Fund Transfer, Verified P&L, API Connect, New Surfaces, Additional, Login/Auth, Trading, Webhook, MCP, EDIS, Signup, Account, Partners)
-- **POCs Remaining**: 6 surfaces (Status, Widgets, WebSocket, API, Infrastructure, Auth)
-
-### High-Value Findings
-1. **H82: CORS Misconfiguration Data Exfiltration** (CVSS 9.1) - CONFIRMED - ACAO: * with ACAC: true
+ true
 2. **H83: Client Data Exfiltration via CORS** (CVSS 8.1) - Client PII at risk
 3. **H84: Revenue Data Exfiltration via CORS** (CVSS 8.1) - Financial data at risk
 4. **H85: CSRF on Partner Lead Creation** (CVSS 7.5) - No CSRF validation
@@ -10080,3 +10021,62 @@ NEXT_STEP_1: Complete final priority ranking
 NEXT_STEP_2: Generate comprehensive report
 NEXT_STEP_3: Explore additional attack surfaces
 ```
+
+===== RUN 2026-08-07 19:34:26 UTC =====
+Model: mimo | Phase: HYPOTHESIS | Target: fyers.in
+
+[0m
+> build · mimo-v2.5-free
+[0m
+I'll analyze the current state and identify gaps for the next research phase.
+
+## Analysis of Current State
+
+**Completed Work:**
+- 142 hypotheses across 33 attack surfaces
+- 23 surfaces with POCs completed
+- 0 surfaces remaining
+
+**High-Value CONFIRMED Findings:**
+| # | Hypothesis | CVSS | Status |
+|---|------------|------|--------|
+| H82 | CORS Misconfiguration Data Exfiltration | 9.1 | CONFIRMED |
+| H109 | api-a1 CORS Credential Leakage | 9.1 | CONFIRMED |
+| H115 | api-a1 CORS Credential Theft | 9.1 | CONFIRMED |
+| H123 | api-t1 Systemic CORS Misconfiguration | 9.1 | CONFIRMED |
+| H138 | trade.fyers.in Private Network Access | 7.5 | CONFIRMED |
+
+**UNVERIFIED High-Value Hypothesis:**
+| # | Hypothesis | CVSS | Status |
+|---|------------|------|--------|
+| H121 | SSTI Remote Code Execution | 8.1 | UNVERIFIED |
+
+## Gap Analysis
+
+The SmartHunt report shows H121 (SSTI) received a 429 response when injecting `<%= 7*7 %>`, but the actual evaluated result (49) was not confirmed in the response body. This hypothesis needs:
+1. Alternative payload testing to confirm template evaluation
+2. Different injection points on the same host
+3. Time-based or out-of-band confirmation techniques
+
+## Recommended Next Steps
+
+Since all surfaces are covered and POCs are complete, the research should either:
+1. **Deep-dive H121 (SSTI)** - Use alternative payloads and injection points
+2. **Comprehensive Report** - Generate final ranking and executive summary
+3. **Uncover new subdomains** - Use certificate transparency, DNS brute-force
+
+Given the system reminder indicates Plan Mode is active, I should provide analysis without executing changes.
+
+## STATE UPDATE FOR NEXT RUN
+
+```
+STATUS_TARGET: fyers.in
+STATUS_PHASE: HYPOTHESIS
+STATUS_STATE: HIGH_POTENTIAL
+
+NEXT_STEP_1: Deep-dive H121 SSTI with alternative payloads (time-based, OOB)
+NEXT_STEP_2: Generate comprehensive final report with all findings
+NEXT_STEP_3: Create executive summary for bug bounty submission
+```
+
+**Key Question:** Should I focus on verifying H121 (SSTI) with more aggressive testing, or proceed to generate the final comprehensive report? The SSTI finding has the highest unverified impact (CVSS 8.1) and could lead to RCE if confirmed.
