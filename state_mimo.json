@@ -1,12 +1,10 @@
 {
   "target": "fyers.in",
-  "phase": "SURFACE",
+  "phase": "RECON",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Complete SURFACE analysis for new endpoints",
-    "Generate HYPOTHESIS for CORS and token leakage findings",
-    "Design POC for high-value findings",
-    "Complete SURFACE analysis for new endpoints",
-    "Generate HYPOTHESIS for CORS and token leakage findings"
+    "Complete final priority ranking",
+    "Generate comprehensive report",
+    "Explore additional attack surfaces"
   ]
 }
