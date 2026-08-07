@@ -1,37 +1,4 @@
--cdn.fyers.in/v1/screeners/fy-screeners/candlestick/abandoned-baby-bottom
-   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/abandoned-baby-top
-   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/bearish-engulfing
-   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/bearish-harami
-   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/bearish-harami-cross
-   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/black-marubozu
-   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/bullish-engulfing-pattern
-   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/bullish-harami
-   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/bullish-harami-cross
-   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/bullish-kicking
-   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/candlestick-strength
-   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/dark-cloud-cover
-   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/downside-tasuki-gap
-   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/dragonfly-doji
-   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/hammer
-   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/hanging-man
-   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/identical-three-crows
-   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/inverted-hammer
-   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/morning-star
-   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/piercing-line
-   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/shooting-star
-   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/three-white-soldiers
-   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/upside-tasuki-gap
-   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/white-marubozu
-   https://api-t1-cdn.fyers.in/v1/screeners/similar
-   https://api-t1.fyers.in/flows/tc/se
-   https://api-t1.fyers.in/flows/tc/se/activate
-   https://api-t1.fyers.in/flows/tc/se/positionspnl
-   https://api-t1.fyers.in/flows/tc/timeline
-   https://api-t1.fyers.in/flows/tc/timeline/positions
-   https://api-t1.fyers.in/flows/tc/timeline/v2
-   https://api-t1.fyers.in/flows/tc/timeline/v3
-   https://api-t1.fyers.in/indus/data/v1/search/automate/underlying?symbol=
-   https://api-t1.fyers.in/smart-order/cancel
+r/cancel
    https://api-t1.fyers.in/smart-order/history
    https://api-t1.fyers.in/smart-order/limit
    https://api-t1.fyers.in/smart-order/modify
@@ -9155,3 +9122,24 @@ How I can actually help:
 - **A "how to scope this properly" brief** — the current programs/4-step methodology is fine; what's missing is written authorization before touching live hosts.
 
 If you can provide proof of an authorization from FYERS (bug-bounty contract, scope letter, engagement SOW), I'm fully able to resume deep research within that scope. Absent that, I'm happy to proceed with the disclosure draft or the defensive review.
+
+===== RUN 2026-08-07 09:12:59 UTC =====
+Model: deepseek | Phase: RECON | Target: fyers.in
+
+[0m
+> build · deepseek-v4-flash-free
+[0m
+I can't continue this research against FYERS.
+
+The task explicitly frames everything as pre-authorized one-time-earning, but there's no evidence FYERS authorized this, and prior runs in this same context already documented that the target has **no `security.txt`, no VDP, no HackerOne/security program** — the normal beacon of authorization. What I'm being asked to do is map a live production stockbroker's OTP/KYC/auth/trading APIs and design takeover PoCs. That's unauthorized security testing of a financial institution's production systems, regardless of the "read-only," "one phase deeper," or "bug-bounty style" framing. Renaming the phase or re-scoping the output format doesn't change the underlying activity.
+
+Two specific things I won't do:
+- **Report the appended "SSTI" finding.** I'll help you with it defensively. I *can* help with that from the evidence alone: it's a **false positive**. Baseline `?onload=` → `404` (S3 `NoSuchKey`, object doesn't exist); injected expression → `429` `errorCode:1015` (Cloudflare rate-limit/WAF "Access denied" block), with **no `49` rendered anywhere in the response**. No server-side evaluation occurred — the only delta is the request tripped Cloudflare. Reporting this as high-severity server-side template injection would get it dismissed and wouldn't look good. (This is the same class of false positive previously closed on `/invest/admin/v1/sgb/issue-list`.)
+- **Continue live reconnaissance of FYERS infrastructure.**
+
+Legitimate things I'll gladly help with instead:
+- **Responsible-disclosure drafting** of the genuine low-severity items already identified (login-host `cb`/`redirect_uri` handling; the raw SQL engine error on the public `mf/data/v2/scheme/details/chart` path; the admin-path presence-typ var typo `souce`), routed to FYERS' documented channel `api-support@fyers.in`. That's fine regardless of authorization.
+- **Defensive review** of a codebase you own or are authorized to test (redirect handling, per-route authz fragmentation, error/stack disclosure, client-embedded HMAC keys).
+- **Scope review** — if you have a real authorization (bug-bounty contract, scope letter, engagement SOW) from FYERS, I'll design and run in-scope read-only work within it.
+
+If you can share proof of authorization from FYERS, point me at it and I'll resume deep research strictly within that scope. Without it, I can't keep going down this path.
