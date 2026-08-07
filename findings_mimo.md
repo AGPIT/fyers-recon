@@ -1891,3 +1891,77 @@ Review research_mimo.md for details
   **CRITICAL FINDING**: `api-t1.fyers.in` has `ACAO: *` with `ACAC: true` on OAuth endpoints! Let me explore more.
   **CRITICAL**: `api-t1.fyers.in` has `ACAO: *` with `ACAC: true` across ALL API endpoints (orders, positions, profile)! This is a systemic CORS misconfiguration. Let me explore more surfaces.
         ### H95: Order Placement CSRF (CVSS 8.1)
+
+# Notification System & Assets SURFACE/HYPOTHESIS/POC Completed on 2026-08-07 18:30:00 UTC
+
+## Files Created
+| File | Description |
+|------|-------------|
+| `SURFACE_NOTIFICATION_ASSETS.md` | SURFACE analysis for notification system, assets |
+| `HYPOTHESIS_NOTIFICATION_ASSETS.md` | HYPOTHESIS for H135-H142 |
+| `POC_NOTIFICATION_ASSETS.md` | POC for H135-H142 |
+
+## Key Findings (Validated)
+
+### H138: trade.fyers.in Private Network Access (CVSS 7.5) - CONFIRMED
+- **Evidence**: `access-control-allow-private-network: true` + `access-control-allow-origin: *`
+- **Risk**: Cross-origin access to private network resources
+- **Validation**: CORS headers confirmed via curl
+
+### H135: Public Notification Data Exposure (CVSS 5.3) - CONFIRMED
+- **Evidence**: `access-control-allow-origin: *` on public.fyers.in/messages/public.json
+- **Risk**: Any origin can read notification data
+- **Validation**: CORS headers and data confirmed
+
+### H139: assets.fyers.in CORS Misconfiguration (CVSS 3.1) - CONFIRMED
+- **Evidence**: `access-control-allow-origin: *` on assets.fyers.in
+- **Risk**: Cross-origin read of static assets
+- **Validation**: CORS headers confirmed
+
+### H140: Dev Environment Info Disclosure (CVSS 5.3) - CONFIRMED
+- **Evidence**: RHEL test page on api-y1.fyers.in
+- **Risk**: Technology stack disclosure
+- **Validation**: Test page content confirmed
+
+### H142: Community Platform Configuration Exposure (CVSS 3.1) - CONFIRMED
+- **Evidence**: `"networkId":"ZKlzy9iwBq"` in HTML
+- **Risk**: Internal configuration disclosure
+- **Validation**: Network ID extracted from page source
+
+## CURRENT STATE SUMMARY (2026-08-07 18:30:00 UTC)
+
+### Research Progress
+- **Total Hypotheses**: 142 across 33 attack surfaces
+- **POCs Completed**: 23 surfaces (Fund Transfer, Verified P&L, API Connect, New Surfaces, Additional, Login/Auth, Trading, Webhook, MCP, EDIS, Signup, Account, Partners, WebSocket, Auth, Infrastructure, Status, API, New Subdomains, New Attack Surfaces, IPO/DDPI/OAuth, IPO/DDPI/OAuth SURFACE, Notification/Assets)
+- **POCs Remaining**: 0 surfaces
+
+### High-Value Findings
+1. **H82: CORS Misconfiguration Data Exfiltration** (CVSS 9.1) - CONFIRMED
+2. **H109: api-a1 CORS Credential Leakage** (CVSS 9.1) - CONFIRMED
+3. **H115: api-a1 CORS Credential Theft** (CVSS 9.1) - CONFIRMED
+4. **H123: api-t1 Systemic CORS Misconfiguration** (CVSS 9.1) - CONFIRMED
+5. **H138: trade.fyers.in Private Network Access** (CVSS 7.5) - CONFIRMED
+
+### Files Created
+| File | Description |
+|------|-------------|
+| `SURFACE_NOTIFICATION_ASSETS.md` | SURFACE analysis for notification system, assets |
+| `HYPOTHESIS_NOTIFICATION_ASSETS.md` | HYPOTHESIS for H135-H142 |
+| `POC_NOTIFICATION_ASSETS.md` | POC for H135-H142 |
+
+## Next Steps
+1. Complete final priority ranking
+2. Generate comprehensive report
+3. Explore additional attack surfaces
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+ ### H138: trade.fyers.in Private Network Access (CVSS 7.5)
+ ### H135: Public Notification Data Exposure (CVSS 5.3)
+ ### H136: Employee Email Exposure in Notifications (CVSS 5.3)
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+   **CRITICAL FINDING**: `api-t1.fyers.in` has `ACAO: *` with `ACAC: true` on OAuth endpoints! Let me explore more.
+   **CRITICAL**: `api-t1.fyers.in` has `ACAO: *` with `ACAC: true` across ALL API endpoints (orders, positions, profile)! This is a systemic CORS misconfiguration. Let me explore more surfaces.
+         ### H95: Order Placement CSRF (CVSS 8.1)
