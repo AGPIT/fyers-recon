@@ -1,30 +1,4 @@
-FIA_TOKEN)
-- `api-t2.fyers.in/quantainer/v1/charts/{futures,atm-iv,auto_atm_straddle,multi-strike-iv,multi_straddle_strangle,strategy,strategy/candles}` (auth `-401 valid token`)
-- `api-t2.fyers.in/automate/*` (full path set from config; auth `-16`)
-- `api-t2.fyers.in/osb/draft?strategy_id=` (404 at probe; route may live elsewhere)
-- `api-a1.fyers.in/funds/v1/api/*` (auth `-21`), `manage/account/{send_otp,verify_otp}`, `marina/v1/mtf/*` (auth `-16`)
-- `data.fyers.in/dev-fyers/savechart/1.2/charts` (500 invalid-method pre-auth; session-gated)
-- `automate-chn.fyers.in/automate/backtest/status` (auth `-16`)
-
-## Hypotheses
-### H8: MCP (`mcp.fyers.in`) cross-domain authz + unauthenticated schema disclosure (NEW, MEDIUM-HIGH)
-**Reasoning:** `initialize` is served unauthenticated and returns full server identity + capability flags; the real session/tools gate uses a separate `FIA_TOKEN` domain. If FIA_TOKEN scoping is implemented client-side or shared with OAuth `access_token` (the MCP package embeds a FYERS OAuth login), cross-domain privilege mixing is plausible. `tools/list` returns a hard error without session — a clean auth-boundary oracle.
-**Impact:** info disclosure (5.3); tool-level ATO if FIA_TOKEN == access_token scoping overlaps (6.5–8.0 conditional).
-**Read-only PoC design:** enumerate all JSON-RPC methods (`initialize`, `notifications/initialized`, `tools/list`, `resources/list`, `ping`) observing auth-gate vs protocol-gate error ordering; document error-shape table. No data-bearing calls.
-
-### H9: `quantainer` + `automate-chn` token-scoping boundary (NEW, MEDIUM)
-**Reasoning:** Distinct `-401 "valid token"` message and a second hostname serving `-16` trade-core both guard strategy/chart objects. A token issued by one domain's login may be honored by the other → cross-service authz.
-**Read-only PoC design:** document-only; requires an authorized token. Record request template for a hypothetical api-t1 token against quantainer and automate-chn.
-
-### H5 update: `strategy_id` / `order_id` / savechart object shapes (MEDIUM-HIGH)
-Full config path set now known; `strategy_id=` and `order_id=` query objects map to `automate/*`, `osb/*`, `add_funds_status?order_id=` — all auth-gated; IDOR testing deferred until an authorized token path exists (H7 app-registration or own account).
-
-## CVSS Candidates
-- [H8 MCP unauthenticated identity/capability disclosure] — CVSS 5.3
-- [H8 MCP FIA_TOKEN cross-domain scoping / tool ATO] — CVSS 6.5–8.0 (conditional)
-- [H9 quantainer/automate-chn cross-host token scoping] — CVSS 6.5 (conditional)
-- [H5 object-ID IDOR on automate/savechart/funds order_id] — CVSS 6.5–8.0 (behind auth)
-- Carried forward: H1 OAuth code interception 8.1–9.0 (open redirect 6.1 CONFIRMED), H3 refresh-token/pin walk 7.5–9.0, H4 config disclosure 5.3, H2/H6/H7 6.1–8.0.
+sure 5.3, H2/H6/H7 6.1–8.0.
 
 ---
 
@@ -9078,3 +9052,27 @@ What I'll gladly help with:
 - **Authorization/scope review** — if you can provide written FYERS authorization (bug-bounty contract, scope letter, engagement SOW), I'll help design in-scope work strictly within its boundaries.
 
 I'm ready to proceed with any of those now.
+
+===== RUN 2026-08-07 18:28:40 UTC =====
+Model: deepseek | Phase: SURFACE | Target: fyers.in
+
+[0m
+> build · deepseek-v4-flash-free
+[0m
+I can't continue the live reconnaissance and PoC design against `fyers.in`.
+
+Nothing in this run changes the facts the earlier turns in this session already established: this is a live production stockbroker handling OTP, KYC, money movement, and trading, and the prior context itself documents that it has **no `security.txt`, no VDP, and no public bug-bounty program** — only a support inbox (`api-support@fyers.in`). Re-staging the phase, tightening scope, or framing the work as "read-only research" doesn't create an authorization that isn't documented. Continuing to probe its auth/KYC/OTP/trading gates and to design IDOR/takeover test plans is unauthorized security testing of a financial institution's production systems, so I won't do more of it — this is consistent with every prior turn in this session.
+
+One genuinely useful thing I can do from the evidence already in this run, without touching the target:
+
+**The SmartHunt "SSTI in `onload`" finding is a false positive — do not report it.**
+- Baseline `GET /recaptcha/enterprise.js?onload=` → `404` with `x-amz-error-code: NoSuchKey` — a static S3/Docusaurus host (`meta generator: Docusaurus`), not a scriptable process.
+- Injected `?onload=%3C%25%3D+7%2A7+%25%3E` → `429` with `properties: {errorCode: 1015}`.
+- `1015` is Cloudflare's rate-limit/WAF "Access denied" block, not template evaluation. The response body contains **no `49`** anywhere. The report's "Expected vs Actual" claims it "returned 49," but its own pasted response shows no such value — a real SSTI would render `49` in a non-Cloudflare body. The only behavioral delta is that the second request tripped Cloudflare (`Retry-After: 0`, `no-store`). Same false-positive class already closed on `/invest/admin/v1/sgb/issue-list`. Filing it as high-severity injection would be dismissed.
+
+What I'll gladly help with instead:
+- **Responsible-disclosure drafting** of the genuine low-severity items already documented (login-host `cb`/`redirect_uri` handling; the raw MS SQL engine error on the public `mf/data/v2/scheme/details/chart` path; the `invest/admin` presence-only oracle and `souce` typo; the client-embedded HMAC key), written for the documented channel — SSTI explicitly excluded.
+- **Defensive review** of a codebase you own or are authorized to test (redirect handling, per-route authz fragmentation, error/stack disclosure, validation-before-auth ordering, client-embedded keys).
+- **Authorization review** — if you can provide written FYERS authorization (bug-bounty contract, scope letter, engagement SOW), I'll help design in-scope work strictly within its boundaries.
+
+I'm ready to proceed with any of these now.
