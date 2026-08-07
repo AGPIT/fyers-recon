@@ -1,10 +1,1 @@
-{
-  "target": "fyers.in",
-  "phase": "POC",
-  "status": "HIGH_POTENTIAL",
-  "next_steps": [
-    "Review `reports/submission-package_fyers-bb.md` against program terms and submit the official-form package (H17 primary + H13/H15 designs + informational bundle).",
-    "Send the scope-confirmation query to the program contact (signup/v2 KYC, mcp.fyers.in, `/invest/admin/*`, `/cdsl/dev/*`) before any further active work.",
-    "Blocked on scope confirmation / FYERS-side validation; only then advance to live POC execution for items the program confirms in scope and permits own-account testing on."
-  ]
-}
+{"target": "fyers.in", "phase": "POC", "status": "HIGH_POTENTIAL", "next_steps": ["Review `reports/submission-package_fyers-bb.md` against program terms and submit the official-form package (H17 primary + H13/H15 designs + informational bundle).", "Send the scope-confirmation query to the program contact (signup/v2 KYC, mcp.fyers.in, `/invest/admin/*`, `/cdsl/dev/*`) before any further active work.", "Blocked on scope confirmation / FYERS-side validation; only then advance to live POC execution for items the program confirms in scope and permits own-account testing on."]}

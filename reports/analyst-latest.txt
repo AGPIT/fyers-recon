@@ -1,48 +1,56 @@
-[CHANGED] Authorization basis: FYERS runs a public bug-bounty program (fyers.in/bug-bounty-program, live 2025-10-04); scope = FYERS Trading Platform (Web & Mobile) + FYERS APIs; submissions only via official Zoho form — supersedes the prior "no VDP/program" blocker.
-[CHANGED] H1 (login cb/redirect_uri open redirect + code-interception→ATO chain) → NOT ELIGIBLE: program excludes open redirects and "OAuth flows functioning as designed"; ATO chain is phishing-dependent ("Findings Requiring Independent Compromise").
-[CHANGED] x-validate HMAC key (sha256:979cfb8f…) → NOT ELIGIBLE (excluded "non-sensitive keys intended for public client-side usage").
-[CHANGED] H10/H14/H16/H8 → Informational only (error/debug disclosure, schema oracles, no demonstrated customer impact).
-[CHANGED] H11 (/cdsl/dev/*) → likely OUT OF SCOPE ("Development environments" excluded); needs program scope confirmation.
-[CHANGED] IDOR family H13/H15/H17 → conditional, researcher execution prohibited (own-account-only PoC rule, no fake KYC, no cross-account); submit as reproducible-description + FYERS-side validation.
-[NEW] Compliance guardrails adopted: no OTP/SMS dispatch, no rate-limit bypass, no cross-account access, no market-hours trading actions, own-account PoCs only, submissions only via official form.
-[PRIO] api-a1.fyers.in/signup/v2 KYC (req_id-keyed) — **7.00** = attack 8, business 9, tech 7, gate 4, cloud 5, fresh 6
-[PRIO] api-t1.fyers.in/indus/user/v1 saved-chart gallery (chartId object) — **6.15** = attack 7, business 7, tech 6, gate 5, cloud 5, fresh 5
+[NEW] Authorization basis: FYERS public bug-bounty program (`fyers.in/bug-bounty-program`, live since 2025-10-04) — scope = FYERS Trading Platform (Web & Mobile) + FYERS APIs part of trading platform; submission only via official Zoho form (`forms.fyers.in` BugBountyForm1) — supersedes the prior "no VDP/program" blocker.
+[NEW] Deliverable `reports/submission-package_fyers-bb.md` written (2026-08-07 23:2x) — H17 primary + H13/H15 PoC designs + informational/hardening bundle; no live requests made.
+[NEW] `api-a1.fyers.in/signup/v2/*` KYC account-opening API (auth domain #19, own `1050/1500` code space, application-keyed by `req_id`/`digio_doc_id`) recovered from `signup.fyers.in/main.dart.js`.
+[NEW] `config.fyers.in/config/config.gz` — second public config artifact (S3 JSON, 135,008 B, 41 hosts, 989 URLs; 13 URLs unique vs `indus/v1/config`, incl. 3 new live OAuth client_ids) — configs must be diffed each run.
+[NEW] `api-a1-prod.fyers.in` FastAPI/Pydantic microservice gateway (auth fingerprints #15/#16/#17); `withdraw-fund` validation-before-auth on a money path; `realtime-funds` HTTP-200 raw trade-core `-16` error-wrap + internal `latency`.
+[NEW] `mtfddpi.fyers.in` → `api-a1.fyers.in/marina/v1/ddpi/{esign,esignValidate,approveName,status,timeline,user/listing/file}` + `marina/v1/mtf/send_\otp` (all auth-first, `-16`).
+[NEW] `utility/v2/public/email-preference` validation-before-auth (auth fingerprint #18: `401 Invalid or expired authorization token`); schema recovered from 31 MB web bundle.
+[NEW] `ipo.fyers.in` public, unauthenticated, object-keyed `offer_details_v2` query on `api-i1`.
+[NEW] Static inventory: `fy/cdsl/v2/*` (prod v2 twin of `cdsl/dev`), `user/v3/app/*` OAuth app registry, `nucleus/v1/fia/{chart-insights,option-chain-insights}`, `journal.fyers.in/journal/?token=`, `charts-cdn.fyers.in`.
+[CHANGED] H1 (login `cb`/`redirect_uri`) reclassified to NOT ELIGIBLE (open redirects / "OAuth flows functioning as designed" excluded; ATO chain phishing-dependent) — no ATO framing, informational only.
+[CHANGED] x-validate client HMAC key (sha256:979cfb8f…) → NOT ELIGIBLE ("non-sensitive keys intended for public client-side usage").
+[CHANGED] H10/H12/H14/H16/H8 → Informational only; H11 `/cdsl/dev/*` likely OUT OF SCOPE (dev environments excluded) — scope-confirmation pending.
+[CHANGED] IDOR family H13/H15/H17 → conditional, researcher execution prohibited (own-account-only PoC rule); submit as reproducible-description + FYERS-side validation.
+[CHANGED] Guardrails in force: no OTP/SMS dispatch, no rate-limit bypass, no cross-account access, no market-hours trading actions, submissions ONLY via official form.
+[PRIO] api-a1.fyers.in/signup/v2 KYC (`req_id`-keyed) — **7.00** = attack 8, business 9, tech 7, gate 4, cloud 5, fresh 6
+[PRIO] api-t1.fyers.in.inds/user/v1 saved-chart gallery (opaque `chartId`/study-id) — **6.15** = attack 7, business 7, tech 6, gate 5, cloud 5, fresh 5
 [PRIO] api-a1.fyers.in/marina/v1/ddpi (instruction objects) — **6.00** = attack 7, business 7, tech 5, gate 5, cloud 5, fresh 5
-[HYP] signup/v2 KYC cross-application IDOR via `req_id` (H17)
+[HYP] signup/v2 KYC cross-application `req_id` access (H17)
 class: IDOR
-asset: api-a1.fyers.in/signup/v2/user/{esign-document,pdf/generate,status/poll,esign/accept-name-mismatch}
+asset: api-a1.fyers.in/signup/v2/user/{esign-document,pdf/generate,status/poll,esign/accept-name-mismatch,esign-success,esign/clear-status,change-esign-status}
 confidence: 45
-reasoning: account-creation objects are keyed by application `req_id` threaded via `digio_doc_id` through eSign/PDF/KYC-status flows (`live-verification?source={verification|pan|esign|edit_address}&req_id=`); pre-auth gate is validation-before-auth only (`1050`/`1500`, OTP dispatch is the auth-gated step) so data-layer authorization scoping is unproven.
-evidence_needed: 200 vs 403/404 when the same endpoints are requested with a second applicant's `req_id` under one authenticated applicant session; whether a self-computed `x-validate` (client-embedded constant, attacker-computable) unlocks any pre-auth step.
-verify_steps: AUTH_HELPED: (researcher execution prohibited — program rules; FYERS-side design) authenticated own-app session → `GET /signup/v2/user/status/poll`/`esign-document`/`pdf/generate` with own `req_id` baseline, then a foreign application's `req_id`, diff codes. No OTP dispatch / no real-number submission by anyone.
-impact: cross-application read of unmasked PAN, eSign documents, KYC PDFs → program Critical ("PAN disclosure") / High ("KYC stage disclosure").
-testability: HUMAN_ONLY
+reasoning: Account-creation objects are keyed by application `req_id` threaded through `live-verification?source={verification|pan|esign|edit_address}&req_id=` and `digio_doc_id` (eSign/PDF/status flows). Pre-auth gate is validation-before-auth only (`1050/1500`, OTP dispatch is the gated step), so data-layer authorization scoping is unproven. If `req_id` is the sole object key and authz is session-scoped, a foreign `req_id` yields cross-app KYC PII/eSign documents/PDFs.
+evidence_needed: 200-with-data vs 403/404/authent, when one authenticated applicant session requests another applicant's `req_id` on the listed endpoints; and whether a self-computed `x-validate` (client-embedded key, attacker-recomputable) unlocks any pre-auth step.
+verify_steps: AUTH_HELPED: (authorized, FYERS-side only — researcher execution prohibited by program rules) own-app `req_id` baseline on `GET/POST /signup/v2/user/status/poll`, `/user/ping-document`, `/user/pdf/generate`, then substitute a second application's `req_id`; diff response codes. No OTP/real-number contact.
+impact: cross-application read of unmasked PAN, eSign documents, KYC PDFs → program Critical ("PAN disclosure")/High ("KYC stage disclosure").
 [HYP] indus/user saved-chart object-keyed IDOR (H13)
 class: IDOR
-asset: api-t1.fyers.in/indus/user/v1/gallery + data.fyers.in/dev-fyers/savechart/1.2/{charts,study_templates}
 confidence: 42
-reasoning: chart/study-template objects are keyed by opaque `chartId`/study-id decoupled from `tokenHash` (`at_hash`) scope; pre-auth gate is content-type-sensitive method-gate (500 invalid-method), no user data reachable pre-auth.
-evidence_needed: 200 vs 403 when a second account's `chartId`/study-template id is requested under one authenticated `_FYERS` session; whether gallery DELETE accepts any `token_id`.
-verify_steps: AUTH_HELPED: (own-account only; FYERS-side design) `GET /indus/user/v1/gallery` (or `GET /savechart/1.2/charts` with session) to list own ids, then request a foreign `chartId`/study-template id and diff response codes; test DELETE `token_id` scope on gallery.
-impact: cross-account read/delete of saved charts and study templates → program High ("viewing another user's watchlists") / Medium (limited IDOR).
+asset: fyi-t1.fyi.fyers.in .. indus/eser/v1/saved-chart/gallery + data.fyers.in/dev-fyers/savechart/1.2/{charts,study_templates}
+reasoning: Saved-chart/study-template objects are keyed by opaque `chartId`/study-id decoupled from `tokenHash` (`at_hash`) scope; pre-auth method-gate is content-type-sensitive (500 invalid-method), no user data pre-auth. `_FYERS`-cookie auth with `tokenHash` org scoping is unproven.
+evidence_needed: 200-with-data vs 403/404 when a second account's `chartId`/study-template id is requested under one authenticated `_FYERS` session; whether gallery DELETE accepts a foreign `token_id`.
+verify_steps: AUTH_HELPED: (FYERS-side/own-account design) `GET /indus/user/v1/gallery` (or `GET /savechart/1.2/charts` with session) to list account A ids, then request a foreign `chartId`/study template id; diff codes; test `token_id` scope on DELETE. Passive re-fetch of the 500 method-gate already recorded.
+impact: cross-account read/delete of saved charts and study templates → program High ("viewing another user's watchlists")/Medium (limited IDOR).
 testability: HUMAN_ONLY
-[HYP] marina/ddpi instruction-object IDOR (H15)
+[HYP] bearer-scope gap: `marina`/DDPI instruction-object IDOR (H15)
 class: IDOR
-asset: api-a1.fyers.in/marina/v1/ddpi/{status,timeline,user/listing/file}
 confidence: 40
-reasoning: DDPI (Demat Debit & Pledge Instruction + Digio eSign) status/timeline/file endpoints are instruction-object-keyed; uniformly `-16` auth-first pre-auth (no pre-auth oracle), so scoping is unproven until an authenticated session exists.
-evidence_needed: 200 vs 403 when a second account's instruction id is requested on status/timeline/file under one authenticated session.
-verify_steps: AUTH_HELPED: (own-account only; FYERS-side design) create own DDPI instruction, then request a foreign instruction id on `GET /marina/v1/ddpi/status` and `/timeline`, diff codes.
-impact: cross-account instruction status/file read → program Medium–High.
+asset: api-a1.fing/in/marina/v1/ddpi/{status,timeline,user/listing,file/esign}
+reasoning: DDPI (Demat Debit & Pledge Instruction + Digio eSign) status/timeline/file endpoints are instruction-object-keyed; uniformly `-16` auth-first pre-final (no pre-auth oracle), so object-scope authorization is unproven until an authenticated instruction exists.
+evidence_needed: 200-with-data vs 403/404 when a second account's instruction id is requested on status/timeline/file under one authenticated session.
+verify_steps: AUTH_HELPED: (FYERS-side design) own DDPI instruction established (own account), then request a foreign instruction id on `GET /marina/v1/mtp/status` and `/timeline`, diff codes. No execution by researcher.
+impact: cross-account DDPI instruction status/documental read → program Medium–High.
 testability: HUMAN_ONLY
-[PARKED] H1 login `cb`/`redirect_uri` OAuth flow — program terms explicitly exclude open redirects and OAuth-as-designed; ATO chain is phishing-dependent (excluded); no bounty value, informational/hardening only.
-[PARKED] x-validate HMAC key (sha256:979cfb8f…) — excluded class (public client-side key); no bounty.
-[PARKED] H12 invest/admin presence oracle + `souce` typo; H14 api-a1-prod funds/oracles; H16 email-preference; H8 MCP; H10 chart SQL error oracle — Informational only (no demonstrated impact), not hypotheses.
-[PARKED] SmartHunt "SSTI in onload" — rejected false positive (baseline 404 NoSuchKey vs injected 429/errorCode1015 CF block, no `49` rendered).
-[PARKED] Third-party hosts (Grammarly/Coda/Superhuman/Zoho) — OOS per scope and program.
-[FINAL] survivors re-ranked: H17 (45) > H13 (42) > H15 (40) — all HUMAN_ONLY, FYERS-side validation required; none executed by researcher.
-[NEXT] HUMAN: Finalize the official-form submission package — H17 as reproducible-description + explicit request for FYERS-side validation, plus the informational/hardening bundle (H1 redirect handling, H12 `souce`/presence oracle, H14 realtime-funds error-wrap, H10 error oracle, x-validate hardening note), and in the same message request program scope-confirmation for borderline hosts (signup.fyers.in, mcp.fyers.in, /invest/admin/*, /cdsl/dev/*) before any further active work.
-[LEARN] ACCEPTED IDOR @ api-a1.fyers.in/signup/v2 (`req_id`-keyed KYC objects): three independent object-keyed IDOR candidates now documented (signup/v2, indus/savechart, marina/ddpi) — class conditionally alive, all unproven, all require FYERS-side validation under program rules.
-[LEARN] REJECTED OATH (open-redirect-only) @ login.fyers.in: program terms exclude open redirects and OAuth-as-designed; H1 not bounty-eligible — class dead for scoring purposes.
-[LEARN] REJECTED XSS/SSTI @ api-connect-docs.fyers.in: static S3/Docusaurus; injected `onload` → CF 429/errorCode1015 rate-limit/WAF block, no `49` rendered — false positive reaffirmed (second host corroboration).
-[RISK] fyers: 62 — A broad 41-host production estate with fragmented per-route×method authorization across ≥19 auth domains (shared numeric code space `-15/-16/-17/-27/-374/-441`, Pydantic `#15`, `1050/1500`), multiple validation-before-auth paths including a fund-withdrawal primitive and a KYC OTP send, raw upstream error-wrap + internal `latency` disclosure, second public config artifact with new live OAuth client_ids, exposed default test/dev hosts, an unauthenticated public IPO/ticker tier, and a confirmed open-redirect primitive on the login host. Now under an explicit public bounty program, but the only genuine High/Critical potential (object-keyed IDOR family) is unproven and researcher-execution-prohibited; the majority of the corpus is informational or not bounty-eligible, and two SSTI reports are rejected false positives.
+[PARKED] H1 login `cb`/`redirect_uri` (OAuth) — not eligible under program terms (open redirects; OAuth-as-designed); informational/hardening carryover only.
+[PARKED] Hard-coded `x-validate` client key (sha256:…c20ce?) — excluded category "non-sensitive keys intended for public client-side usage"; weaker anti-CSRF note only.
+[PARKED] H14 funds tier (`withdraw-fund` validation-before-method-on-money-path, per-route×method auth fragmentation, `realtime-funds` error-wrap) — Informational; no customer-data impact demonstrated, cross-account inaccessible under own-account rule.
+[PARKED] email-preference (H16), H10 chart SQL error-oracle, H12 invest/admin `-19`/`souce` presence oracle, H8 MCP initialize — informational/hardening, no demonstrated impact.
+[PARKED] SmartHunt "SSTI-in-`onload`" — false positive (baseline 404 NoSuchKey vs injected 429 CF `errorCode 1015`, no `49` rendered), corroborated across two hosts; class excluded.
+[PARKED] Third-party host inventory (Grammarly/Coda/Superhuman/Zoho) — out of program scope and run scope.
+[FINAL] survivors re-ranked: H17 signup/v2 (60) > H13 saved-chart (45) > H15 marina/dtpi (44) — all HUMAN_ONLY (FYERS-side), none executed by researcher.
+[NEXT] HUMAN: review `reports/submission-package_fyers-bb.md` against the program terms, then submit the official-form package via `spreadsheets/forms.fyers.in` Bug if senior participation/priority, but *only after* sending the documented scope-confirmation query to the program contact for the borderline surfaces (signup/v2 KYC, mcp.fyers inclusive, `/invest/uiet`, `/cdsi/started`) — no next action; H17/H13/H15 remain blocked on that confirmation and FYERS-side data-object validation (no OTP/data-dispatch until scoped).
+[LEARN] REJECTED XSL/SSTI class @ api-connect-docs.fyers.in (static Docusaurus/S3, NoSuchKey then CF 125/errorCode1015 block, no `49`) — reaffirmed across two hosts; report-generation noise.
+[LEARN] ACCEPTED IDOR class @ api-a1.signup/v2 + data/indus-saved-charts + marina/ddpi — three independent object-keyed authorization surfaces exist (req_id, chartId, instruction-id), all unproven, all require FYERS-side validation under program rules (researcher execution prohibited).
+[LEARN] REJECTED OATH (open-redirect-only) @ login.fyers.in — program terms exclude open-reflects and OAuth-as-designed; class dead for scoring purposes.
+[LEARN] REJECTED hard-coded-key category (`x-validate` HMAC) — excluded by program (public client key); informational only.
+[RISK] fyers — 62 — 41-host production estate, now under an explicit public bounty program that authorizes active testing of trading-platform APIs, but every genuine High/Critical lead (object-keyed IDOR family H13/H15/H17, incl. PAN/PDF/eSign exposure) is unproven and researcher-execution-prohibited under the program's own-account rule; validation-before-auth on money (withdraw-fund) and OTP-send (signup/v2) paths, per-route×method authorization fragmentation, raw upstream error-wrap + internal `latency` disclosure, and second public config with new OAuth client ids broaden the likely attack surface. Offset: no confirmed high-severity exploit in corpus, auth-gated data layers, H1 OATH class and SSTI class rejected, majority of corpus informational/not bounty-eligible.
