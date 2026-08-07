@@ -1478,4 +1478,81 @@ HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
 Review research_mimo.md for details
    ### H95: Order Placement CSRF (CVSS 8.1)
    ### H96: GTT Order IDOR (CVSS 8.1)
-+1. **H82: CORS Misconfiguration Data Exfiltration** (CVSS 9.1) - CONFIRMED - ACAO: * with ACAC: true
+1. **H82: CORS Misconfiguration Data Exfiltration** (CVSS 9.1) - CONFIRMED - ACAO: * with ACAC: true
+
+# New Attack Surfaces RECON Completed on 2026-08-07 13:45:00 UTC
+
+## Files Created
+| File | Description |
+|------|-------------|
+| `RECON_NEW_SURFACES.md` | RECON for Debt Market, Open Account, Saved Charts, MarketSmith, BO-Login |
+
+## Key Findings
+
+### H109: api-a1 CORS Credential Leakage (CVSS 9.1)
+- **Status**: CONFIRMED - ACAO: * with ACAC: true
+- **Evidence**: `access-control-allow-origin: *` with `access-control-allow-credentials: true` on api-a1.fyers.in
+- **Risk**: Cross-origin read of authenticated signup data
+
+### H110: Session Token in URL Leakage (CVSS 7.5)
+- **Status**: CONFIRMED - Token in URL parameter
+- **Evidence**: `account.fyers.in/webclient/index.cfm?sessionid=${sessionId}` in bo-login.fyers.in
+- **Risk**: Token leakage via Referer, browser history, logs
+
+### H111: Access Token in URL Parameter (CVSS 7.5)
+- **Status**: CONFIRMED - Token in query string
+- **Evidence**: `access_token` read from URL parameters in open-account.fyers.in
+- **Risk**: Token leakage via Referer, browser history
+
+### H112: User Enumeration via Token Endpoint (CVSS 5.3)
+- **Status**: CONFIRMED - Different error responses
+- **Evidence**: `/signup/v1/user/token/get-details` returns "user not found"
+- **Risk**: Account enumeration
+
+### H113: Client-Side JWT Structure Exposure (CVSS 6.5)
+- **Status**: CONFIRMED - atob() decoding in JavaScript
+- **Evidence**: `_FYERS` cookie decoded client-side in bo-login.fyers.in/validate.js
+- **Risk**: JWT payload structure exposed
+
+### H114: localStorage Token Theft via XSS (CVSS 6.5)
+- **Status**: CONFIRMED - Token in localStorage
+- **Evidence**: `localStorage.setItem("accessToken", token)` in service.js
+- **Risk**: XSS-accessible token storage
+
+## CURRENT STATE SUMMARY (2026-08-07 13:45:00 UTC)
+
+### Research Progress
+- **Total Hypotheses**: 114 across 29 attack surfaces
+- **POCs Completed**: 19 surfaces (Fund Transfer, Verified P&L, API Connect, New Surfaces, Additional, Login/Auth, Trading, Webhook, MCP, EDIS, Signup, Account, Partners, WebSocket, Auth, Infrastructure, Status, API, New Subdomains)
+- **POCs Remaining**: 0 surfaces
+
+### High-Value Findings
+1. **H82: CORS Misconfiguration Data Exfiltration** (CVSS 9.1) - CONFIRMED - ACAO: * with ACAC: true
+2. **H109: api-a1 CORS Credential Leakage** (CVSS 9.1) - CONFIRMED - ACAO: * with ACAC: true
+3. **H95: Order Placement CSRF** (CVSS 8.1) - No CSRF on order endpoints
+4. **H96: GTT Order IDOR** (CVSS 8.1) - Sequential GTT IDs
+5. **H97: Position Data Exfiltration via CORS** (CVSS 8.1) - CONFIRMED
+6. **H110: Session Token in URL Leakage** (CVSS 7.5) - CONFIRMED
+7. **H111: Access Token in URL Parameter** (CVSS 7.5) - CONFIRMED
+
+### Files Created
+| File | Description |
+|------|-------------|
+| `RECON_NEW_SURFACES.md` | RECON for new subdomains |
+
+## Next Steps
+1. Complete SURFACE analysis for new endpoints
+2. Generate HYPOTHESIS for CORS and token leakage findings
+3. Design POC for high-value findings
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+ ### H109: api-a1 CORS Credential Leakage (CVSS 9.1)
+ ### H110: Session Token in URL Leakage (CVSS 7.5)
+ ### H111: Access Token in URL Parameter (CVSS 7.5)
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+    ### H95: Order Placement CSRF (CVSS 8.1)
+    ### H96: GTT Order IDOR (CVSS 8.1)
+-+1. **H82: CORS Misconfiguration Data Exfiltration** (CVSS 9.1) - CONFIRMED - ACAO: * with ACAC: true

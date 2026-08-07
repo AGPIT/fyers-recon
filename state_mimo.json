@@ -3,10 +3,10 @@
   "phase": "SURFACE",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Complete SURFACE analysis for API Management",
-    "Generate HYPOTHESIS for API endpoints",
+    "Complete SURFACE analysis for new endpoints",
+    "Generate HYPOTHESIS for CORS and token leakage findings",
     "Design POC for high-value findings",
-    "Complete final priority ranking",
-    "Generate comprehensive report"
+    "Complete SURFACE analysis for new endpoints",
+    "Generate HYPOTHESIS for CORS and token leakage findings"
   ]
 }
