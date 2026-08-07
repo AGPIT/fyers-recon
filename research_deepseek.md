@@ -1,53 +1,4 @@
-/api-t2.fyers.in/quantainer/v1/charts/strategy/candles
-   https://api-t2.fyers.in/trade/v3/baskets/execute/v3
-   https://automate-chn.fyers.in/automate/backtest/
-   https://automate-chn.fyers.in/automate/backtest/cancel
-   https://automate-chn.fyers.in/automate/backtest/result
-   https://automate-chn.fyers.in/automate/backtest/status
-   https://automate-chn.fyers.in/automate/backtest/trade-book-export
-   https://automate-chn.fyers.in/automate/backtest/trade-book/
-   https://data.fyers.in/dev-fyers/savechart/1.2/charts
-   https://savedcharts.fyers.in
-   https://screeners.fyers.in/koshi/cug/async/screeners/
-   https://screeners.fyers.in/koshi/v2/async/screeners/
-   https://screeners.fyers.in/koshi/v2/budget/events
-   https://screeners.fyers.in/koshi/v2/eventDetails
-   https://screeners.fyers.in/koshi/v2/events
-   https://screeners.fyers.in/koshi/v2/market-analytics/analytics
-   https://screeners.fyers.in/koshi/v2/market-analytics/bulk-block-insider
-   https://screeners.fyers.in/koshi/v2/market-analytics/company-filings
-   https://screeners.fyers.in/koshi/v2/market-analytics/config
-   https://screeners.fyers.in/koshi/v2/market-analytics/config/v2
-   https://screeners.fyers.in/koshi/v2/market-analytics/config/v3
-   https://screeners.fyers.in/koshi/v2/market-analytics/fii-dii
-   https://screeners.fyers.in/koshi/v2/market-analytics/latest-expiry
-   https://screeners.fyers.in/koshi/v2/market-analytics/latest-expiry/commodity-options
-   https://screeners.fyers.in/koshi/v2/market-analytics/oi-heatmap
-   https://screeners.fyers.in/koshi/v2/market-analytics/sectors
-   https://screeners.fyers.in/koshi/v2/market-analytics/sectors/budget
-   https://screeners.fyers.in/koshi/v2/market-analytics/sectors/commodity
-   https://screeners.fyers.in/koshi/v2/market-overview/advances-declines
-   https://screeners.fyers.in/koshi/v2/market-overview/commodity-markets
-   https://screeners.fyers.in/koshi/v2/market-overview/index-performance
-   https://screeners.fyers.in/koshi/v2/market-overview/snapshot
-   https://screeners.fyers.in/koshi/v2/market-overview/tab-config
-   https://screeners.fyers.in/koshi/v2/screeners/
-   https://screeners.fyers.in/koshi/v2/screeners/about
-   https://screeners.fyers.in/koshi/v2/screeners/block-deals
-   https://screeners.fyers.in/koshi/v2/screeners/company-details
-   https://screeners.fyers.in/koshi/v2/screeners/company-financial/balance-sheet
-   https://screeners.fyers.in/koshi/v2/screeners/company-financial/cashflow
-   https://screeners.fyers.in/koshi/v2/screeners/company-financial/fundamental/balance-sheet
-   https://screeners.fyers.in/koshi/v2/screeners/company-financial/fundamental/cashflow
-   https://screeners.fyers.in/koshi/v2/screeners/company-financial/fundamental/pnl-annual
-   https://screeners.fyers.in/koshi/v2/screeners/company-financial/fundamental/pnl-quarterly
-   https://screeners.fyers.in/koshi/v2/screeners/company-financial/pnl
-   https://screeners.fyers.in/koshi/v2/screeners/company-financial/quarterly
-   https://screeners.fyers.in/koshi/v2/screeners/companyFinancials
-   https://screeners.fyers.in/koshi/v2/screeners/config
-   https://screeners.fyers.in/koshi/v2/screeners/corporate-details/announcements
-   https://screeners.fyers.in/koshi/v2/screeners/corporate-details/annual-reports
-   https://screeners.fyers.in/koshi/v2/screeners/corporate-details/investor-presentations
+ers.in/koshi/v2/screeners/corporate-details/investor-presentations
    https://screeners.fyers.in/koshi/v2/screeners/dividends
    https://screeners.fyers.in/koshi/v2/screeners/financial-overview-chart
    https://screeners.fyers.in/koshi/v2/screeners/financial-overview?symbol=symbol
@@ -9107,3 +9058,28 @@ What I will help with instead:
 - **Scope/authorization review** — if you can provide proof of an FYERS authorization (real bug-bounty contract, scope letter, engagement SOW), I will design and run read-only research strictly within that written scope.
 
 I'm not going to proceed with further live reconnaissance, endpoint enumeration, or takeover-PoC design on fyers.
+
+===== RUN 2026-08-07 11:11:55 UTC =====
+Model: deepseek | Phase: RECON | Target: fyers.in
+
+[0m
+> build · deepseek-v4-flash-free
+[0m
+I can't continue this reconnaissance against fyers.in.
+
+This is a live production stockbroker handling OTP, KYC, trading, and money movement, and nothing in either this prompt or the prior context establishes that FYERS authorized this testing. In fact, the prior runs themselves repeatedly documented that the target has **no `security.txt`, no VDP, and no public bug-bounty program**, and that the only documented channel is the support address `api-support@fyers.in` — a support inbox, not a testing authorization. Re-labeling the phase, re-scoping the output format, renumbering CVSS, or framing it as "one-time-earning / already validated" does not create an authorization that isn't there. Continuing to map its auth, OTP, KYC, and trading endpoints and to design account-takeover and IDOR test plans is unauthorized security testing of a financial institution's production systems, so I won't do more of that.
+
+One technical item I can address cleanly from the evidence already in this run, without touching the target: the appended **"SSTI in `onload`" finding is a false positive and should not be reported.**
+
+- Baseline `?onload=` → `404` with `x-amz-error-code: NoSuchKey` — the object `recaptcha/enterprise.js` simply does not exist. This is a static S3/Docusaurus host, not a scriptable process.
+- Injected `?onload=%3C%25%3D+7*7+%25%3E` → `429` with `properties: {errorCode: 1015 }`.
+- `1015` is Cloudflare's **rate-limit / WAF block** ("Access denied"), not a template evaluation. The response is the stock CF block page and contains **no `49` anywhere**. The report's "Expected vs Actual" claims it "returned 49," but the pasted response shows no such value — a real SSTI would render `49` in a non-Cloudflare body.
+- The only behavioral difference between the two requests is that the second tripped Cloudflare (Retry-After: 0, private no-store cache). This is the same false-positive class previously closed on `/invest/admin/v1/sgb/issue-list` (baseline auth error → injected `429` `1015` block). Reporting this as high-severity server-side injection would be dismissed immediately.
+
+What I'll gladly help with instead:
+
+- **Responsible-disclosure drafting** — a clean, professional report of the genuine low-severity items already documented (login-host `cb`/`redirect_uri` handling; the raw MS SQL engine error on the public `mf/data/v2/scheme/details/chart` path; the `invest/admin` `-19`/`souce`-typo presence oracle; the client-embedded HMAC key hardening note), written for FYERS' documented channel.
+- **Defensive review** of a codebase you own or are authorized to test, on these same patterns (redirect handling, per-route authz fragmentation, error/stack disclosure, validation-before-auth ordering, client-embedded secrets).
+- **Authorization/scope review** — if you can provide proof of an FYERS authorization (bug-bounty contract, scope letter, engagement SOW), I'll help design in-scope work within that written scope.
+
+If you have a real, written authorization from FYERS, share it and I'll resume within its exact boundaries. Without it, I can't proceed with deeper live research on this target.
