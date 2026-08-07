@@ -3,8 +3,10 @@
   "phase": "RECON",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Explore debt.fyers.in, marketsmith.fyers.in, insights.fyers.in",
-    "Test Zoho services (people.fyers.in, works.fyers.in)",
-    "Generate hypotheses for underexplored surfaces"
+    "Submit findings to bug bounty program",
+    "Monitor for remediation",
+    "Conduct follow-up assessment",
+    "Submit findings to bug bounty program",
+    "Monitor for remediation"
   ]
 }
