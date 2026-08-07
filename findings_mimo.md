@@ -435,3 +435,21 @@ Review research_mimo.md for details
 1. **Session Token Leakage in URLs** (CVSS 7.5)
 2. **Development Environment Exposed** (CVSS 6.5)
 3. **IIS TRACE Method Enabled** (CVSS 3.1)
+
+# HYPOTHESIS Refinement Completed on 2026-08-06 16:00:00 UTC (Login, Auth & New Surfaces)
+- **H50**: Login OAuth Redirect Manipulation - cb parameter accepts arbitrary URLs (CVSS 7.5)
+- **H51**: Community Open Redirect to Phishing - redirect parameter allows external URLs (CVSS 4.7)
+- **H52**: SSRF via source Parameter - api-a1/api-i1 accept URLs in source param (CVSS 7.5)
+- **H53**: IIS TRACE Method Enabled - Cross-Site Tracing potential on int-invest (CVSS 3.1)
+- **H54**: Express Risky HTTP Methods - DELETE/PATCH/PUT on marketdata-api (CVSS 3.1)
+- **H55**: Permissive CORS on API - ACAO: * on api.fyers.in and data.fyers.in (CVSS 5.3)
+- **H56**: Community GraphQL Exposed - GraphQL endpoint on community.fyers.in (CVSS 5.3)
+- **H57**: Back-Office Login Bypass - bo-login.fyers.in separate auth system (CVSS 6.5)
+
+TOTAL HYPOTHESIES: 57 across 16 attack surfaces
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+ 1. **Session Token Leakage in URLs** (CVSS 7.5)
+ 2. **Development Environment Exposed** (CVSS 6.5)
+ 3. **IIS TRACE Method Enabled** (CVSS 3.1)

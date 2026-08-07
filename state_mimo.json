@@ -1,11 +1,12 @@
 {
   "target": "fyers.in",
-  "phase": "HYPOTHESIS",
+  "phase": "POC",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Formalize H50-H57 with detailed PoC methodology",
-    "Analyze login.fyers.in OAuth callback validation",
-    "Test bo-login.fyers.in session management",
-    "Investigate API token refresh mechanism"
+    "Create POC_LOGINAUTH.md with detailed testing methodology",
+    "Document H50 OAuth redirect test cases",
+    "Design H52 SSRF test methodology",
+    "Prepare H57 back-office bypass tests",
+    "Create POC_LOGINAUTH.md with detailed testing methodology"
   ]
 }
