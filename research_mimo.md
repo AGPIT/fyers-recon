@@ -1,193 +1,4 @@
- true
-2. **H83: Client Data Exfiltration via CORS** (CVSS 8.1) - Client PII at risk
-3. **H84: Revenue Data Exfiltration via CORS** (CVSS 8.1) - Financial data at risk
-4. **H85: CSRF on Partner Lead Creation** (CVSS 7.5) - No CSRF validation
-5. **H86: CSRF on Partner Ticket Creation** (CVSS 7.5) - No CSRF validation
-
-### Files Created
-| File | Description |
-|------|-------------|
-| `RECON_PARTNERS.md` | RECON for Partners Dashboard |
-| `SURFACE_PARTNERS.md` | SURFACE analysis for Partners Dashboard |
-| `HYPOTHESIS_PARTNERS.md` | HYPOTHESIS for H82-H86 |
-| `POC_PARTNERS.md` | POC for H82-H86 |
-
-## Next Steps
-1. Explore WebSocket EDIS data exposure
-2. Analyze Auth flow for session fixation
-3. Document API management security
-4. Investigate alerts.fyers.in notification system
-EOF
-
-(no output)
-[0m
-[0m$ [0mcat >> /home/runner/work/fyers-recon/fyers-recon/research_mimo.md << 'EOF'
-
-===== RUN 2026-08-07 08:15:00 UTC =====
-Model: mimo | Phase: Partners Dashboard CORS | Target: fyers.in
-
-# Target: fyers.in
-# Current Phase: Partners Dashboard CORS Analysis - COMPLETE
-
-## Summary
-
-### Partners Dashboard Analysis
-
-| Component | Finding | Risk |
-|-----------|---------|------|
-| CORS Configuration | ACAO: * with ACAC: true | CRITICAL |
-| Client Data | Exfiltration possible | HIGH |
-| Revenue Data | Exfiltration possible | HIGH |
-| Lead Creation | No CSRF validation | MEDIUM |
-| Ticket Creation | No CSRF validation | MEDIUM |
-
-### Hypotheses Validated
-
-| # | Hypothesis | CVSS | Status |
-|---|------------|------|--------|
-| 82 | CORS Misconfiguration Data Exfiltration | 9.1 | CONFIRMED |
-| 83 | Client Data Exfiltration via CORS | 8.1 | UNVERIFIED |
-| 84 | Revenue Data Exfiltration via CORS | 8.1 | UNVERIFIED |
-| 85 | CSRF on Partner Lead Creation | 7.5 | UNVERIFIED |
-| 86 | CSRF on Partner Ticket Creation | 7.5 | UNVERIFIED |
-
-### Files Created
-
-| File | Description |
-|------|-------------|
-| `RECON_PARTNERS.md` | RECON for Partners Dashboard |
-| `SURFACE_PARTNERS.md` | SURFACE analysis for Partners Dashboard |
-| `HYPOTHESIS_PARTNERS.md` | HYPOTHESIS for H82-H86 |
-| `POC_PARTNERS.md` | POC for H82-H86 |
-
----
-
-## Combined Priority Ranking (All 86 Hypotheses)
-
-| Priority | Hypothesis | CVSS | Surface |
-|----------|------------|------|---------|
-| 1 | #4: appIdHash Bypass | 9.1 | Auth |
-| 2 | #14: MCP OAuth Token Theft | 9.1 | MCP |
-| 3 | #15: EDIS Authorization Bypass | 9.1 | EDIS |
-| 4 | #82: CORS Misconfiguration Data Exfiltration | 9.1 | Partners |
-| 5 | #43: SSTI Remote Code Execution | 8.1 | API |
-| 6 | #59: Order IDOR | 8.1 | Trading |
-| 7 | #1: IDOR on Orders | 8.1 | Trading |
-| 8 | #6: Webhook Spoofing | 8.1 | Webhook |
-| 9 | #20: PIN Brute Force | 8.1 | Signup |
-| 10 | #24: Multi-Factor Auth Bypass | 8.1 | Signup |
-| 11 | #25: CSRF on Withdrawal | 8.1 | Fund Transfer |
-| 12 | #31: Account Mgmt CSRF | 8.1 | Account |
-| 13 | #33: API Connect postMessage | 8.1 | API Connect |
-| 14 | #37: Fund Transfer CSRF | 8.1 | Fund Transfer |
-| 15 | #41: SSTI on SGB Issue List | 8.1 | API |
-| 16 | #64: Missing Webhook Signature | 8.1 | Webhook |
-| 17 | #72: PIN Brute Force | 8.1 | Signup |
-| 18 | #75: CSRF on Fund Transfer | 8.1 | Fund Transfer |
-| 19 | #76: Order Placement CSRF | 8.1 | Trading |
-| 20 | #83: Client Data Exfiltration via CORS | 8.1 | Partners |
-| 21 | #84: Revenue Data Exfiltration via CORS | 8.1 | Partners |
-| 22 | #2: Refresh Token Race | 7.5 | Auth |
-| 23 | #9: Webhook Secret Leakage | 7.5 | Webhook |
-| 24 | #11: MCP Session Hijacking | 7.5 | MCP |
-| 25 | #16: CDSL Redirect Manipulation | 7.5 | EDIS |
-| 26 | #19: OTP Brute Force | 7.5 | Signup |
-| 27 | #26: IDOR on Bank Details | 7.5 | Fund Transfer |
-| 28 | #27: Race Condition Withdrawal | 7.5 | Fund Transfer |
-| 29 | #30: Verified P&L API IDOR | 7.5 | Verified P&L |
-| 30 | #32: Tax P&L API IDOR | 7.5 | API |
-| 31 | #38: Fund Transfer IDOR | 7.5 | Fund Transfer |
-| 32 | #34: SDK Key Theft via XSS | 7.5 | API Connect |
-| 33 | #44: DDPI/MTF OAuth Redirect | 7.5 | EDIS |
-| 34 | #45: Debt Market IDOR | 7.5 | Investment |
-| 35 | #47: Account Opening PII Disclosure | 7.5 | Account |
-| 36 | #50: Login OAuth Redirect | 7.5 | Auth |
-| 37 | #52: SSRF via source | 7.5 | API |
-| 38 | #60: Position Manipulation | 7.5 | Trading |
-| 39 | #61: GTT Order Bypass | 7.5 | Trading |
-| 40 | #62: EDIS Authorization Bypass | 7.5 | EDIS |
-| 41 | #63: Webhook Secret in JavaScript | 7.5 | Webhook |
-| 42 | #66: MCP Session Hijacking | 7.5 | MCP |
-| 43 | #69: EDIS Authorization Bypass | 7.5 | EDIS |
-| 44 | #70: CDSL Redirect URL Manipulation | 7.5 | EDIS |
-| 45 | #73: OTP Brute Force | 7.5 | Signup |
-| 46 | #77: EDIS Authorization Bypass | 7.5 | EDIS |
-| 47 | #78: Profile Modification CSRF | 7.5 | Account |
-| 48 | #85: CSRF on Partner Lead Creation | 7.5 | Partners |
-| 49 | #86: CSRF on Partner Ticket Creation | 7.5 | Partners |
-| 50 | #35: Notification Spoofing | 6.5 | Partners |
-| 51 | #28: Session Exposure | 6.5 | Fund Transfer |
-| 52 | #39: Partner Dashboard Access | 6.5 | Partner |
-| 53 | #57: Back-Office Login Bypass | 6.5 | Auth |
-| 54 | #58: Trading WebSocket CSWSH | 6.5 | WebSocket |
-| 55 | #65: Webhook URL Prediction | 6.5 | Webhook |
-| 56 | #67: MCP Token Passthrough | 6.5 | MCP |
-| 57 | #79: Watchlist Manipulation CSRF | 6.5 | Account |
-| 58 | #80: Token Leakage via Query String | 6.5 | Account |
-| 59 | #46: Saved Charts XSS | 6.1 | Charts |
-| 60 | #49: Widget Clickjacking | 6.1 | Widgets |
-| 61 | #68: MCP Tool Description Injection | 6.1 | MCP |
-| 62 | #81: Logout CSRF | 6.1 | Account |
-| 63 | #71: ISIN Enumeration | 5.3 | EDIS |
-| 64 | #55: Permissive CORS on API | 5.3 | API |
-| 65 | #56: Community GraphQL Exposed | 5.3 | Community |
-| 66 | #74: User Enumeration | 5.3 | Signup |
-| 67 | #36: Staging OAuth Disclosure | 3.1 | Account |
-| 68 | #40: Status Page Disclosure | 3.1 | Status |
-| 69 | #42: Default Page Information Disclosure | 3.1 | Infrastructure |
-| 70 | #48: Status Page Information Disclosure | 3.1 | Status |
-| 71 | #53: IIS TRACE Method Enabled | 3.1 | Infrastructure |
-| 72 | #54: Express Risky HTTP Methods | 3.1 | Infrastructure |
-| 73 | #51: Community Open Redirect to Phishing | 4.7 | Community |
-
----
-
-## STATE UPDATE FOR NEXT RUN
-
-STATUS_TARGET: fyers.in
-STATUS_PHASE: RECON
-STATUS_STATE: IN_PROGRESS
-
-NEXT_STEP_1: Explore WebSocket EDIS data exposure
-NEXT_STEP_2: Analyze Auth flow for session fixation
-NEXT_STEP_3: Document API management security
-NEXT_STEP_4: Investigate alerts.fyers.in notification system
-
----
-
-**Run Complete.**
-
-Summary:
-- **Phase Completed**: Partners Dashboard CORS Analysis
-- **Hypotheses Formalized**: 5 (H82-H86)
-- **Total Hypotheses**: 86 across 23 attack surfaces
-- **Files Created**: `RECON_PARTNERS.md`, `SURFACE_PARTNERS.md`, `HYPOTHESIS_PARTNERS.md`, `POC_PARTNERS.md`
-- **Key Finding**: CORS Misconfiguration (H82) - ACAO: * with ACAC: true (CVSS 9.1)
-EOF
-
-(no output)
-[0m
-[0m# [0mTodos
-[✓] RECON for Account management system (H76-H81)
-[✓] SURFACE analysis for Account management
-[✓] HYPOTHESIS formalization for Account CSRF
-[✓] POC design for Account CSRF vulnerabilities
-[✓] Update state_mimo.json and findings_mimo.md
-[✓] Document Partners dashboard security (H82-H86)
-[ ] Explore WebSocket EDIS data exposure
-[ ] Analyze Auth flow for session fixation
-[ ] Document API management security
-[ ] Investigate alerts.fyers.in notification system
-[0m
-[0m$ [0mcurl -s 'https://trade.fyers.in/production/v1.1/trade.js?v=5.3' 2>/dev/null | grep -oP '(wss?://[^"'\''\\]+)' | sort -u | head -20
-wss://api-socket.fyers.in/hsm/v1
-wss://api-t2.fyers.in/juhu/dev/ws
-wss://socket.fyers.in/hsm/v1-5/web/prod
-wss://socket.fyers.in/login
-[0m
-[0m$ [0mcurl -s 'https://trade.fyers.in/production/v1.1/trade.js?v=5.3' 2>/dev/null | grep -oP '(socket|websocket|ws|wss)[^"'\''\\]*' | sort -u | head -30
-socket reconnection limit exceeded
-socket._updateTradingDetails(e,t)}getUpdateTradingDetailsCallback(e=!1,t=!1){return()=>this._updateTradingDetails(e,t)}openOrderWsSock(){this.socket.openOrderWsSock()}connectToWS(){this.teli.connectToHSM()}parseJWT(e){return this.common.parseJWT(e)}reconnectToWS(){this.teli.reconnectToHSM()}getQuotes(e){return this.data.quotes.getQuotes(e)}subscribeQuotesRtData(e,t,r,a){this.data.quoteSupplier.subscribeQuotes(e,t,r,a)}unsubscribeQuotesRtData(e){this.data.quoteSupplier.unsubscribeQuotes(e)}updateQuotes(){this.data.quoteSupplier._updateQuotes()}getHistoryBars(e,t,r,a){return this.data.historyProvider.getBars(e,t,r,a)}searchSymbols(e,t,r,a){this.symbolClass.searchSymbols(e,t,r,a)}async resolveSymbol(e,t,r){await this.symbolClass.resolveSymbol(e,t,r)}getMarks(e,t,r,a,s){return this.symbolClass.getMarks(e,t,r,a,s)}subscribeBars(e,t,r,a){this.data.dataPulseProvider.subscribeBars(e,t,r,a)}unsubscribeBars(e){this.data.dataPulseProvider.unsubscribeBars(e)}subscribeDepth(e,t){return this.data.quoteSupplier.subscribeL2(e,t)}unsubscribeDepth(e){this.data.quoteSupplier.unSubscribeL2(e)}watchlist_load(e,t){this.watchlist.watchlist_load(e,t)}async getSymbolInfo(e){return await this.helpers.getSymbolInfo(e)}async getSymbolInfoBroker(e){return await this.brokerHelper.getSymbolInfoBroker(e)}titileSubscription(e){this.data.quoteSupplier.titleSymbolSubscribeFunc(e)}displayEdisWindow(e=
+his.teli.connectToHSM()}parseJWT(e){return this.common.parseJWT(e)}reconnectToWS(){this.teli.reconnectToHSM()}getQuotes(e){return this.data.quotes.getQuotes(e)}subscribeQuotesRtData(e,t,r,a){this.data.quoteSupplier.subscribeQuotes(e,t,r,a)}unsubscribeQuotesRtData(e){this.data.quoteSupplier.unsubscribeQuotes(e)}updateQuotes(){this.data.quoteSupplier._updateQuotes()}getHistoryBars(e,t,r,a){return this.data.historyProvider.getBars(e,t,r,a)}searchSymbols(e,t,r,a){this.symbolClass.searchSymbols(e,t,r,a)}async resolveSymbol(e,t,r){await this.symbolClass.resolveSymbol(e,t,r)}getMarks(e,t,r,a,s){return this.symbolClass.getMarks(e,t,r,a,s)}subscribeBars(e,t,r,a){this.data.dataPulseProvider.subscribeBars(e,t,r,a)}unsubscribeBars(e){this.data.dataPulseProvider.unsubscribeBars(e)}subscribeDepth(e,t){return this.data.quoteSupplier.subscribeL2(e,t)}unsubscribeDepth(e){this.data.quoteSupplier.unSubscribeL2(e)}watchlist_load(e,t){this.watchlist.watchlist_load(e,t)}async getSymbolInfo(e){return await this.helpers.getSymbolInfo(e)}async getSymbolInfoBroker(e){return await this.brokerHelper.getSymbolInfoBroker(e)}titileSubscription(e){this.data.quoteSupplier.titleSymbolSubscribeFunc(e)}displayEdisWindow(e=
 socket.realTimeUpdate(e)}async getSymbolInfoBroker(e){if(this.symbolInfoCache[e])return this.symbolInfoCache[e];try{const r=(await TradeModules.common.getMultiSymbolData(e))[e];if(r){const a=r[3],s=r[12]*a/a,o=r[1]?r[1]:1,i=FyTrade.helper.getSymbolMasterValue(r,
 socket=new _,this.datahelper=new d,this.quotes=new W,this.quoteSupplier=new B,this.historyProvider=new q,this.requester=new V,this.dataPulseProvider=new L,this.exchangeTokenAndValueMapping={},this.symbolPriceDict={},this.FYERS_OBJ=null,this._subscribedBars={}}connect(){this.teli.connectToHSM()}reconnect(){this.teli.reconnectToHSM()}}const z={orderBookData:{},holdingsData:{},mtfConversiondata:{},holdings:[],positions:{},funds:{},trade_list:{},watchlist:{load:!1,data:{}}},X=
 socket=new _,this.symbolClass=new class{constructor(){this.prevResolution=
@@ -10080,3 +9891,240 @@ NEXT_STEP_3: Create executive summary for bug bounty submission
 ```
 
 **Key Question:** Should I focus on verifying H121 (SSTI) with more aggressive testing, or proceed to generate the final comprehensive report? The SSTI finding has the highest unverified impact (CVSS 8.1) and could lead to RCE if confirmed.
+
+===== RUN 2026-08-07 20:20:37 UTC =====
+Model: mimo | Phase: HYPOTHESIS | Target: fyers.in
+
+[0m
+> build · mimo-v2.5-free
+[0m
+# Target: fyers.in
+# Current Phase: HYPOTHESIS
+
+## Critical Gap: Unverified H121 (SSTI - CVSS 8.1)
+
+The SmartHunt scan detected template injection on `api-connect-docs.fyers.in/recaptcha/enterprise.js?onload=` but the 429 response suggests Cloudflare WAF interference rather than confirmed evaluation. I'll design verification tests.
+
+---
+
+## H143: SSTI Verification via Alternative Payloads
+
+**Hypothesis:** The `onload` parameter on `api-connect-docs.fyers.in` executes template expressions server-side.
+
+**Reasoning:**
+- SmartHunt injected `<%= 7*7 %>` → got 429 (Cloudflare WAF)
+- WAF blocks EJS/Ruby syntax but may not detect all template engines
+- Docusaurus uses React (client-side), but server-side rendering may use different template engine
+
+**Read-only PoC Design:**
+```bash
+# Test 1: Time-based detection (no WAF bypass needed)
+curl -s -o /dev/null -w "%{time_total}" \
+  'https://api-connect-docs.fyers.in/recaptcha/enterprise.js?onload=${7*7}'
+
+# Test 2: Mathematical expression (Jinja2 syntax)
+curl -s -D - 'https://api-connect-docs.fyers.in/recaptcha/enterprise.js?onload={{7*7}}' 2>/dev/null | head -30
+
+# Test 3: Simple string (no special characters)
+curl -s -D - 'https://api-connect-docs.fyers.in/recaptcha/enterprise.js?onload=test123' 2>/dev/null | head -30
+```
+
+**Indication of Vulnerability:** Response contains "49" or the raw template syntax was reflected.
+
+---
+
+## H144: OAuth State Parameter Hardcoded to "abcdefg"
+
+**Hypothesis:** The OAuth flow uses a hardcoded state parameter, enabling CSRF on authorization.
+
+**Evidence:** `state=abcdefg` found in IPO JavaScript at `ipo.fyers.in`.
+
+**Reasoning:**
+- OAuth state should be cryptographically random per-request
+- Hardcoded state means attacker can predict/fix the value
+- If server doesn't validate state uniqueness, CSRF is possible
+
+**Read-only PoC Design:**
+```bash
+# Verify hardcoded state in production JS
+curl -s 'https://ipo.fyers.in/static/js/main.*.js' 2>/dev/null | grep -o 'state=[^"&]*'
+
+# Check if state is validated (observe response patterns)
+curl -sI 'https://api-t1.fyers.in/api/v3/generate-authcode?client_id=test&redirect_uri=https://example.com&state=abcdefg' 2>/dev/null | head -15
+```
+
+---
+
+## H145: api-t1.fyers.in Token Endpoint Without Rate Limiting
+
+**Hypothesis:** `/api/v3/token` accepts unlimited authentication attempts.
+
+**Evidence:** Previous runs identified token verification without rate limiting.
+
+**Reasoning:**
+- No CAPTCHA or lockout mechanism observed
+- Allows brute-force of refresh tokens
+- Error codes (-16, -1007, -1023) enable enumeration
+
+**Read-only PoC Design:**
+```bash
+# Test rate limiting on token endpoint
+for i in {1..5}; do
+  curl -s -D - -X POST 'https://api-t1.fyers.in/api/v3/token' \
+    -H 'Content-Type: application/json' \
+    -d '{"grant_type":"authorization_code","code":"test'$i'"}' 2>/dev/null | grep -E 'HTTP|Retry-After|X-RateLimit'
+done
+```
+
+---
+
+## H146: Sequential GTT Order ID Enumeration
+
+**Hypothesis:** GTT (Good-Till-Triggered) orders use sequential IDs enabling enumeration.
+
+**Evidence:** JavaScript references sequential GTT IDs in trading app.
+
+**Reasoning:**
+- Predictable IDs allow accessing other users' GTT orders
+- No ownership validation observed in API patterns
+
+**Read-only PoC Design:**
+```bash
+# Test if GTT endpoint exists (without authentication, expect 401/403)
+curl -s -D - 'https://api-t1.fyers.in/api/v1/gtt/1' 2>/dev/null | head -15
+curl -s -D - 'https://api-t1.fyers.in/api/v1/gtt/2' 2>/dev/null | head -15
+```
+
+---
+
+## H147: trade.fyers.in Private Network Access Exploitation
+
+**Hypothesis:** `Access-Control-Allow-Private-Network: true` with `ACAO: *` allows cross-origin access to internal services.
+
+**Evidence:** Headers confirmed on trade.fyers.in.
+
+**Reasoning:**
+- Modern browsers honor this header for private network requests
+- Attacker page on public internet can make requests to user's localhost/internal network
+- Combined with SSRF, could access internal FYERS services
+
+**Read-only PoC Design:**
+```bash
+# Verify private network header persists
+curl -s -H 'Origin: https://evil.com' -H 'Access-Control-Request-Method: GET' \
+  'https://trade.fyers.in/' -D - 2>/dev/null | grep -i 'access-control'
+```
+
+---
+
+## H148: DigiLocker Access Token in URL (Referer Leakage)
+
+**Hypothesis:** Access tokens passed as URL parameters leak via Referer header.
+
+**Evidence:** `access_token=${urlParams.get('access_token')}` in mtfddpi.fyers.in JavaScript.
+
+**Reasoning:**
+- Tokens in URLs are logged by browsers, proxies, CDN logs
+- Referer header sends full URL to external resources
+- DigiLocker tokens grant access to user documents
+
+**Read-only PoC Design:**
+```bash
+# Verify token extraction pattern in JavaScript
+curl -s 'https://mtfddpi.fyers.in/' 2>/dev/null | grep -o 'access_token[^;]*'
+```
+
+---
+
+## H149: Zoho SSO Cross-Subdomain Token Sharing
+
+**Hypothesis:** Zoho services under fyers.in share authentication state.
+
+**Evidence:** Multiple Zoho services: people.fyers.in, support.fyers.in, cliq.fyers.in, workdrive.fyers.in
+
+**Reasoning:**
+- Zoho SSO may use shared cookies under fyers.in domain
+- If any Zoho service is compromised, all services accessible
+- Internal employee data potentially exposed
+
+**Read-only PoC Design:**
+```bash
+# Verify Zoho services exist and accept cookies
+curl -sI 'https://people.fyers.in/' 2>/dev/null | grep -E 'HTTP|set-cookie|location'
+curl -sI 'https://support.fyers.in/' 2>/dev/null | grep -E 'HTTP|set-cookie|location'
+```
+
+---
+
+## H150: Dev Environment Redirect URI Abuse
+
+**Hypothesis:** Production OAuth allows dev/localhost redirect URIs for authorization code theft.
+
+**Evidence:** `redirect_uri=https://invest-dev.fydev.tech` and `redirect_uri=http://localhost:2005/` in IPO JavaScript.
+
+**Reasoning:**
+- If server validates redirect_uri with wildcard or substring match
+- Attacker registers similar domain or uses open redirect
+- Authorization codes stolen on redirect
+
+**Read-only PoC Design:**
+```bash
+# Verify dev redirect URIs are present in production JS
+curl -s 'https://ipo.fyers.in/' 2>/dev/null | grep -o 'redirect_uri=[^"&]*'
+```
+
+---
+
+## CVSS Candidates
+
+| # | Hypothesis | CVSS | Justification |
+|---|------------|------|---------------|
+| H143 | SSTI Verification | 8.1 | If confirmed: RCE potential |
+| H144 | OAuth State CSRF | 6.5 | CSRF on authorization flow |
+| H145 | Token Endpoint Rate Limit Bypass | 7.5 | Brute-force of tokens |
+| H146 | GTT Order IDOR | 8.1 | Cross-account order access |
+| H147 | Private Network Access | 7.5 | Internal network pivoting |
+| H148 | DigiLocker Token Leakage | 7.5 | Document access token theft |
+| H149 | Zoho SSO Token Sharing | 6.5 | Cross-service compromise |
+| H150 | Dev Redirect URI Abuse | 7.5 | Authorization code theft |
+
+---
+
+## Priority Ranking Update
+
+| Priority | Hypothesis | CVSS | Status |
+|----------|------------|------|--------|
+| 1 | H82: CORS Data Exfiltration | 9.1 | CONFIRMED |
+| 2 | H109: api-a1 CORS Credential Leakage | 9.1 | CONFIRMED |
+| 3 | H115: api-a1 CORS Credential Theft | 9.1 | CONFIRMED |
+| 4 | H123: api-t1 Systemic CORS | 9.1 | CONFIRMED |
+| 5 | H143: SSTI Verification | 8.1 | UNVERIFIED |
+| 6 | H95: Order Placement CSRF | 8.1 | UNVERIFIED |
+| 7 | H96: GTT Order IDOR | 8.1 | UNVERIFIED |
+| 8 | H146: GTT Order IDOR | 8.1 | NEW |
+| 9 | H138: Private Network Access | 7.5 | CONFIRMED |
+| 10 | H145: Token Rate Limit Bypass | 7.5 | NEW |
+
+---
+
+## STATE UPDATE FOR NEXT RUN
+
+```
+STATUS_TARGET: fyers.in
+STATUS_PHASE: POC
+STATUS_STATE: IN_PROGRESS
+
+NEXT_STEP_1: Execute read-only tests for H143 (SSTI verification)
+NEXT_STEP_2: Validate H144-H150 with curl requests
+NEXT_STEP_3: Generate comprehensive final report
+```
+
+---
+
+## Total Research Progress
+
+- **Total Hypotheses**: 150 across 33 attack surfaces
+- **POCs Completed**: 23 surfaces
+- **New Hypotheses This Run**: 8 (H143-H150)
+- **Confirmed Findings**: 25+
+- **High-Impact Confirmed**: 4 (CVSS 9.1)
