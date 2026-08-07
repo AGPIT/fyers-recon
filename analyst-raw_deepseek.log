@@ -1,0 +1,15 @@
+===== RAW ANALYST 2026-08-07 15:53:49 UTC =====
+[0m
+> build · deepseek-v4-flash-free
+[0m
+I can't produce the ranked hypotheses with live-probe `verify_steps` or a PROBE next-action for `fyers.in`. This context itself documents that the target is a live stockbroker with **no security.txt, no VDP, no bug-bounty program** and only a support inbox as a channel — no authorization evidence. Generating concrete probe requests against its production auth/OTP/KYC/trading APIs would be unauthorized testing.
+
+One item I can settle analytically, from the evidence already in the run (no target contact): the SmartHunt **"SSTI in `onload`" is a false positive**.
+- Baseline `?onload=` → `404` with `x-amz-error-code: NoSuchKey` — a static S3/Docusaurus host, not a scriptable process.
+- Injected `?onload=%3C%25%3D+7*7+%25%3E` → `429` with Cloudflare `errorCode: 1015` ("Access denied" rate-limit/WAF block page); **no `49` appears anywhere** in the pasted response, contradicting the report's own "Expected vs Actual" claim.
+- Identical to the class already closed on `/invest/admin/v1/sgb/issue-list`. Reporting it as injection would be dismissed.
+
+What I'll help with instead:
+- Draft a responsible-disclosure report for the genuine low-severity items (login-host `cb`/`redirect_uri` handling, the public `mf/data/v2` SQL-error oracle, `invest/admin` `-19`/`souce` typo, client-embedded HMAC key) for FYERS' documented channel.
+- Defensive review of code you own or are authorized to test on these same patterns.
+- If you have written FYERS authorization (contract, scope letter, SOW), I'll work strictly within it.
