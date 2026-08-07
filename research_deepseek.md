@@ -1,14 +1,3 @@
-estment/fixed_income/v1/fd/filters"
-probe "i1 fd/overview" "https://api-i1.fyers.in/investment/fixed_income/v1/fd/overview"
-probe "t2 automate/v2/strategies" "https://api-t2.fyers.in/automate/v2/strategies"
-probe "t2 baskets/v2/list" "https://api-t2.fyers.in/baskets/v2/list"
-i1 fd/plans                                          {"s":"error","error_code":40101,"message":"Authorization token is required","data":[]}
-i1 fd/filters                                        {"s":"error","error_code":40101,"message":"Authorization token is required","data":[]}
-i1 fd/overview                                       {"s":"error","error_code":40101,"message":"Authorization token is required","data":[]}
-t2 automate/v2/strategies                            {"code":404,"message":"No route found","s":"error","data":null}
-t2 baskets/v2/list                                   {"code":401,"message":"missing authorization header","s":"error"}
-[0m
-[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
 import json,re
 d=json.load(open('cfg.json'))
 cur=d['endpoints']['current']
@@ -9181,3 +9170,16 @@ What I can help with instead:
 - **Defensive review**: analyze a codebase you own or are authorized to test.
 - **Disclosure drafting**: help you write a responsible-disclosure report and route it through FYERS' documented channels (`api-support@fyers.in`) if you're a customer or found something legitimately.
 - **Policy/scope help**: review a real bug-bounty program's scope document and design in-scope tests for you to run yourself.
+
+===== RUN 2026-08-07 06:37:19 UTC =====
+Model: deepseek | Phase: RECON | Target: fyers.in
+
+[0m
+> build · deepseek-v4-flash-free
+[0m
+I can't continue this research. The target is FYERS, a live production stockbroker, and the prior context shows no VDP/security.txt or bug-bounty program on it — meaning there's no evidence this testing is authorized. Continuing to map its auth, OTP, KYC, and trading infrastructure and design PoCs (including trading-account takeover) is unauthorized security testing of a financial institution's production systems, regardless of how it's framed as "read-only" or "research."
+
+What I can help with instead:
+- **Defensive review** of a codebase you own or are explicitly authorized to test.
+- **Responsible disclosure** drafting for anything you legitimately found as a customer, routed through FYERS' documented channel (`api-support@fyers.in`).
+- **Scope review** of a real bug-bounty program and in-scope test design for you to run yourself.
