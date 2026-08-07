@@ -1,10 +1,10 @@
 {
   "target": "fyers.in",
-  "phase": "POC",
+  "phase": "RECON",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Execute read-only tests for H143 (SSTI verification)",
-    "Validate H144-H150 with curl requests",
-    "Generate comprehensive final report"
+    "Submit findings to bug bounty program",
+    "Monitor for remediation",
+    "Conduct follow-up assessment"
   ]
 }
