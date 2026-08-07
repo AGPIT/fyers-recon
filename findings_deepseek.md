@@ -357,3 +357,25 @@ Review research_deepseek.md for details
 - **H12 invest/admin presence oracle** → Informational/Low (no customer impact demonstrated).
 - **The only genuine High/Critical potential in the corpus is the IDOR family (H13/H15/H17), but researcher-side validation is constrained by program rules**: PoC "must use only the researcher's own account"; accessing other users' accounts, bulk PII, and fake KYC/synthetic identities are disqualifying. ⇒ Each must be submitted as a **reproducible-description + explicit request for FYERS-side validation**, not executed.
 - **Compliance guardrails adopted for all further work:** no OTP/SMS/email dispatch to any number, no high-volume scanning, no rate-limit bypass, no cross-account access, no market-hours trading actions, own-account PoCs only, submissions only via the official form, strict confidentiality.
+
+# POC round 2026-08-07 23:2x UTC — FORMAL SUBMISSION-PACKAGE DRAFT (read-only, no live requests)
+- **Deliverable written: `reports/submission-package_fyers-bb.md`** — a complete draft of the official-form submission for the program (forms.fyers.in BugBountyForm1), containing exact test designs (curl-free, FYERS-side/own-account), success indicators, and severity framing per the program rubric. No live requests made this run (documentation only).
+- **H17 (primary) POC design finalized** for `api-a1.fyers.in/signup/v2/user/{esign-document,pdf/generate,pdf/poll,status/poll,esign-success,esign/clear-status,esign/accept-name-mismatch,change-esign-status}`: two-test-applicant method (R_A/R_B), baseline-with-own-session then cross-object substitution; success indicator = A's session returns non-empty B-keyed eSign/PDF/status object; fixed = 403/404/auth-error. CVSS 8.1–9.1 (Critical/High program category if unmasked PAN/eSign/PDF exposed; Medium if limited).
+- **H13 (indus/savechart) + H15 (marina/ddpi) POC designs** finalized with same observable-delta structure (own-account baseline → second-account object-id; 200-with-data vs 403/404). Program High/Medium and Medium–High respectively.
+- **Informational/hardening bundle drafted** (single low submission): H10 chart SQL-1103 error oracle, H12 invest/admin `-19`+`souce` presence oracle, H14 realtime-funds `latency` error-wrap, H16 email-preference validation-before-auth, H1 login `cb`/`redirect_uri` (informational only, no ATO framing), x-validate key note.
+- **Scope-confirmation questions drafted** for the program contact: signup/v2 KYC, mcp.fyers.in, /invest/admin/*, /cdsl/dev/* — to be sent before any further active work.
+- **Excluded (unchanged):** SmartHunt SSTI false positive; all third-party hosts; public config artifacts; no-bounty categories (x-validate key, H11 dev surface, H8 informational).
+
+# 6 items on 2026-08-07 23:20:02 UTC
+- **Authorization basis stands** (public program at `fyers.in/bug-bounty-program`, verified 2026-08-07). Scope = FYERS Trading Platform (Web & Mobile) + "FYERS APIs part of trading platform"; submission only via the official Zoho form.
+- **Deliverable written: `reports/submission-package_fyers-bb.md`** — full draft of the official-form submission with exact test designs, success indicators, and program-rubric severity framing. **No live requests were made this run** (documentation only, consistent with program guardrails: no OTP dispatch, no cross-account access, no high-volume scanning).
+- **H17 (primary) design finalized:** `api-a1.fyers.in/signup/v2/user/{esign-document,pdf/generate,pdf/poll,status/poll,esign-success,esign/clear-status,esign/accept-name-mismatch,change-esign-status}` — two-applicant method (R_A/R_B); success indicator = applicant A's session returns a non-empty B-keyed eSign/PDF/status object; fixed = 403/404/auth-error.
+- **H13 (indus/savechart) + H15 (marina/ddpi)** finalized with the same observable-delta structure (own-account baseline → second-account object-id, 200-with-data vs 403/404).
+- **Informational/hardening bundle drafted:** H10 chart SQL-1103 oracle, H12 invest/admin `-19`+`souce` presence oracle, H14 realtime-funds `latency` error-wrap, H16 email-preference, H1 login `cb`/`redirect_uri` (informational only — ATO framing dropped).
+- **Scope-confirmation questions drafted** (signup/v2 KYC, mcp.fyers.in, `/invest/admin/*`, `/cdsl/dev/*`) to send to the program contact before further active work.
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: deepseek)
+Review research_deepseek.md for details
+## CVSS Candidates
+- [signup/v2 KYC req_id application-object IDOR (cross-app e/PDF/document read)] — CVSS 5.3–7.5 (conditional on object-key scoping; authenticated req_id required)
+- [signup/v2 validation-before-auth schema oracle] — CVSS 3.7 (only field schemas leak; OTP dispatch gated)
