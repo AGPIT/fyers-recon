@@ -321,3 +321,7 @@ Review research_deepseek.md for details
 ## CVSS Candidates
 - [signup/v2 KYC req_id application-object IDOR (cross-app e/PDF/document read)] — CVSS 5.3–7.5 (conditional on object-key scoping; authenticated req_id required)
 - [signup/v2 validation-before-auth schema oracle] — CVSS 3.7 (only field schemas leak; OTP dispatch gated)
+
+# 2 items on 2026-08-07 20:20:11 UTC
+- SSTI-on-`onload` report = false positive (baseline 404 NoSuchKey vs injected 429 CF `1015`; no `49`);
+- Third-party inventory (Grammarly/Coda/Superhuman/Zoho) is out of scope by the stated rules; dropped.
