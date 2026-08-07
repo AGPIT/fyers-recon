@@ -3,10 +3,9 @@
   "phase": "RECON",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Document Partners dashboard security",
-    "Explore WebSocket EDIS data exposure",
-    "Analyze Auth flow for session fixation",
     "Document API management security",
-    "Explore WebSocket EDIS data exposure"
+    "Investigate alerts.fyers.in notification system",
+    "Explore Infrastructure security",
+    "Complete remaining surface analysis"
   ]
 }
