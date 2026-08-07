@@ -813,3 +813,62 @@ Review research_mimo.md for details
   1. **Session Token Leakage in URLs** (CVSS 7.5)
   2. **Development Environment Exposed** (CVSS 6.5)
   3. **IIS TRACE Method Enabled** (CVSS 3.1)
+
+# EDIS/TPIN System Analysis Completed on 2026-08-07 05:30:00 UTC
+
+## Files Created
+| File | Description |
+|------|-------------|
+| `RECON_EDIS.md` | RECON for EDIS/TPIN system |
+| `SURFACE_EDIS.md` | SURFACE analysis for EDIS/TPIN system |
+| `HYPOTHESIS_EDIS.md` | HYPOTHESIS for H69-H71 |
+| `POC_EDIS.md` | POC for H69-H71 |
+
+## Key Findings
+
+### H69: EDIS Authorization Bypass (CVSS 7.5)
+- **Status**: UNVERIFIED - Requires authenticated testing
+- **Evidence**: Client-side validation only visible
+- **Risk**: Cross-account holding manipulation
+
+### H70: CDSL Redirect URL Manipulation (CVSS 7.5)
+- **Status**: UNVERIFIED - Config analysis needed
+- **Evidence**: CDSL URL loaded from client-side config
+- **Risk**: Phishing via fake CDSL portal
+
+### H71: ISIN Enumeration (CVSS 5.3)
+- **Status**: UNVERIFIED - API testing needed
+- **Evidence**: ISINs visible in JavaScript
+- **Risk**: Portfolio mapping and information disclosure
+
+## CURRENT STATE SUMMARY (2026-08-07 05:30:00 UTC)
+
+### Research Progress
+- **Total Hypotheses**: 71 across 20 attack surfaces
+- **POCs Completed**: 10 surfaces (Fund Transfer, Verified P&L, API Connect, New Surfaces, Additional, Login/Auth, Trading, Webhook, MCP, EDIS)
+- **POCs Remaining**: 9 surfaces (Signup, Auth, Account, Partners, Status, Widgets, WebSocket, API, Infrastructure)
+
+### High-Value Findings
+1. **H69: EDIS Authorization Bypass** (CVSS 7.5) - Client-side validation only
+2. **H70: CDSL Redirect URL Manipulation** (CVSS 7.5) - Config loaded dynamically
+3. **H71: ISIN Enumeration** (CVSS 5.3) - ISINs exposed in JavaScript
+
+### Files Created
+| File | Description |
+|------|-------------|
+| `RECON_EDIS.md` | RECON for EDIS/TPIN system |
+| `SURFACE_EDIS.md` | SURFACE analysis for EDIS/TPIN system |
+| `HYPOTHESIS_EDIS.md` | HYPOTHESIS for H69-H71 |
+| `POC_EDIS.md` | POC for H69-H71 |
+
+## Next Steps
+1. Explore Signup/Registration flow for brute force
+2. Investigate Account management CSRF vulnerabilities
+3. Document Partners dashboard security
+4. Explore WebSocket EDIS data exposure
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+### H69: EDIS Authorization Bypass (CVSS 7.5)
+### H70: CDSL Redirect URL Manipulation (CVSS 7.5)
+### H71: ISIN Enumeration (CVSS 5.3)

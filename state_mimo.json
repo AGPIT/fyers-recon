@@ -3,10 +3,10 @@
   "phase": "RECON",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Explore Trading platform (trade.fyers.in) for IDOR testing",
-    "Analyze Webhook system for spoofing vulnerabilities",
-    "Investigate MCP integration for session hijacking",
-    "Document EDIS/TPIN system for authorization bypass",
-    "Analyze trading WebSocket authentication"
+    "Analyze Signup/Registration flow for brute force",
+    "Investigate Account management CSRF vulnerabilities",
+    "Document Partners dashboard security",
+    "Explore WebSocket EDIS data exposure",
+    "Analyze Signup/Registration flow for brute force (Vagator OTP API)"
   ]
 }
