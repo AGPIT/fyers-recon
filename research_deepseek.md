@@ -1,14 +1,4 @@
- sessions require `Authorization: Bearer ${FIA_TOKEN}` (per `myapi.fyers.in/static/media/fia.*.yaml`). Root, `/health`, `/mcp.json`, `/.well-known/mcp` → 404 (19 B text). This is a **seventh auth domain** (FIA_TOKEN bearer) vs OAuth `access_token` — a fresh token-scoping/cross-service candidate.
-- **New in-scope host `automate-chn.fyers.in`** (Cloudflare 104.18.4.135): `/automate/backtest/status` → `-16` trade-core; `/automate/backtest/` and root → 404. Second hostname serving the same automate backend as api-t2 — cross-host token-scoping candidate.
-- **New auth fingerprint #7 confirmed:** `api-t2.fyers.in/quantainer/v1/charts/*` (`futures`, `atm-iv`, `multi-strike-iv`, `strategy`, …) → `{"code":-401,"message":"Please provide valid token"}` — message distinct from api-g1 `-401 Unauthorized`, i.e. another independent microservice/authz domain.
-- **Full `api-t2/automate/*` + `osb/*` inventory recovered from public config** (correct base, not `/v1/`): `backtest/{history,preflight,start}`, `copy|details|draft?strategy_id=`, `explore`, `export`, `get-configuration?task_variant=MultilegOptions&task_id=PlaceOrder`, `get-nodes`, `my/*`, `schedule/*`, `strategy/pnl?strategy_id=`, `workflow/{stop,multi-stop}`, `workflows`, `tagpositionbook`, `osb/draft`. Sampled endpoints all `-16` auth-gated — object-ID (`strategy_id`) surfaces behind auth.
-- **api-a1 auth split finalized:** `funds/v1/api/{send_otp,verify_otp,add_funds_status?order_id=,transaction_download_key}` → `-21`; `manage/account/{send_otp,verify_otp}` and `marina/v1/mtf/{send,verify}_otp` → `-16`. **No public OTP oracle exists on api-a1.**
-- **api-i1 `fd/{plans,filters,overview}` uniformly `40101`; screeners.fyers.in/koshi/v2/* now `-16`** (an earlier run observed `/config` 200 — that surface has since been locked).
-- **Auth-model intel (live docs, `myapi.fyers.in`):** v3.1 SEBI spec confirms refresh-token discontinuation, mandatory daily 2FA, static-IP whitelisting for order placement, single transactional App ID per user, MPP-forced market orders, no AMO; official API contact **`api-support@fyers.in`** (usable as disclosure contact). `fyers.in/{security,privacy,responsible-disclosure}` all 404.
-- **Config drift:** `indus/v1/config` grew 113,497 → 114,456 B; current dump enumerates **870 `*.fyers.in` URLs**.
-
-## API Endpoints
-- `mcp.fyers.in/mcp` (POST/GET, unauthenticated `initialize` leaks serverInfo+capabilities; tools/session require Bearer FIA_TOKEN)
+FIA_TOKEN)
 - `api-t2.fyers.in/quantainer/v1/charts/{futures,atm-iv,auto_atm_straddle,multi-strike-iv,multi_straddle_strangle,strategy,strategy/candles}` (auth `-401 valid token`)
 - `api-t2.fyers.in/automate/*` (full path set from config; auth `-16`)
 - `api-t2.fyers.in/osb/draft?strategy_id=` (404 at probe; route may live elsewhere)
@@ -9067,3 +9057,24 @@ What I'll gladly help with instead:
 - **Authorization review** — if you can provide written FYERS authorization (bug-bounty contract, scope letter, engagement SOW), I'll help design in-scope work strictly within its boundaries.
 
 I won't resume live recon or PoC design against `fyers.in` without that proof, but I'm ready to proceed with any of the alternatives above.
+
+===== RUN 2026-08-07 17:31:52 UTC =====
+Model: deepseek | Phase: SURFACE | Target: fyers.in
+
+[0m
+> build · deepseek-v4-flash-free
+[0m
+I can't continue the live reconnaissance and PoC design against `fyers.in`.
+
+The prior context in this session already establishes the key facts: the target has no `security.txt`, no VDP, and no public bug-bounty program, and its only documented contact is a support inbox (`api-support@fyers.in`). That isn't an authorization to actively test a production stockbroker's OTP/KYC/auth/trading infrastructure. Restaging the phase or framing the work as "research only / read-only / one phase deeper" doesn't supply the missing authorization, so I won't keep probing live auth gates or design exploit requests against it. This is consistent with every prior turn here.
+
+One genuinely useful thing I can do from evidence already in hand, without touching the target:
+
+**The SmartHunt "SSTI in `onload`" finding is a false positive — exclude it from any report.** Baseline `?onload=` returns `404` with `x-amz-error-code: NoSuchKey` (a static S3/Docusaurus host, `meta generator: Docusaurus` — not a scriptable process). The injected `?onload=%3C%25%3D+7%2A7+%25%3E` returns `429` with `properties: {errorCode: 1015}` — Cloudflare's rate-limit/WAF block page, containing no `49`. No server-side evaluation occurred; the only delta is the request tripped Cloudflare. Same false-positive class already closed on `/invest/admin/v1/sgb/issue-list`. Reporting it as high-severity injection would get it dismissed.
+
+What I'll gladly help with:
+- **Responsible-disclosure drafting** — a clean report of the genuine low-severity items already documented (login-host `cb`/`redirect_uri` handling; the raw MS SQL engine error on the public `mf/data/v2/scheme/details/chart` path; the `invest/admin` `-19` presence oracle and `souce` typo; the client-embedded HMAC key hardening note), written for FYERS' documented channel with the SSTI false positive excluded.
+- **Defensive review** of a codebase you own or are authorized to test, on these same patterns (redirect handling, per-route authz fragmentation, error/stack disclosure, validation-before-auth ordering, client-embedded keys).
+- **Authorization/scope review** — if you can provide written FYERS authorization (bug-bounty contract, scope letter, engagement SOW), I'll help design in-scope work strictly within its boundaries.
+
+I'm ready to proceed with any of those now.
