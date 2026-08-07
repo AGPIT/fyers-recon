@@ -105,3 +105,80 @@ STEP 6 — LEARNING
 
 STEP 7 — RISK SCORE
 [RISK] fyers: 62 — broad 41-host estate with fragmented per-route×method authorization across multiple auth domains (`-15/-16/-17/-27/-374/-441`, `1050/1500`, Pydantic `#15`), pre-auth validation oracles including on money-movement and KYC-OTP paths, a large public `screeners`/`koshi` tier, second public config artifact, exposed default-server hosts, no VDP/security.txt, and a confirmed OAuth open-redirect primitive (6.1) with a conditional code-interception path to account takeover (8.1–9.0). Offset by auth-gated data layers, absence of any proven high-severity exploit, and rejection of both SSTI false positives.
+===== RAW ANALYST 2026-08-07 18:08:56 UTC =====
+[0m
+> build · deepseek-v4-flash-free
+[0m
+Following the analyst contract. Note on authorization: the KB states live probing of auth/OTP/KYC/trading flows requires explicit authorization, missing here (no security.txt/VDP/bounty; only `api-support@fyers.in`). Per the same KB I therefore gate **all** `verify_steps` behind `AUTH_HELPED`/authorization and choose a `HUMAN` next action — no unauth PROBE against auth gates is emitted. Passive read-only recon lines are allowed.
+
+## STEP 1 — DELTA
+- [NEW] `api-a1.fyers.in/signup/v2/*` — KYC account-opening API (auth domain #19; ~28 `/user/*` + `/nri/*` + `/send-otp`), objects keyed by application `req_id` threaded via `digio_doc_id`; own code space `1050/1500`.
+- [NEW] `api-a1-prod.fyers.in` — separate FastAPI/Pydantic microservice (config 36→41 hosts); Pydantic `detail`-style 422; auth fingerprints #15/#16; `myaccount/prod/*` funds/withdraw tier with per-route×method gate split; `realtime-funds` HTTP-200 error-wrap leaking upstream trade-core `-16` + `latency`.
+- [NEW] `utility/v2/public/*` (api-t1) — `email-preference` reaches a validation-before-auth gate (400, no token); auth fingerprint #18 `401 Invalid or expired authorization token`.
+- [NEW] `mtfddpi.fyers.in` → `api-a1/marina/v1/ddpi/{esign,esignValidate,approveName,status,timeline,user/listing/file}` + `/mtf/send_otp` — DDPI/eSign, uniformly `-16` auth-first, no pre-auth oracle.
+- [NEW] Second public config `config.fyers.in/config/config.gz` (135 KB, 989 URLs, 41 hosts) + 3 new live OAuth client_ids usable against the H1 step-1 oracle.
+- [NEW] `ipo.fyers.in` → `api-i1/investment/jhelum/v1/api/{offer_details_v2}` public object-keyed; `offer_list_v2` closed (uniform `-11`).
+- [CHANGED] `myaccount/alerts/direct/app/community/pledge` = 301 aliases into `fyers.in/web` SPA (not real services); `betatrade/datapub` stale (no DNS); Discourse (`about.json`) gone.
+- [REJECTED-ROUND] Grammarly/Coda/Superhuman inventory = third-party hosts, OOS, not analyzed (step 4).
+
+## STEP 2 — PRIORITIZE
+[PRIO] `api-appl.fyers.a` signup/v2 KYC (`req_id`-keyed) — **7.05** = attack 8, business 8, tech 7, gate 6 (validation-before-auth public), cloud 6, fresh 6
+[PRIO] `api-a1-prod.fyers.in` myaccount/prod funds+withdraw tier — **6.50** = attack 5, business 8, tech 5, gate 7, cloud 5, fresh 8
+[PRIO] `api-t1.fyers.in/utility/v2/public` email-preference — **5.55** = attack 5, business 5, tech 5, gate 8, cloud 5, fresh 6
+(second config `config.gz` = freshness only, enrich data not surface: 4.5; DDPI `marina` = ripper of signup, folded into #1.)
+
+## STEP 3 — HYPOTHESES
+[HYP] signup/v2 KYC application-object IDOR via `req_id`
+class: IDOR
+asset: api-a1.fyers.in/signup/v2/user/{esign-document,pdf/generate,status/poll,esign/accept-name-mismatch}
+confidence: 45
+reasoning: account-creation objects are keyed by application `req_id` threaded through eSign/PDF/KYC flows (`live-verification?source={verification|pan|esign|edit_address}&req_id=`); the pre-auth gate is validation-before-auth only (1050/1500), so data-layer authorization scoping is unproven. If `req_id` is the sole object key and authz is applicant-session-scoped, a second application's `req_id` yields cross-app KYC PII/eSign/PDFs.
+evidence_needed: 200 vs 403/404 when `GET /signup/v2/user/esign-document|pdf/generate` is issued with a foreign `req_id` under one authenticated applicant session.
+verify_steps: AUTH_HELPED: (ONLY after authorization confirmed) submit own `req_id`, then a second application's `req_id` on `/user/esign-document`, `/user/pdf/generate`, `/user/status/poll`, `pdf/generate`, diff codes; separately test whether a self-computed `x-validate` (key is client-embedded, see [LEARN]) unlocks any pre-auth step. No real-number OTP dispatch prior to authorization.
+impact: cross-application read of KYC PII, PAN, eSign documents, generated PDFs (5.3–7.5 conditional).
+testability: AUTH_HELPED
+
+[HYP] api-a1-prod `withdraw-fund` validation-before-auth on a money path + per-route×method authorization fragmentation
+class: MISCONFIG
+asset: api-a1-prod.fyers.in/myaccount/prod/{withdraw-fund,realtime-funds,user-withdrawal-history}
+confidence: 50
+reasoning: `withdraw-fund` POST rejects missing `amount` (HTTP 400) before any token check — validation-before-auth on a fund-withdrawal primitive; `user-withdrawal-history` is GET `-374`/POST `-17` (method-dependent gate); `realtime-funds` returns HTTP 200 wrapping raw trade-core `-16` JSON plus an internal `latency` field, leaking proxy timing and proving the gateway chain. Fragmented gate map across routes×methods may permit cross-account funds reads.
+evidence_needed: whether any no-token request on the tier reaches a data operation; whether `amount` present + no auth passes validation into the data layer; whether a low-priv session crosses account isolation.
+verify_steps: AUTH_HELPED: after authorization only; walk route×method gate matrix with (a) no token and (b) low-priv session, recording gate code per cell; retest `withdraw-fund` with `amount` present/no auth and observe if it passes validation into the data path. Pre-auth passive re-fetch of the error-wrap body is allowed.
+impact: authorization confusion on fund withdrawal/report surfaces (5.3–6.5 conditional).
+testability: AUTH_HELPED
+
+[HYP] `utility/v2/public/email-preference` reaches a schema-opaque validation-before-auth gate on a notification-preference endpoint
+class: MISSING_AUTHZ
+asset: api-mt1.fyers.in/util:utility/v2/public/email-preference
+confidence: 45
+reasoning: POST `{}`/`{email}`/`{token}`/`{action}` all return `400 Validation failed…` with no token — validation-before-auth on a per-user notification-preference endpoint; response shape `data.{email_disabled,sms_disabled,whatsapp_disabled}` recovered from the web bundle. Body schema is opaque (no field oracle), so reaching the data layer needs a validated body plus a bound identity.
+evidence_needed: a schema-valid body that passes validation unauthenticated and changes/reads a user's notification prefs.
+verify: AUTH_HELPED: after authorization only; walk candidate bodies, on a valid-pass/no-token hit verify cross-user isolation with two tokens; if only field schemas leak with no data reach, downgrade to hardening (do not report as vuln).
+impact: schema oracle at best; cross-user notification-preference read/write if a validated body reaches the data layer (3.1–5.3 conditional).
+testability: AUTH_HELPED
+
+## STEP 4 — SELF-CRITIQUE
+[PARKED] H1 OAuth `redirect_uri`/auth-code interception — already final in prior analyst (6.1 confirmed open redirect; 8.1–9.0 conditional, PoC design ready); not a NEW asset this run; carried, not re-listed.
+[PARKED] DDPI `marina`/`mtfddpi`, IPO `offer_details_v2`, `screeners/koshi` — public/auth-first tiers with no pre-auth oracle (mine read-only, no new exploitation path).
+[PARKED] Third-party Grammarly/Coda/Superhuman hosts — OOS (rejected class) per scope `${TARGET}`.
+[PARKED] `insurance`/admin-path `souce` typo + presence oracle — reclassified as low hardening/schema-only remm 3.7, kept for report body, not a standalone hypothesis.
+[PARKED] email-preference kept, but flagged low; if evidence shows only field-schema leakage and no user-data reachant, retire to hardening.
+[PARKED] SmartHunt "SSTI in onload" — REJECTED (see [LEARN]).
+[FINAL] survivor re-ranked:
+1. signup/v2 KYC `req_id` IDOR (AUTH_HELPED, conf.45)
+2. api-a1-prod `withdraw-fund` validation-before-auth/mis-authz (AUTH_HELPED, conf.50)
+3. `utility/v2/public/email-preference` auth-gate oracle (AUTH_HELPED, conf.45, impact-low)
+
+## STEP 5 — NEXT ACTION
+[NEXT] HUMAN: confirm written authorization with FYERS before any active step. Per KB: no VDP/security.txt/no public bounty; only documented channel `api-support@fyers.in` (v3.1 SEBI spec) + GitHub `fyers/claude-installer` issuer. Until authorization (scope letter/SOW) is provided, all three hypotheses remain unexecuted (AUTH_HELPED). Passive continuation order: HEAD `GET config.fyers.in/config/config.gz` vs `indus/v1/config` diff and refresh `signup.fyers.in/main.dart.js` fingerprint for drift — no auth touched.
+
+## STEP 6 — LEARNING
+[LEARN] REJECTED AUTH (server-side SSTI) @ api-connect-docs.fyers.in (static S3/Docusaurus, NoSuchKey; 429/errorCode1015 = CF rate-limit, no `49`) — corroborated across two hosts (api-connect-docs, invest admin).
+[LEARN] REJECTED encryption class (client-embedded `x-validate` HMAC keyed by a public bundle constant, alongside a recomputed client tamper-check) — attacker can recompute, no protective value; hardening-only. Not a real secret (hash omitted per rule; it is public).
+[LEARN] ACCEPTED OBJECT-KEYED IDOR class as a viable conditional lead on two independent surfaces: `signup/v2` `req_id` (this run) and `data.fpers/savechart` `chartId` (prior) — both require authenticated confirmation.
+
+## STEP 7 — RISK SCORE
+[RISK] fyers: 62 — 41-host production estate with fragmented per-route×method authorization across ≥19 auth domains (fingerprints sharing a shared numeric code space), multiple validation-before-auth paths including a money-movement primitive and a KYC OTP send, raw upstream error-wrap + internal `latency` disclosure, second public config and three new live OAuth client_ids, exposed default-server hosts, an unauthenticated public IPO/ticker/`schema` tier, an OAuth open-redirect primitive (6.1) with a conditional code-interception path to account takeover (8.1–9.0). Offset by auth-gated data layers, the absence of any proven high-severity exploit, a narrow-object IDOR authorization characterization, and two rejected SSTI false positives.
+
+Note: everything above is analysis, gated on authorization; no active request beyond permitted passive reads is recommended absent that authorization.
