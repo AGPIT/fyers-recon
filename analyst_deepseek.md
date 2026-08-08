@@ -448,3 +448,46 @@ testability: HUMAN_ONLY
 [LEARN] ACCEPTED auth-first-gate class @ api-t1.fyers.in/nucleus/v1 — uniform `-1` fingerprint #21, no pre-auth oracle; conditional IDOR on per-session objects carried but unproven.
 [LEARN] REJECTED pre-auth-oracle class @ api-t1.fyers.in/user/v3/app — trade-core `-16`, no schema/field leak pre-auth.
 [RISK] fyers: 65 — estate now ≥42 hosts / ≥21 auth domains with 5 conditional object-keyed IDOR candidates (H17 req_id incl. PAN/PDF/eSign, H13 chartId, H15 DDPI, H18 journal note/upload, nucleus conversation) plus the first unauth upload/URL-fetch primitive (api-testing-prod, H19) touching KYC/PAN document storage; this run added no confirmed exposure — all new surfaces are auth-first with no oracle. Offset: zero exploits proven, researcher execution of every high-value path is prohibited/pending authorization, SSTI/OATH/third-party classes rejected, SmartHunt `.env` is empty and third-party.
+
+===== ANALYST 2026-08-08 09:08:42 UTC =====
+[NEW] `api-t1.fyers.in/nucleus/v1` object-keyed routes confirmed (static `fyers.in/web/main.dart.js` 31.6 MB): `GET /history/{cid}` builds `$.ru9()+"/"+a`; live `GET /history/99999` → 401 fingerprint #21 vs `GET /chat/request-limit/99999` → 404 ⇒ `{cid}` is a real per-conversation object key behind the session gate.
+[NEW] H21 — nucleus/1 conversation/drawing object-keyed IDOR family: `{cid}` (history, cancel-chat), `{a}/{b}` (drawings delete), body `client_id` (drawings save), `{old_fia,uuid}` (oldfiachat), `cid` (chat body); added as design A6.
+[NEW] POC request-shape appendix E1–E6 appended to `reports/submission-package_fyers-bb.md` (exact parameterized shapes for H17/H13/H15/H18/H19/H21).
+[CHANGED] nucleus realm upgraded from PARKED (conf 35, shape-unknown, 07:27 run) to shaped/shaped candidate this run.
+[NEW] Live gates re-confirmed: signup/v2 esign-document #19 (401/1050 session-expired), journal #20 (403 `{"code":401}`), nucleus #21 (401 `-1`) — unchanged, no pre-auth data.
+[PRIO] api-testing-prod.fyers.in KYC upload tier (H19) — 7.75 = attack 7, business 8, tech 8, gate 10, cloud 7, fresh 6 (carried; still the estate's only no-auth tier)
+[PRIO] api-a1.fyers.in/signup/v2/* KYC req_id family (H17) — 6.30 = attack 7, business 9, tech 7, gate 1, cloud 6, fresh 5 (highest CVSS potential, HUMAN-only)
+[PRIO] api-t1.fyers.in/nucleus/v1 FIA family (H21) — 5.60 = attack 6, business 6, tech 7, gate 1, cloud 5, fresh 9 (new object-key model; low pre-auth exposure)
+[HYP] H21 — nucleus/v1 conversation/drawing object-keyed IDOR
+class: IDOR
+asset: api-t1.fyers.in/nucleus/v1/{history/{cid}, chat(body cid), cancel-chat/{cid}/{mid}, drawings/{a}/{b}, oldfiachat/history}
+confidence: 45
+reasoning: static bundle proves `{cid}` is a caller-supplied path key; probe differentiated real route (401 -1) from 404 on a non-keyed path; keys client-supplied, per-owner scoping undetermined behind the uniform auth-first gate.
+evidence_needed: own-session `GET /history/{own_cid}` returns non-empty; same session with `{foreign_cid}` returns 200-with-data (IDOR) vs 403/404/auth-error (fixed).
+verify_steps: AUTH_HELPED — own-account baseline, then foreign-object-key substitution under the same session (`Authorization: Bearer`, header `version:1.0.0`); cross-account execution prohibited (FYERS-side only).
+impact: cross-account read/delete of FIA copilot chat history + drawings → program Medium, CVSS 5.3–6.5 conditional.
+testability: HIS_ONLY
+[HYP] H19 — Unauthenticated server-side URL fetch (SSRF) + KYC object-write
+class: SSRF
+asset: api-tests-prod.fyers.in/signup/upload/api/v1/{pdf/is-password-protected, user/general/upload-image, user/fetch-pan, user/general/zip-all-images, signature-to-bmp}
+confidence: 55
+reasoning: bundle shows the single-ajax wrapper but the service never rejects a token at any depth (`{}`→402, dummy-token→403 format-parse, `zip-all-images {}`→200 no-auth); `is-pswd-protected` posts a caller-biased `file_url` for a server-side fetch; `signature-to-bmp` uses fixed key `user/signature/bmp`.
+evidence_needed: distinct answer across the 3-case `file_url` diff-oracle; unauth retrieval of a caller-stored object.
+verify_steps: PASSIVE — `POST .../pdf/is-password-protected` with `{"file_url":""}` then `{"file_url":"not-a-url"}` (spaced ≥5s, no valid external URL, no outbound fetch, no OTP/file/write); real-fetch confirm = FYERS-side.
+impact: blind SSRF from a CF-fronted KYC microservice + unauth write/clobber into a KYC doc tier → program Medium–High, CVSS 5.3–7.5 conditional.
+testability: PASSIVE (branch oracle) → HUMAN
+[HYP] H17 — signup/v2 KYC req_id application-object IDOR
+class: IDOR
+asset: api-a1.fyers.in/signup/v3/user/{esign-document,pdf/generate,pdf/poll,status/poll} + /nri/get-document (req_id keyed via digio_doc_id/live-verification)
+confidence: 45
+reasoning: KYC application objects are keyed by caller-re-usable `req_id` across the eSignature/PDF/status family; gate #19 (401/1050) requires a signup session but says nothing about intra-session object ownership; earlier studies note request to MU set of endpoints take `req_id` straight from client.
+verify_steps: `HUMAN_SIDE`: two acting applicants; A-session + artifacts of B-keyed non-empty eSSign/PDF/status → yes, any 2xx-with-data, no OTP; FYERS-confirmed, own-account only.
+impact: unmasked PAN/eSign/PDF cross-app disclosure → program Critical (PAN-disclose) / High; CVSS 8.1–9.1 conditional.
+testability: HIS_ONLY
+[PARKED] signup/v1 schema/parse oracle (validate-opt)/staging start-account: earlier resolved (1007/1051-or-less) — no pre-auth impact; informational bundle only.
+[PARKED] SmartHunt SSTI `issue_id=${7*7}`: reaffirmed false positive 4× — R404 = baselined CF 404 → injection = 429 CF `errorCode:1015`, no `49`; reject.
+[PARKED] nucleus `request-limit`/deep_research abuse: auth-gated; no oracle/impact → informational.
+[PARKED] h20 tests/packet oracle: auth available oracle stopped in container.
+[FINAL] survivors re-ranked: H19 (55, SSRF/unauth-write, new & passive-tested) > H17 (45, req_id/SS-Value, HIGHEST-CVSS) > H21 (45, nucleus object-IDOR, new analysis-confirmed). All three ≤ condition, none allows researcher cross account execution; multi-side validation block as convey.
+[NEXT] PROBE: `POST https://api-apps-prod.fyers.in/signup/upload/api/v1/pdf/is-password-protected` — spaced ≥5s, 2 requests only: `{"file_url":""}` and `{"file_url":"not-a-url"}` (do NOT pass valid/external URL; no outbound fetch, no file-upload side effects) → diff vs recorded `{}`→200-empty to confirm branch-on-`file_ness` (H19 branch oracle, already-in-scope, authorization-not-effect). Then [HUMAN]: dispatch scope-confirmation labels ($A1–A8) and submit `reports/submission-package_fyers-bb.pdf`.
+[RISK] fyers: 66 — estate has 5 conditional object-keyed IDOR candidates (H4 req_id→PAN/PDF 8.1–9.1, H13/H15/H18/H21) alongside the first unaudit KYC upload tier (SSRF + storage-write) touching the highest-sensitivity data class; ≥21 auth-time regimes & ~40 hosts; but zero side-effects executed, no cross-account leverage, ID-only family is researcher-execution-prohibited, program excludes dev/staging counts, and the only newly-demonstrated additions are gate/splits (no data exposure).
