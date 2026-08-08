@@ -2627,3 +2627,14 @@ Review research_mimo.md for details
 - **Critical Findings**: 7 (CVSS 9.1) - All CORS misconfigurations
 - **High-Value Findings**: 11 (CVSS 7.5-8.1)
 ### H199: api-connect.fyers.in OAuth Token Leakage (CVSS 7.5)
+
+# 3 items on 2026-08-08 11:34:12 UTC
+- **Developer Portal Surface**: 3 new subdomains (api-connect.fyers.in, myapi.fyers.in, api-connect-docs.fyers.in)
+- **Tech Stack**: Next.js (api-connect), React SPA (myapi), Docusaurus (api-connect-docs)
+- **Auth Mechanism**: OAuth 2.0 with redirect-based flow
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+### H199: api-connect.fyers.in OAuth Token Leakage (CVSS 7.5)
+### H200: myapi.fyers.in API Key Exposure (CVSS 6.5)
+### H201: fyers-lib.js Hardcoded Credentials (CVSS 6.5)
