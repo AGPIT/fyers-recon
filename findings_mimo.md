@@ -2816,3 +2816,71 @@ Review research_mimo.md for details
 - ### H199: api-connect.fyers.in OAuth Token Leakage (CVSS 7.5)
 - ### H200: myapi.fyers.in API Key Exposure (CVSS 6.5)
 - ### H201: fyers-lib.js Hardcoded Credentials (CVSS 6.5)
+
+# Developer Portal POC Validation Completed on 2026-08-08 13:56:00 UTC
+
+## Files Created
+| File | Description |
+|------|-------------|
+| `POC_DEVELOPER_PORTAL.md` | POC validation results for H199-H203 |
+
+## Validation Results
+
+### H199: api-connect.fyers.in OAuth Token Leakage - CONFIRMED
+- **Evidence**: Access token reflected in error responses
+- **Result**: Token leakage via browser history, Referer headers
+- **Status**: CONFIRMED
+
+### H200: myapi.fyers.in API Key Exposure - PARTIALLY CONFIRMED
+- **Evidence**: Internal API endpoints discovered in JS bundle
+- **Result**: No hardcoded credentials, but endpoints exposed
+- **Status**: PARTIALLY CONFIRMED
+
+### H201: fyers-lib.js Hardcoded Credentials - NOT CONFIRMED
+- **Evidence**: OAuth parameters are variables, not hardcoded
+- **Result**: No credential exposure
+- **Status**: NOT CONFIRMED
+
+### H202: api-connect-docs.fyers.in Information Disclosure - CONFIRMED
+- **Evidence**: Full API documentation accessible without auth
+- **Result**: OAuth flow documentation exposed
+- **Status**: CONFIRMED
+
+### H203: Next.js Data Endpoint Exposure - CONFIRMED
+- **Evidence**: Internal routes discovered via build manifest
+- **Result**: `/api/health_check` returns `{"message":"Totoi"}` without auth
+- **Status**: CONFIRMED
+
+## CURRENT STATE SUMMARY (2026-08-08 13:56:00 UTC)
+
+### Research Progress
+- **Total Hypotheses**: 213 across 39 attack surfaces
+- **POCs Validated This Run**: 5 (H199-H203)
+- **Confirmed**: 3
+- **Partially Confirmed**: 1
+- **Not Confirmed**: 1
+- **Confirmed Findings**: 77+
+
+### Key Discovery
+**H203: Next.js Internal Route Exposure** - Build manifest reveals internal API routes including `/api/health_check` which returns data without authentication.
+
+### Files Created
+| File | Description |
+|------|-------------|
+| `POC_DEVELOPER_PORTAL.md` | POC validation results for H199-H203 |
+
+## Next Steps
+1. Generate comprehensive final report
+2. Create executive summary for bug bounty submission
+3. Document remediation recommendations
+
+# 3 items on 2026-08-08 13:58:07 UTC
+- **POC Validation Completed**: 5 Developer Portal hypotheses (H199-H203)
+- **Confirmed**: 3 | **Partially Confirmed**: 1 | **Not Confirmed**: 1
+- **Total Confirmed Findings**: 77+
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+1. **H199: api-connect.fyers.in OAuth Token Leakage** (CVSS 7.5) - CONFIRMED
+2. **H200: myapi.fyers.in API Key Exposure** (CVSS 6.5) - PARTIALLY CONFIRMED
+3. **H201: fyers-lib.js Hardcoded Credentials** (CVSS 3.1) - NOT CONFIRMED
