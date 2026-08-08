@@ -259,3 +259,52 @@ testability: PASSIVE
 [NEXT] PROBE: passive, read-only, ≤6 spaced (≥30s) GETs on pending recon surface per state — (1) `GET https://api-t1.fyers.in/nucleus/v1/fia/chart-insights` (no auth → fingerprint gate vs #15/#16/#17/#19); (2) `GET https://journal.fyers.in/journal/` and `GET https://journal.fyers.in/journal/?token=<random>` (observe redirect/4xx, reflection, app fingerprint — no valid session contact); (3) `GET https://charts-cdn.fyers.in/` + `/?list-type=2` (S3 listing check); (4) `GET https://trade2.fyers.in/` (fingerprint). No auth, no OTP, no PII, no volume.
 [LEARN] No class newly proven dead or alive this run (docs-only + no live probes). Reaffirmed: ACCEPTED (conditional, unproven) IDOR class @ signup/v2 req_id + indus/savechart + marina/ddpi; REJECTED XSS/SSTI @ api-connect-docs (CF 1015 block, no `49`) and REJECTED OATH @ login.fyers.in (program-excluded) remain closed.
 [RISK] fyers: 62 — 41-host production estate under a live public bounty program; all genuine High/Critical potential (object-keyed IDOR family H13/H15/H17 incl. PAN/eSign/PDF exposure) is unproven and researcher-execution-prohibited under the own-account rule; validation-before-auth on a money path (withdraw-fund) and KYC OTP-send (signup/v2), per-route×method auth fragmentation across ≥19 domains, raw upstream error-wrap + internal `latency` disclosure, and two public configs with live OAuth client_ids broaden attack surface. Offset: no confirmed high-severity exploit, auth-gated data layers, OATH and SSTI classes rejected, majority of corpus informational/non-eligible.
+
+===== ANALYST 2026-08-08 04:33:32 UTC =====
+[NEW] journal.fyers.in "Journal" trade-journal Flutter SPA mapped (main.dart.js 4.4 MB): bootstrap `getTokenFromQueryParam()` sets `_FYERS` cookie from `?token=` unvalidated; backend = `api-a1-prod.fyers.in/journal-server/*` (12 endpoints: v2/{summary,orders-list,positions-list}, v1/{notes-list,note/create,note/edit/,note/delete/,note/detail,note/search,note/recent-searches,tag/get-or-create,upload-document}) + `api-a1.fyers.in/reports/v2/api/journal_pnl` + `api-t1.fyers.in/gk/verify_token`.
+[NEW] Auth fingerprint #20: `journal-server/*` no-auth → HTTP 403 `{"code":401,"message":"unauthorized","response":""}` (distinct from api-a1-prod `-374`/`-17`/Pydantic #15; `gk/verify_token` = trade-core `-16`). Auth-first, no pre-auth oracle.
+[NEW] H18 IDOR candidate: per-account notes/tags + `upload-document` file objects behind `_FYERS` (4th object-keyed surface, same class as H13/H15/H17).
+[NEW] Client primitives (informational): unvalidated `?token=` setter + SPA logout `_FYERS=-1` at `domain=.fyers.in` → crafted link clears the apex cookie across ALL *.fyers.in properties; hardcoded OAuth `state=sample_state`; no Referrer-Policy on tokenized deep-links.
+[NEW] OAuth client_id `3NF8I0C645-101` registered redirect `https://journal.fyers.in/` (H1-adjacent; H1 already not eligible).
+[CHANGED] `trade2.fyers.in` → no A record (dead; drop with betatrade/datapub). `charts-cdn.fyers.in` → S3 CDN asset only (NoSuchKey on `/`).
+[PRIO] api-a1.fyers.in/signup/v2 KYC (`req_id`-keyed, H17) — **7.00** = attack 8, business 9, tech 7, gate 4, cloud 5, fresh 6
+[PRIO] api-t1/indus/user saved-chart gallery (opaque `chartId`, H13) — **6.15** = attack 7, business 7, tech 6, gate 5, cloud 5, fresh 5
+[PRIO] api-a1-prod.fyers.in/journal-server (H18, NEW) — **6.00** = attack 7, business 6, tech 6, gate 3, cloud 5, fresh 9
+[PRIO] api-a1.fyers.in/marina/v1/ddpi (H15, unchanged) — **6.00** = attack 7, business 7, tech 5, gate 5, cloud 5, fresh 5
+[HYP] journal-server note/upload object-keyed IDOR (H18, NEW)
+class: IDOR
+asset: api-a1-prod.fyers.in/journal-server/v1/{note/detail,note/edit/,note/delete/,upload-document,tag/get-or-create} + v2/{summary,orders-list,positions-list}
+confidence: 40
+reasoning: Trade-journal objects (notes, tags, uploaded documents) are keyed per-account behind `_FYERS`; endpoint ids are opaque object keys (note id / tag id / document). Pre-auth gate is auth-first HTTP 403 (#20), so data-layer authorization scoping is unproven until an authenticated session exists. Estate precedent: three prior object-keyed surfaces (req_id, chartId, instruction-id) all unproven authz.
+evidence_needed: 200-with-data vs 403/404 when one authenticated account's session requests a second account's note/tag/document id on detail/edit/delete/upload-document; whether `upload-document` file URLs are keyed to the owning account.
+verify_steps: AUTH_HELPED: (FYERS-side/own-account only — researcher cross-account execution prohibited) baseline `GET /journal-server/v1/notes-list` with own `_FYERS` session, then substitute a foreign note id on `note/detail/{id}`, `note/edit/{id}`, `note/delete/{id}`, and a foreign document reference on `upload-document`; diff codes. No live dispatch.
+impact: cross-account read/edit/delete of trade-journal notes, tags and uploaded documents → program Medium–High (conditional, unproven).
+testability: HUMAN_ONLY
+[HYP] signup/v2 KYC cross-application `req_id` access (H17, carried — compact)
+class: IDOR
+asset: api-a1.fyers.in/signup/v2/user/{esign-document,pdf/generate,pdf/poll,status/poll,esign/accept-name-mismatch,esign-success,esign/clear-status,change-esign-status}
+confidence: 45
+reasoning: Account-creation objects keyed by application `req_id` threaded via `digio_doc_id`; pre-auth gate validation-before-auth only (`1050/1500`); authz scoping unproven.
+evidence_needed: 200-with-data vs 403/404 on cross-app `req_id` substitution; whether self-computed `x-validate` unlocks any pre-auth step.
+verify_steps: AUTH_HELPED: two-applicant R_A/R_B own-session baseline then B-keyed substitution on the listed endpoints (FYERS-side).
+impact: unmasked PAN/eSign/PDF cross-application read → program Critical ("PAN disclosure")/High (conditional).
+testability: HUMAN_ONLY
+[HYP] indus/user saved-chart object-keyed IDOR (H13, carried — compact)
+class: IDOR
+asset: api-t1/indus/user/v1/gallery + data.fyers.in/dev-fyers/savechart/1.2/{charts,study_templates}
+confidence: 42
+reasoning: Saved-chart/study-template objects keyed by opaque `chartId` decoupled from `tokenHash` scope; pre-auth gate content-type-sensitive, no user data pre-auth.
+evidence_needed: 200-with-data vs 403/404 on foreign `chartId` under one `_FYERS` session; DELETE `token_id` scope.
+verify_steps: AUTH_HELPED: own-account gallery list → foreign chartId/study-template read and DELETE delta (FYERS-side).
+impact: cross-account read/delete of saved charts → program High/Medium (conditional).
+testability: HUMAN_ONLY
+[PARKED] SmartHunt "SSTI in `issue_id`" — false positive reaffirmed (4th triage): its own Response 2 is a CF `429` `errorCode:1015` block with no `49`; baseline is 401 `-27`. Class excluded.
+[PARKED] journal client primitives (apex `_FYERS=-1` cross-property logout via crafted `?token=` link; hardcoded OAuth `state=sample_state`; missing Referrer-Policy) — informational/hardening only; no demonstrated impact, OAuth-as-designed excluded. Add to informational bundle, not hypotheses.
+[PARKED] New OAuth client_id `3NF8I0C645-101` — public identifier; H1 already not bounty-eligible.
+[PARKED] charts-cdn.fyers.in S3 listing (prior MISCONFIG) — confirmed S3 asset host, NoSuchKey on `/`; no evidence of open listing.
+[FINAL] survivors re-ranked: H17 (45) > H13 (42) > H18 journal (40) > H15 marina/ddpi (40) — all IDOR, all HUMAN_ONLY (FYERS-side), researcher execution prohibited; none executed.
+[NEXT] PROBE: passive, read-only — extract exact journal-server request shapes from the locally-cached `journal.dart.js` (4.4 MB, single fetch): note-id/tag-id key names, `upload-document` field names, and auth-header/`_FYERS`-cookie handling, to make H18 `verify_steps` concrete before it is appended to the submission package. No auth, no dispatch, no cross-account access.
+[LEARN] ACCEPTED IDOR class @ api-a1-prod/journal-server (journal notes + upload-document file objects) — 4th independent object-keyed authorization surface in the estate (req_id/chartId/instruction-id/note-id); conditionally alive, all unproven, all FYERS-side validation required.
+[LEARN] REJECTED SSTI @ api-i1/invest/admin/v1/sgb/issue-list — reaffirmed 4th time: baseline 401 `-27` vs injected 429 CF `errorCode:1015` block, no template evaluation; SmartHunt `issue_id` report noise.
+[LEARN] REJECTED OATH (open-redirect-only) @ login.fyers.in + OAuth-as-designed (hardcoded `state`) — program-excluded; class dead for scoring.
+[RISK] fyers: 63 — estate grown to 42 live hosts / ≥20 auth domains: new journal-server surface adds a 4th object-keyed IDOR candidate including file upload, an unvalidated `?token=`→`_FYERS` cookie primitive enabling apex-wide cross-property logout via one link, and CF bot cookies scoped `Domain=fyers.in` estate-wide; prior High/Critical potential (IDOR family H13/H15/H17/H18 incl. PAN/PDF/eSign exposure) remains unproven and researcher-execution-prohibited. Offset: auth-first gates on all new surfaces (no pre-auth oracle), no confirmed high-severity exploit, SSTI and OATH classes rejected, majority of corpus informational/not bounty-eligible.
