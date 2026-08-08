@@ -1,1 +1,11 @@
-{"target": "fyers.in", "phase": "POC", "status": "EXHAUSTED", "next_steps": ["Operator dispatches scope-confirmation query (package C1\u2013C8) then submits `reports/submission-package_fyers-bb.md` (A1\u2013A6 + B + C + D + E1\u2013E6) via forms.fyers.in BugBountyForm1; no cross-account/OTP/SSRF execution by researcher.", "If blocked on scope, restart RECON on unexplored in-scope surface \u2014 api.fyers.in/api/v2/* OAuth2 generate-authcode param validation, myaccount.fyers.in SPAs, automate-chn.fyers.in backtest family, ipo.fyers.in bundles \u2014 spaced, read-only.", "Exclusions unchanged (SmartHunt SSTI false positive 4\u00d7, third-party hosts, api-a1.fydev.tech, public config artifacts); guardrails hold."]}
+{
+  "target": "fyers.in",
+  "phase": "RECON",
+  "status": "IN_PROGRESS",
+  "next_steps": [
+    "SURFACE aip on api-i1 eIPO family \u2014 extract exact request/response shapes for place-order/order-book/cancel/issue-list from ipo SPA bundles (esp. /invest order-book body, tapi order-book 0/1 split, offer_details keying) \u2014 read-only.",
+    "SURFACE api-i1 eIPO family \u2014 extract exact request/response shapes for place-order/order-book/cancel/issue-list from ipo SPA bundles (esp. /invest order-book body, tapi order-book 0/1 split, offer_details keying) \u2014 read-only.",
+    "Operator extends scope-confirm with C9 + submits package (A1\u2013A7 + B + C + D + E + F) via official form; no pre-auth order placing.",
+    "Exclusions + guardrails unchanged."
+  ]
+}
