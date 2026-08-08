@@ -1,11 +1,11 @@
 {
   "target": "fyers.in",
-  "phase": "POC",
+  "phase": "RECON",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Complete POC phase for login.fyers.in hypotheses",
-    "Validate high-value findings (H214, H216, H219)",
-    "Generate comprehensive report",
+    "Generate comprehensive final report",
+    "Create executive summary for bug bounty submission",
+    "Document remediation recommendations",
     "Generate comprehensive final report",
     "Create executive summary for bug bounty submission"
   ]

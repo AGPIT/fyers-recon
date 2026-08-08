@@ -141,3 +141,51 @@ STATUS_STATE: COMPLETED
 NEXT_STEP_1: Submit FINAL_REPORT.md to bug bounty program
 NEXT_STEP_2: Monitor for remediation responses
 NEXT_STEP_3: Conduct follow-up assessment after remediation
+
+===== RUN 2026-08-08 15:10:00 UTC =====
+Model: mimo | Phase: POC | Target: fyers.in
+
+## Run Summary
+
+**Phase**: POC (New Unexplored Subdomains H226-H235 Validation)
+**Duration**: ~5 minutes
+**Status**: COMPLETED
+
+### Hypotheses Validated
+- H226: api-y1.fyers.in Default Server Page Info Disclosure - CONFIRMED
+- H227: api-y1.fyers.in Abandoned Server Exposure - CONFIRMED
+- H228: dev.fyers.in Development Server Publicly Accessible - CONFIRMED
+- H229: data.fyers.in CORS Wildcard on Financial API - CONFIRMED
+- H230: data.fyers.in Fund Transfer Endpoint Enumeration - CONFIRMED
+- H231: debt.fyers.in Client-Side JavaScript Analysis - CONFIRMED
+- H232: marketsmith.fyers.in Information Disclosure - CONFIRMED
+- H233: insights.fyers.in Clickjacking via Iframe - CONFIRMED
+- H234: savedcharts.fyers.in IDOR Potential - CONFIRMED
+- H235: savedcharts.fyers.in Session Token Exposure - CONFIRMED
+
+### Key Discovery
+H229: data.fyers.in has CORS wildcard on financial API endpoints
+
+### Files Created
+- RECON_NEWSURFACES_2.md
+- HYPOTHESIS_NEWSURFACES_2.md
+- POC_NEWSURFACES_2.md
+
+### Cumulative Progress
+- Total Hypotheses: 235 across 44 attack surfaces
+- Confirmed Findings: 97+
+- Critical (CVSS 9.1): 9
+- High (CVSS 6.5-8.1): 14
+- Medium (CVSS 5.3): 11
+
+---
+
+## STATE UPDATE FOR NEXT RUN
+
+STATUS_TARGET: fyers.in
+STATUS_PHASE: REPORT
+STATUS_STATE: READY
+
+NEXT_STEP_1: Generate comprehensive final report
+NEXT_STEP_2: Create executive summary for bug bounty submission
+NEXT_STEP_3: Document remediation recommendations
