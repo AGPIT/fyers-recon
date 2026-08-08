@@ -590,3 +590,5 @@ testability: HUMAN_ONLY (AUTH_HELPED)
 [LEARN] REJECTED method-gate class @ api.fyers.in/open-account/staging/* — 500 method gate on GET and POST, auth never reached; dev/staging scope-excluded (re-affirmed).
 [LEARN] REJECTED SSTI class @ SmartHunt `issue_id=${7*7}` — reaffirmed false positive 4× (401→429 CF errorCode:1015, no `49` rendered).
 [RISK] fyers: 66 — estate now ~42 hosts / ≥22 auth fingerprint domains, with six conditional object-keyed IDOR candidates (H13/H15/H17/H18/H21/H22 — H17 top-severity at 8.1–9.1 if unmasked PAN/eSign) plus the estate's only fully-unauthenticated tier (api-testing-prod H19: SSRF + KYC object-write, 5.3–7.5) now joined by a new live eIPO order surface (api-i1). Offsets: zero exploits executed or proven, every high-value path is researcher-execution-prohibited pending authorization, all live gates re-confirmed auth-first (#19/#20/#21 + new `-100`/`-441`), jhelum public feed is public-by-design with no leak, SSTI/third-party/method-gate classes rejected, and the 401-in-HTTP-200 wrap exposes no data.
+
+===== ANALYST 2026-08-08 11:50:43 UTC =====
