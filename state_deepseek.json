@@ -1,10 +1,1 @@
-{
-  "target": "fyers.in",
-  "phase": "RECON",
-  "status": "HIGH_POTENTIAL",
-  "next_steps": [
-    "Continue on `api-testing-prod.fyers.in` surface \u2014 map remaining upload/upload-route shapes and probe `api.fyers.in/open/time/staging/*` method-gate family (spaced, read-only, no file/URL side-effects).",
-    "Firm H19 in the submission package (A5) and dispatch the scope-confirmation query (api-testing-prod, /invest/admin/*, /cdsl/dev/*, signup/v2 KYC, mcp.fyers.in, open-account/staging) before any execution.",
-    "Exclusions unchanged: SmartHunt SSTI, third-party hosts, `api-a1.fydev.tech`, public config artifacts; guardrails (no OTP dispatch, no cross-account, no high volume) hold."
-  ]
-}
+{"target": "fyers.in", "phase": "SURFACE", "status": "HIGH_POTENTIAL", "next_steps": ["Continue on `api-testing-prod.fyers.in` surface \u2014 map remaining upload/upload-route shapes and probe `api.fyers.in/open/time/staging/*` method-gate family (spaced, read-only, no file/URL side-effects).", "Firm H19 in the submission package (A5) and dispatch the scope-confirmation query (api-testing-prod, /invest/admin/*, /cdsl/dev/*, signup/v2 KYC, mcp.fyers.in, open-account/staging) before any execution.", "Exclusions unchanged: SmartHunt SSTI, third-party hosts, `api-a1.fydev.tech`, public config artifacts; guardrails (no OTP dispatch, no cross-account, no high volume) hold."]}

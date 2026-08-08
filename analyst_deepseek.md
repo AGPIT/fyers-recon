@@ -308,3 +308,48 @@ testability: HUMAN_ONLY
 [LEARN] REJECTED SSTI @ api-i1/invest/admin/v1/sgb/issue-list — reaffirmed 4th time: baseline 401 `-27` vs injected 429 CF `errorCode:1015` block, no template evaluation; SmartHunt `issue_id` report noise.
 [LEARN] REJECTED OATH (open-redirect-only) @ login.fyers.in + OAuth-as-designed (hardcoded `state`) — program-excluded; class dead for scoring.
 [RISK] fyers: 63 — estate grown to 42 live hosts / ≥20 auth domains: new journal-server surface adds a 4th object-keyed IDOR candidate including file upload, an unvalidated `?token=`→`_FYERS` cookie primitive enabling apex-wide cross-property logout via one link, and CF bot cookies scoped `Domain=fyers.in` estate-wide; prior High/Critical potential (IDOR family H13/H15/H17/H18 incl. PAN/PDF/eSign exposure) remains unproven and researcher-execution-prohibited. Offset: auth-first gates on all new surfaces (no pre-auth oracle), no confirmed high-severity exploit, SSTI and OATH classes rejected, majority of corpus informational/not bounty-eligible.
+
+===== ANALYST 2026-08-08 06:03:40 UTC =====
+[NEW] Host `api-testing-prod.fyers.in` — KYC upload microservice (5 endpoints: `signup/upload/api/v1/user/general/upload-image`, `.../user/fetch-pan`, `.../pdf/is-password-protected`, `signup/upload/signature-to-bmp`, `.../user/general/zip-all-images`); NO auth gate observed (402/403/501 code space) → H19 candidate: unauth file-write + SSRF via `file_url`.
+[NEW] `api-a1-prod.fyers.in/signup/v1/*` legacy account-opening family (`user/auth/{send-otp,validate-otp,user-type}`, `verification/email/send-otp`, `user/token/get-details`) with `Access-Token` header scheme and own code space 1051(auth-first)/1007(validation-first); JSON-parse error string leaked in `verification/email/send-otp` 400 message.
+[NEW] `api.fyers.in/open-account/staging/{user,admin}/*` staging account API reachable on PROD (500 content-type method-gate; same family as data.fyers.in/dev-fyers, cdsl/dev).
+[CHANGED] `api-a1.fydev.tech/open-account/dev/*` dev twin referenced in SPA — out of scope (non-`*.fyers.in`), recorded, not tested.
+[PRIO] api-testing-prod.fyers.in KYC upload service (H19) — **7.90** = attack 7, business 8, tech 8, gate 9, cloud 7, fresh 9
+[PRIO] api-a1-prod.fyers.in/signup/v1 legacy family — **5.60** = attack 5, business 7, tech 5, gate 5, cloud 5, fresh 6
+[PRIO] api.fyers.in/open-account/staging/* — **5.00** = attack 5, business 7, tech 4, gate 2, cloud 5, fresh 6
+[HYP] H19 — Unauthenticated KYC document-upload storage-write + SSRF via `is-password-protected?file_url=`
+class: SSRF
+asset: api-testing-prod.fyers.in/signup/upload/api/v1/{pdf/is-password-protected, user/general/upload-image, user/fetch-pan}
+confidence: 55
+reasoning: Gate walk showed no auth at any stage — `{}`→400 402 "All fields are mandatory"; empty-fields + dummy `Access-Token`→400 403 "Invalid File Format" (token never rejected); nulls→500/501. SPA code confirms `is-password-protected` POSTs a user-supplied `file_url` (server-side fetch) and `upload-image` POSTs base64 file + `key` (object-storage path). Estate norm is auth-first; this is the first unauth file/URL primitive.
+evidence_needed: (a) fetch-oracle — in-scope valid URL vs malformed `file_url` yields distinct responses proving server fetch; (b) fetch constraints (scheme/host allowlist, internal reach); (c) whether an object stored under a controlled `key` is later retrievable (FYERS-side).
+verify_steps: PASSIVE — spaced ≥5s: `POST https://api-testing-prod.fyers.in/signup/upload/api/v1/pdf/is-password-protected` bodies `{"file_url":""}` / `{"file_url":"not-a-url"}` / `{"file_url":"http://127.0.0.1:1/x.pdf"}` / `{"file_url":"https://api-t1.fyers.in/"}` → diff status/body for fetch-error oracle (connection-refused vs validation). No external network, no file upload, no storage write.
+impact: blind SSRF from a Cloudflare-protected KYC microservice (internal services/object storage) and/or unauth file-write into a KYC document tier → program Medium–High (conditional); CVSS 5.3–7.5.
+testability: PASSIVE (gate/SSRF oracle) → HUMAN (storage-write confirm)
+[HYP] signup/v1 legacy validation-before-auth schema oracle + JSON-parse error leak
+class: OTHER
+asset: api-a1-prod.fyers.in/signup/v1/{user/auth/validate-otp, verification/email/send-otp}
+confidence: 30
+reasoning: `validate-otp` `{}` → 400 1007 "Fields missing!!" pre-auth (validation-first field oracle); `verification/email/send-otp` `{}` → 400 message embeds a JSON-parse trace from body handling ("Expecting value: line 1 column 1 (char 0)"). `send-otp` is auth-first (1051), so no pre-auth OTP path exists.
+evidence_needed: whether crafted malformed JSON in signup/v1 bodies widens the parse-error disclosure; no OTP/dispatch reachable pre-auth.
+verify_steps: PASSIVE — `POST https://api-a1-prod.fyers.in/signup/v1/verification/email/send-otp` with bodies `[` and `{"email":` → observe message/parse-oracle differences. No OTP, no auth, no side-effects.
+impact: field-schema/parser internals disclosure — Informational, no bounty (enumeration-without-impact).
+testability: PASSIVE
+[HYP] staging account-opening API exposed on production (content-type method-gate)
+class: MISCONFIG
+asset: api.fyers.in/open-account/staging/{user,admin}/*
+confidence: 25
+reasoning: Staging namespace resolves on prod; root and defined user paths return 500 "Invalid Request, please provide valid method" — content-type-sensitive method gate (same family as data.fyers.in/dev-fyers, cdsl/dev). No auth handler reached, no data pre-gate.
+evidence_needed: whether a specific method+Content-Type passes the gate to a real handler; program scope of staging/dev surfaces (terms exclude dev environments).
+verify_steps: PASSIVE — vary Content-Type (`application/json`/`x-www-form-urlencoded`/`multipart/form-data`) × method (GET/POST) on `https://api.fyers.in/open-account/staging/user/token/get-details`; diff the 500 message (routing oracle). No side-effects.
+impact: dev/staging handler exposure on prod — Informational; likely out of scope (dev-env exclusion); keep as scope question C.
+testability: PASSIVE
+[PARKED] signup/v1 schema/parse oracle — confidence 30 < 40; enumeration-without-impact = no-bounty category.
+[PARKED] staging API — confidence 25 < 40; dev/staging surface likely excluded by program terms; gate holds, no data.
+[PARKED] SmartHunt SSTI `issue_id` — reaffirmed false positive (baseline 401 vs injected 429 CF errorCode:1015, no "49"); do not report.
+[PARKED] api-a1.fydev.tech + all third-party hosts (Grammarly/Coda/etc) — out of scope.
+[FINAL] survivors re-ranked: H19 api-testing-prod SSRF/unauth-upload (55, NEW, PASSIVE) > H17 signup/v2 req_id IDOR (45, carried, HUMAN_ONLY) > H13 saved-chart IDOR (42) > H18 journal IDOR (40) > H15 marina/ddpi (40). Only H19 is new and passively testable; IDOR family remains FYERS-side-only.
+[NEXT] PROBE: `POST https://api-testing-prod.fyers.in/signup/upload/api/v1/pdf/is-password-protected` with `{"file_url":"http://127.0.0.1:1/x.pdf"}` and `{"file_url":"https://api-t1.fyers.in/"}` vs `{"file_url":""}` baseline — spaced ≥5s, read-only, no external network, no file upload; diff responses to confirm the server-fetch oracle (H19).
+[LEARN] ACCEPTED SSRF/unauth-endpoint class @ api-testing-prod.fyers.in — first estate surface with no auth gate observed (validation-before-auth at every probe stage; arbitrary Access-Token accepted into format parsing); conditional, impact unproven.
+[LEARN] REJECTED MISCONFIG-data-exposure @ api.fyers.in/open-account/staging + signup/v1 — 500 method-gate holds, no handler/data reached; consistent with the dev-env exclusion.
+[RISK] fyers: 64 — first unauth upload/URL-fetch primitive (api-testing-prod, SSRF + KYC/PAN document-storage write candidate) targets the estate's most sensitive data class; legacy signup/v1 on the same prod gateway adds a third auth contract (`Access-Token`) and fragmented validation-ordering now spans ≥21 domains. Offset: no side-effect executed, impact unproven, program excludes dev/staging and no-bounty oracles, IDOR family (H13/H15/H17/H18) still researcher-execution-prohibited, all other new surfaces auth-first.
