@@ -1,943 +1,4 @@
-1.fyers.co.in/api/v2/direct-login
-https://login.fyers.co.in
-https://assets.fyers.in/new-login/images/Google_Play_Store_badge.svg\x22\x20alt=
-//login
-https://api-t1.fyers.co.in/api/v3/direct-login
-https://api-t1.fyers.co.in/tradingview/auth/token
-[0m
-[0m$ [0mcd /tmp/opencode && timeout 20 curl -s -m 15 -o step1.html -w "HTTP %{http_code} size=%{size_download}\n" "https://api-t1.fyers.in/api/v3/generate-authcode?client_id=SOFG221ZX4-101&redirect_uri=https%3A%2F%2Fevil.example.com%2Fcb&response_type=code&state=poc-design&code_challenge=abc123def456"; echo "---"; head -c 120 step1.html
-HTTP 200 size=60917
----
-<!doctype html>
-<html>
-
-<head>
-    <meta charset="UTF-8">
-    <meta content="width=device-width, initial-scale=1.0" name
-[0m
-[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
-import re
-s=open('step1.html',encoding='utf-8',errors='ignore').read()
-print("len", len(s))
-# scripts
-for m in re.finditer(r'<script[^>]*src="([^"]+)"', s):
-    u=m.group(1)
-    if 'login' in u or 'sso' in u: print("SSO script:", u)
-# hidden inputs (login form fields)
-for m in re.finditer(r'<input[^>]*>', s):
-    tag=m.group(0)
-    if 'hidden' in tag or 'redirect_uri' in tag or 'client_id' in tag or 'state' in tag or 'code_challenge' in tag:
-        print(tag)
-# any reflection of redirect_uri / evil.example
-print("evil.example reflected:", s.count('evil.example.com'))
-print("redirect_uri present:", s.count('redirect_uri'))
-EOF
-len 60907
-SSO script: https://login.fyers.in/new-sso/17.0/api_v3_login/login.min.js?v=1.3
-SSO script: https://trade.fyers.in/fyers_login/live/js/jquery.validate.js
-<input type="text" id="fy_client_id" name="fy_client_id"
-                                                class="form-control input-bar text-uppercase validate client_id"
-                                                placeholder="Client ID" autocomplete="off">
-<input type="text" id="fy_client_id" name="fy_client_id" width="100%"
-                                        class="form-control input-bar text-uppercase mt-md-3 validate"
-                                        placeholder="Client ID" autocomplete="on">
-evil.example reflected: 0
-redirect_uri present: 1
-[0m
-[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
-import re
-s=open('step1.html',encoding='utf-8',errors='ignore').read()
-i=s.find('redirect_uri')
-print(repr(s[max(0,i-300):i+200]))
-EOF
-"ent.getElementById('main_web_rd').checked = false;\n                    }\n                }\n\n                const shouldShowPlatform = (\n                    (!cb || cb.includes('https://fyers.in/web') || cb.includes('https://trade.fyers.in')) &&\n                    !window.location.search.includes('redirect_uri'));\n                document.querySelectorAll('.platform-selection').forEach(function(el) {\n                    el.style.display = shouldShowPlatform ? '' : 'none';\n                });\n  "
-[0m
-[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
-import re
-code=open('sso.full.js',encoding='utf-8',errors='ignore').read()
-# requestDirectLogin definition
-i=code.find('"requestDirectLogin"]=function')
-print("requestDirectLogin idx",i)
-if i>0: print(code[i:i+1200].replace(';',';\n'))
-EOF
-requestDirectLogin idx 67944
-"requestDirectLogin"]=function _0x4e0bff(_0x487bd0){var _0x31d322=_0x476711,_0x2e1f45=this;
-if(_0x487bd0===void 0x0)_0x487bd0=![];
-try{var _0x4bec3e=this["_directLoginService"](_0x487bd0);
-this["makeRequest"](_0x36da5a["api_v2_direct_login"],_0x4bec3e)["then"](function(_0x585fcd){var _0x2c85ee=_0x31d322;
-console["log"]("direct login data",_0x585fcd["data"]),_0x2e1f45['dataFromServer']=_0x585fcd,_0xde5cc8["prototype"]["handleDirectLoginResponse"](_0x585fcd["data"]);
-});
-}catch(_0x378c58){throw "error in making v2 request: "+_0x378c58;
-}},_0xde5cc8["prototype"]["requestApiV2Login"]=function _0x844a94(){var _0x309490=_0x236e43,_0x43cb3d=_0x476711,_0x518fa4=this;
-try{var _0x37d774=this['_apiV2Service']();
-this["makeRequest"](_0x36da5a["api_v2_login"],_0x37d774)["then"](function(_0x993df9){var _0x3454ad=_0x309490,_0x28af48=_0x43cb3d;
-console['log']("response data",_0x993df9["data"]),_0x518fa4['dataFromServer']=_0x993df9,_0xde5cc8["prototype"]["handleAPIV2Response"](_0x993df9["data"]);
-});
-}catch(_0x35bbed){throw "error in making v2 request: "+_0x35bbed;
-}},_0xde5cc8["prototype"]["handleSOSCancelDisplay"]=function _0x557de7(_0x43f196){var _0x4db91=_0x236e43,_0x3f234a=_0x476711;
-_0x43f196==="E1ZTXMKZBV
-[0m
-[0m# [0mTodos
-[✓] Re-fetch login.min.js and statically extract reserved-cb denylist + redirect_uri/cb/state handling
-[✓] Recover exact generate-authcode / validate-authcode request shapes from v3 OpenAPI spec
-[•] Construct H1 POC design doc (exact curl sequence, success indicators, CVSS) and append to findings
-[✓] Read-only confirmation of login.fyers.in open-redirect primitive (cb param) if rate limits allow
-[ ] Update state + findings files
-[0m
-[0m→ [0mRead findings_deepseek.md[90m [offset=126, limit=40][0m
-[0m
-[0m← [0mEdit findings_deepseek.md
-Index: /home/runner/work/fyers-recon/fyers-recon/findings_deepseek.md
-===================================================================
---- /home/runner/work/fyers-recon/fyers-recon/findings_deepseek.md
-+++ /home/runner/work/fyers-recon/fyers-recon/findings_deepseek.md
-@@ -161,4 +161,13 @@
- Review research_deepseek.md for details
-   - [H8 MCP FIA_TOKEN cross-domain scoping / tool ATO] — CVSS 6.5–8.0 (conditional)
- -+- **NEW: raw Microsoft SQL Server error leak (unauthenticated) on `api-i1.fyers.in/mf/data/v2/scheme/details/chart`.** With valid `period` (1M/1Y/3M/5Y; `1D` is invalid) returns `{"Number":1103,"SQLState":[52,50,48,48,48],"Message":"Incorrect table name ''"}` — SQLState decodes to "42000". Backend is SQL Server; the chart table name is interpolated server-side (empty for unknown params), and the raw DB error is reflected with no wrapper and **no auth**. isin/plan_id/symbol params accepted but do not set the table name → table name derived server-side. Error-based oracle + stack disclosure on a public endpoint (H10, CVSS 4.3 baseline; SQLi conditional on table-name provenance).
- ++- **H10 closed on chart table-name provenance.** `scheme_code` is the table selector: `scheme_code=47941&period=1Y` returns full public NAV history (`nav_history[]` timestamps+NAV); `scheme_code` is **parameterized** (strings/non-exist codes → empty `nav_history[]`, no injection). The raw SQL-1103 error only surfaces on the `scheme_code`-absent / plan_id-only fallback path (empty interpolated table name). ⇒ No SQLi; the leak collapses to a no-auth NAV-history enumeration + a benign error-shape oracle on a sting path with SQL Server engine disclosure. H10 downgraded to CVSS 3.9–4.3.
-+
-+# POC round 2026-08-06 01:xx UTC — H1 evidence chain completed (static, current bundle) + step-1 live re-confirm
-+- **Reserved-`cb` denylist extracted verbatim from CURRENT `login.min.js?v=1.3` (18 string arrays, 91-arg alias map fully resolved; 0 unresolved decoder calls).** The post-auth handler `handleVerifyPinServiceResponse` runs: `_0x2e3204=["https://fyers.in/web","https://fyers.in/web/","https://fyers.in/web/markets/home","https://trade.fyers.in","https://trade.fyers.in/"]; if(cb && DENYLIST.includes(cb)) delete cb;` — the 5-value allowlist is **exact-match** and FYERS-internal only. Any other `cb` value survives and drives navigation.
-+- **Post-auth navigation branch order (current build, fully deobfuscated):** `handleTokenStatusResponse`: `q=params(); if(q['redirect_uri']){location.href=q['redirect_uri'];return} else if(q['cb']){location.href=q['cb'];return} else showOtpForm()`. `handleVerifyPinServiceResponse`: after cookie-set (`_FYERS`=access_token, `refresh_token`, `_deviceId`): `if(cb){set cookies; document.location.href=cb} else if(redirect_uri && (redirect_uri contains "myaccount"|"profile")){set cookies; location.href=redirect_uri} else if(client_id && response_type && state){new LoginClient(params,_,access_token).requestApiV2Login()} else {set cookies; showAuthenticatedPage()}`. `params()` = `new URLSearchParams(location.search)` — all values from the URL query string.
-+- **OAuth code-delivery path fully traced (current build):** `LoginClient` ctor sets `this.redirection_url = params.redirect_uri` (attacker-controlled). `getDirectLoginData()` → POST body `{app_id, redirect_uri: redirection_url, user_id, auth, state, scope, nonce, response_type}` to `https://api.fyers.in/api/v2/direct-login` (or `/api/v3/direct-login`, `/tradingview/auth/direct-login` variants). `handleDirectLoginResponse`: `if(s=='ok') window.location.href = data.Url`. `handleAPIV2Response`: `code==308 → window.location.assign(data.Url)`. ⇒ **the server-returned `Url` is what carries the code to the attacker-supplied redirect_uri**; whether `data.Url` includes the auth_code and whether the server validates `redirect_uri` against the app registry at issuance is the only remaining unknown (requires authenticated confirmation — documented, not executed).
-+- **PKCE is ineffective against this primitive:** `code_challenge` is accepted as a URL param (step-1 live-confirmed this run with `code_challenge=abc123def456`) and forwarded into the direct-login body; the attacker who crafts the phished URL also controls the verifier → code redemption by the attacker is unhindered.
-+- **Step-1 oracle re-confirmed LIVE on the current build (1 request, spaced):** `GET api-t1.fyers.in/api/v3/generate-authcode?client_id=SOFG221ZX4-101&redirect_uri=https://evil.example.com/cb&response_type=code&state=poc-design&code_challenge=abc123def456` → **HTTP 200, 60,917 B** login page, no allowlist rejection, no URI reflection in HTML (1 `redirect_uri` hit is the inline platform-selection JS). The returned page loads the exact bundle deobfuscated above (`login.min.js?v=1.3`).
-+- **Inline step-1 `cb` handler is UI-only, not a security gate:** `const cb=urlParams.get('cb'); if(cb.startsWith('https://fyers.in/web')){...} else if(cb.startsWith('https://trade.fyers.in')){...}` + `shouldShowPlatform=(!cb||cb.includes('https://fyers.in/web')||cb.includes('https://trade.fyers.in'))&&!search.includes('redirect_uri')` — `startsWith`/`includes` substring checks only pre-check the web/trader radio; they do NOT constrain the post-auth `location.href=cb` destination in `login.min.js` (exact-match denylist there).
-+- **H1 POC chain now fully evidenced end-to-end (read-only):** (A) step-1 `generate-authcode` accepts arbitrary `redirect_uri`/`code_challenge` [live]; (B) `getQueryStringValue()` feeds `redirect_uri`/`cb` from `location.search` [static]; (C) LoginClient forwards `params.redirect_uri` into direct-login POST [static]; (D) server `Url` becomes `location.href` [static]. Open-redirect primitive = **confirmed** (CVSS 6.1). Code-interception-to-ATO = **conditional on step (D) server behavior** (CVSS 8.1–9.0), needing authenticated confirmation of the code artifact in `data.Url`.
-
-[0m
-[0m← [0mWrite state_deepseek.json
-Wrote file successfully.
-[0m
-[0m# [0mTodos
-[✓] Re-fetch login.min.js and statically extract reserved-cb denylist + redirect_uri/cb/state handling
-[✓] Recover exact generate-authcode / validate-authcode request shapes from v3 OpenAPI spec
-[✓] Construct H1 POC design doc (exact curl sequence, success indicators, CVSS) and append to findings
-[✓] Read-only confirmation of login.fyers.in open-redirect primitive (cb param) if rate limits allow
-[✓] Update state + findings files
-[0m
-# Target: fyers.in
-# Current Phase: POC (advanced one phase from HYPOTHESIS)
-
-## Key Findings
-- **H1 POC evidence chain closed (this run).** Fully deobfuscated the *current* `login.min.js?v=1.3` (18 string arrays + 91-alias map resolved; 0 unresolved calls) and extracted the exact reserved-`cb` denylist, the post-auth navigation branch order, and the complete OAuth code-delivery path.
-- **Reserved-`cb` denylist (5 values, exact-match):** `https://fyers.in/web`, `https://fyers.in/web/`, `https://fyers.in/web/markets/home`, `https://trade.fyers.in`, `https://trade.fyers.in/`. Handler: `if(cb && DENYLIST.includes(cb)) delete cb`. Any other `cb`/`redirect_uri` value is honored.
-- **Post-auth branch order (static):** `redirect_uri` → `cb` → `(client_id&&response_type&&state)` OAuth → default page. `params()` reads `new URLSearchParams(location.search)` — all attacker-controlled in a phished URL.
-- **Code-delivery path (static):** `LoginClient.redirection_url = params.redirect_uri` → POST `/api/v2/direct-login` (body `{app_id, redirect_uri, user_id, auth, state, scope, nonce, response_type}`) → `handleDirectLoginResponse`: `location.href = data.Url`. **Server `Url` is the code carrier; whether it embeds `auth_code` + registry-validates `redirect_uri` is the sole remaining unknown.**
-- **PKCE ineffective:** attacker controls `code_challenge`/verifier in the phished URL (step-1 accepts it — live-confirmed with `code_challenge=abc123def456`).
-- **Step-1 re-confirmed live on current build:** `generate-authcode?client_id=SOFG221ZX4-101&redirect_uri=https://evil.example.com/cb&...&code_challenge=...` → HTTP 200, 60,917 B login page, no allowlist rejection, no URI reflection.
-- **Step-1 inline `cb` handler is UI-only** (`startsWith` radio pre-check), not a security gate — does not constrain the post-auth `location.href=cb`.
-
-## API Endpoints
-- `GET /api/v3/generate-authcode?client_id={id}&redirect_uri={hostile}&response_type=code&state={s}&code_challenge={attacker}` (api-t1, no auth) — step-1 oracle: 200 login page, URI accepted
-- `POST https://api.fyers.in/api/v2/direct-login` / `POST https://api-t1.fyers.in/api/v3/direct-login` — direct-login exchange; response `data.Url` → `location.href` (code carrier, unverified)
-- `POST /api/v3/validate-authcode` / `POST /api/v3/token` — v3 code/token redemption (documented shapes, prior runs)
-
-## Hypotheses
-### H1: OAuth `redirect_uri`/`cb` code interception + open redirect — POC DESIGN COMPLETE
-**Reasoning (evidence chain A→D):** (A) step-1 accepts arbitrary URI live; (B) `getQueryStringValue()` feeds `redirect_uri`/`cb` from `location.search`; (C) `LoginClient` forwards `params.redirect_uri` into the direct-login POST; (D) server `Url` → `location.href`. **Impact:** open redirect from trusted login host (6.1); if `data.Url` embeds the code, attacker-in-loop code redemption → full trading-account ATO (8.1–9.0). **PoC design (documented, read-only):** step-1 curl above → victim logs in on the authentic page → client-side JS navigates to attacker URI; success indicators: (1) post-auth navigation/302 to attacker URI (open redirect), (2) `auth_code` present in `data.Url` of direct-login response (code interception). **Proof needed:** authenticated confirmation of (2) by the program.
-
-## CVSS Candidates
-- [H1 open redirect on login host] — CVSS 6.1 (CONFIRMED step-1 + static navigation primitive)
-- [H1 OAuth code interception → ATO] — CVSS 8.1–9.0 (conditional: auth_code in `data.Url`; needs authenticated confirmation)
-- [H8 MCP FIA_TOKEN scoping / tool ATO] — CVSS 6.5–8.0 (conditional; next to firm up)
-- [H11 cdsl/dev schema disclosure] — CVSS 5.5 (downgraded) · [H8 MCP identity disclosure] — 5.3 · [H10 chart SQL error oracle] — 3.9–4.1
-
----
-## STATE UPDATE FOR NEXT RUN
-STATUS_TARGET: fyers.in
-STATUS_PHASE: POC
-STATUS_STATE: HIGH_POTENTIAL
-
-NEXT_STEP_1: Write the formal H1 PoC writeup (exact step-1 curl, victim-flow, direct-login body, the two success indicators, CVSS 6.1/8.1–9.0); flag as ready for authenticated confirmation. Optionally probe `/api/v2/direct-login` with dummy `user_id`/`auth` (spaced, read-only) to test whether `redirect_uri` is reflected/registry-bound pre-auth.
-NEXT_STEP_2: Static pass of the Windows MCP .exe (77 MB, assets.fyers.in) for FIA_TOKEN/OAuth scopes + local token storage — firm up H8.
-NEXT_STEP_3: Re-diff `indus/v1/config` for new hosts; enumerate `insights.fyers.in` / `savedcharts.fyers.in` widget surfaces for token-bearing endpoints (guest-created content IDOR).
-
-===== RUN 2026-08-06 07:34:16 UTC =====
-Model: deepseek | Phase: POC | Target: fyers.in
-
-[0m
-> build · deepseek-v4-flash-free
-[0m
-[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && ls -la && echo "---" && git log --oneline -5 2>/dev/null; echo "---"; ls -la /tmp/opencode/ 2>/dev/null | head -40
-total 1172
-drwxr-xr-x 5 runner runner   4096 Aug  6 07:20 .
-drwxr-xr-x 3 runner runner   4096 Aug  6 07:20 ..
-drwxr-xr-x 7 runner runner   4096 Aug  6 07:20 .git
-drwxr-xr-x 3 runner runner   4096 Aug  6 07:20 .github
--rw-r--r-- 1 runner runner  41496 Aug  6 07:20 ctx-findings_deepseek.txt
--rw-r--r-- 1 runner runner 102746 Aug  6 07:20 ctx-research_deepseek.txt
--rw-r--r-- 1 runner runner  41496 Aug  6 07:20 findings_deepseek.md
--rw-r--r-- 1 runner runner  12624 Aug  6 07:20 findings_mimo.md
--rw-r--r-- 1 runner runner     44 Aug  6 07:20 raw_deepseek.txt
--rw-r--r-- 1 runner runner 156268 Aug  6 07:20 research-prompt.txt
--rw-r--r-- 1 runner runner 551064 Aug  6 07:20 research_deepseek.md
--rw-r--r-- 1 runner runner 234673 Aug  6 07:20 research_mimo.md
--rw-r--r-- 1 runner runner      0 Aug  6 07:20 run-log.md
-drwxr-xr-x 3 runner runner   4096 Aug  6 07:20 smarthunt-results
--rw-r--r-- 1 runner runner    755 Aug  6 07:20 state_deepseek.json
--rw-r--r-- 1 runner runner    317 Aug  6 07:20 state_mimo.json
--rw-r--r-- 1 runner runner   3986 Aug  6 07:20 surface-map-new-hosts.md
----
-5016adf smarthunt deep scan 2026-08-06-05-34
----
-total 16
-drwxr-xr-x  2 runner runner  4096 Aug  6 07:20 .
-drwxrwxrwt 14 root   root   12288 Aug  6 07:20 ..
-[0m
-[0m→ [0mRead state_deepseek.json
-[0m→ [0mRead findings_deepseek.md[90m [offset=160, limit=30][0m
-[0m
-[0m# [0mTodos
-[•] Probe /api/v2/direct-login + /api/v3/direct-login pre-auth for redirect_uri reflection/registry binding (spaced, read-only)
-[ ] Confirm api-i1 /invest/admin/v1/sgb/issue-list -27 auth fingerprint (new domain) read-only
-[ ] Enumerate savedcharts.fyers.in + insights.fyers.in JS bundles for token-bearing endpoints / guest-content IDOR
-[ ] Static analysis of Windows MCP .exe for FIA_TOKEN/OAuth scope + local token storage (H8)
-[ ] Update state + findings files
-[0m
-I'll continue the POC phase on fyers.in. Building on the completed H1 evidence chain, the key remaining pre-auth probeable question is the `direct-login` exchange behavior, plus firming up H8 (MCP) and exploring the unexamined `savedcharts`/`insights` widget surfaces. Let me set up tracking.
-Starting with the direct-login pre-auth probes. Per the deobfuscated `getDirectLoginData()` body shape: `{app_id, redirect_uri, user_id, auth, state, scope, nonce, response_type}` with `Authorization: Bearer <token>`.
-[0m$ [0mtimeout 25 curl -s -m 20 -X POST 'https://api.fyers.in/api/v2/direct-login' \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json' \
-  -H 'Authorization: Bearer dummy_invalid_token' \
-  -d '{"app_id":"SOFG221ZX4","redirect_uri":"https://evil.example.com/cb","user_id":"SOFG221ZX4","auth":"dummy","state":"poc","scope":"profile,orders","nonce":"n1","response_type":"code"}' \
-  -w '\n[HTTP %{http_code}]\n'
-{"s": "error", "code": -443, "message": "Please provide a valid scope"}
-[HTTP 401]
-[0m
-A pre-auth field-walk gate appeared: `-443 "Please provide a valid scope"` — the server validates `scope` before token/auth. Let me walk the scope values (spaced).
-[0m$ [0mfor scope in 'profile' 'profile,orders' 'orders' 'positions' 'holdings' 'trades' 'investment' 'profile orders' 'profile,orders,positions' 'profile orders positions' 'profile,orders,positions,holdings,trades,investment'; do
-  echo "=== scope='$scope' ==="
-  timeout 20 curl -s -m 15 -X POST 'https://api.fyers.in/api/v2/direct-login' \
-    -H 'Content-Type: application/json' -H 'Accept: application/json' \
-    -H 'Authorization: Bearer dummy_invalid_token' \
-    -d "{\"app_id\":\"SOFG221ZX4\",\"redirect_uri\":\"https://evil.example.com/cb\",\"user_id\":\"SOFG221ZX4\",\"auth\":\"dummy\",\"state\":\"poc\",\"scope\":\"$scope\",\"nonce\":\"n1\",\"response_type\":\"code\"}" \
-    -w ' [HTTP %{http_code}]'
-  echo; sleep 3
-done
-=== scope='profile' ===
-{"s": "error", "code": -443, "message": "Please provide a valid scope"} [HTTP 401]
-=== scope='profile,orders' ===
-{"s": "error", "code": -443, "message": "Please provide a valid scope"} [HTTP 401]
-=== scope='orders' ===
-{"s": "error", "code": -443, "message": "Please provide a valid scope"} [HTTP 401]
-=== scope='positions' ===
-{"s": "error", "code": -443, "message": "Please provide a valid scope"} [HTTP 401]
-=== scope='holdings' ===
-{"s": "error", "code": -443, "message": "Please provide a valid scope"} [HTTP 401]
-=== scope='trades' ===
-{"s": "error", "code": -443, "message": "Please provide a valid scope"} [HTTP 401]
-=== scope='investment' ===
-{"s": "error", "code": -443, "message": "Please provide a valid scope"} [HTTP 401]
-=== scope='profile orders' ===
-{"s": "error", "code": -443, "message": "Please provide a valid scope"} [HTTP 401]
-=== scope='profile,orders,positions' ===
-{"s": "error", "code": -443, "message": "Please provide a valid scope"} [HTTP 401]
-=== scope='profile orders positions' ===
-{"s": "error", "code": -443, "message": "Please provide a valid scope"} [HTTP 401]
-=== scope='profile,orders,positions,holdings,trades,investment' ===
-{"s": "error", "code": -443, "message": "Please provide a valid scope"} [HTTP 401]
-[0m
-[0m$ [0mtimeout 60 curl -s -m 55 'https://myapi.fyers.in/static/media/v3.fc0a0244d7d288c81e4f.yaml' -o /tmp/opencode/v3.yaml && wc -c /tmp/opencode/v3.yaml && grep -n -i 'scope' /tmp/opencode/v3.yaml | head -40
-1576028 /tmp/opencode/v3.yaml
-[0m
-All common scope strings rejected — `-443` fires pre-auth, so this is an app-registry-validated field. Let me check the v3 OpenAPI spec for the exact `scope` schema and look at how the authcode flow builds scope.
-[0m$ [0mcd /tmp/opencode && grep -c -i 'scope' v3.yaml; echo "---direct-login sections---"; grep -n -i 'direct-login\|direct_login\|redirect_uri' v3.yaml | head -30
-0
----direct-login sections---
-819:         `redirect_uri` | string | This is where the user will be redirected after successful login. <br/>Eg: <br/> <a href="https://trade.fyers.in/api-login/redirect-uri/index.html" target="_blank">https://trade.fyers.in/api-login/redirect-uri/index.html</a> <br/> <b>This should be the same as what was provided at the time of app creation</b>
-883:         <li>Provide a redirect_uri which is in your control rather than a public endpoint such as google.com</li>
-29630:        `redirect_uri` | string | This is where the user will be redirected after successful login. <br/>Eg: https://trade.fyers.in/api-login/redirect-uri/index.html <br/><b>This should be the same as what was provided at the time of app creation</b>
-29646:            curl --location --request GET 'https://api-t1.fyers.in/api/v3/generate-authcode?client_id=SPXXXXE7-100&redirect_uri=https://trade.fyers.in/api-login/redirect-uri/index.html&response_type=code&state=sample_state'
-29657:            redirect_uri = "https://trade.fyers.in/api-login/redirect-uri/index.html"
-29665:                redirect_uri=redirect_uri,
-29682:            redirect_uri=https%3A%2F%2Fdev.fyers.in%2Fredirection%2Findex.html
-29711:            redirect_uri=https%3A%2F%2Fdev.fyers.in%2Fredirection%2Findex.html
-29741:            redirect_uri=https%3A%2F%2Fdev.fyers.in%2Fredirection%2Findex.html
-29820:                const char* redirect_uri = "https://trade.fyers.in/api-login/redirect-uri/index.html";
-29825:                    redirect_uri,
-29892:            redirect_uri = "https://trade.fyers.in/api-login/redirect-uri/index.html"  # Replace with your redirect URI
-29903:                redirect_uri=redirect_uri, 
-30123:                const char* redirect_uri = "https://trade.fyers.in/api-login/redirect-uri/index.html";
-30129:                    redirect_uri,
-30204:        <li>Provide a redirect_uri which is in your control rather than a public endpoint such as google.com
-[0m
-[0m→ [0mRead /tmp/opencode/v3.yaml[90m [offset=29590, limit=90][0m
-[0m
-[0m$ [0mtimeout 60 curl -s -m 55 'https://login.fyers.in/new-sso/17.0/api_v3_login/login.min.js?v=1.3' -o /tmp/opencode/login.min.js && wc -c /tmp/opencode/login.min.js && echo "--- scope contexts (raw) ---" && grep -o -P '.{0,80}scope.{0,120}' /tmp/opencode/login.min.js | head -30
-313193 /tmp/opencode/login.min.js
---- scope contexts (raw) ---
-20\x20\x20\x20\x20\x20\x20\x20\x20\x20<input\x20type=\x22hidden\x22\x20name=\x22scope\x22\x20value=\x22',_0x150821(0x686),_0x150821(0x69b),_0x150821(0x387),_0x150821(0x2e2),_0x150821(0x566),_0x150821(0x613
-his[_0x15a4bf(0x22e)]?this[_0x15a4bf(0x22e)]:'','state':this[_0x402085(0x1a6)],'scope':this[_0x402085(0x1c4)]?this[_0x402085(0x1c4)]:'','nonce':this[_0x402085(0x1b2)]?this[_0x402085(0x1b2)]:'','response_ty
-id':this[_0x2e9ffc(0x1ad)],'auth':this[_0x2e9ffc(0x187)],'state':this['state'],'scope':this[_0x2e9ffc(0x1c4)],'nonce':this[_0x2e9ffc(0x1b2)],'response_type':this[_0x2e9ffc(0x1f9)]};return _0x34a2ea&&(_0x36
-tus','value','https://api-t1.fydev.tech/tradingview/auth','input#','userMobNo','scope','592780cSKyHg','Please\x20enter\x20the\x20valid\x20OTP.','https://dev.fyers.co.in/new-sso-test/images/info.svg','userE
-[0m
-The `-443` gate is registry-derived. Let me check how the current login bundle default-scopes the direct-login body when `scope` isn't in the URL.
-[0m$ [0mfor t in 'empty' 'missing' 'other-app'; do
-  if [ "$t" = "empty" ]; then body='{"app_id":"SOFG221ZX4","redirect_uri":"https://evil.example.com/cb","user_id":"SOFG221ZX4","auth":"dummy","state":"poc","scope":"","nonce":"n1","response_type":"code"}'
-  elif [ "$t" = "missing" ]; then body='{"app_id":"SOFG221ZX4","redirect_uri":"https://evil.example.com/cb","user_id":"SOFG221ZX4","auth":"dummy","state":"poc","nonce":"n1","response_type":"code"}'
-  else body='{"app_id":"ABCDE12345-100","redirect_uri":"https://evil.example.com/cb","user_id":"ABCDE12345","auth":"dummy","state":"poc","scope":"profile,orders","nonce":"n1","response_type":"code"}'; fi
-  echo "=== $t ==="
-  timeout 20 curl -s -m 15 -X POST 'https://api.fyers.in/api/v2/direct-login' \
-    -H 'Content-Type: application/json' -H 'Accept: application/json' \
-    -H 'Authorization: Bearer dummy_invalid_token' \
-    -d "$body" -w ' [HTTP %{http_code}]'
-  echo; sleep 4
-done
-=== empty ===
-{"s": "error", "code": -17, "message": "Could not authenticate the user"} [HTTP 401]
-=== missing ===
-{"s": "error", "code": -17, "message": "Could not authenticate the user"} [HTTP 401]
-=== other-app ===
-{"s": "error", "code": -443, "message": "Please provide a valid scope"} [HTTP 401]
-[0m
-Excellent — the field-walk advanced: **empty/absent `scope` passes and reaches the token-auth gate (`-17` "Could not authenticate the user")**, while any non-empty scope string is rejected with `-443` for both real and synthetic app_ids. And `redirect_uri=https://evil.example.com/cb` is accepted in the body (not malformed-rejected) pre-auth. Let me compare the v3 variant on api-t1 (single spaced request) and check `-17` vs `-16` distinction.
-[0m$ [0mecho "=== v3 direct-login (api-t1) ==="; timeout 20 curl -s -m 15 -X POST 'https://api-t1.fyers.in/api/v3/direct-login' \
-  -H 'Content-Type: application/json' -H 'Accept: application/json' \
-  -H 'Authorization: Bearer dummy_invalid_token' \
-  -d '{"app_id":"SOFG221ZX4","redirect_uri":"https://evil.example.com/cb","user_id":"SOFG221ZX4","auth":"dummy","state":"poc","scope":"","nonce":"n1","response_type":"code"}' -w ' [HTTP %{http_code}]'; echo; sleep 6
-echo "=== v3 direct-login bad scope ==="; timeout 20 curl -s -m 15 -X POST 'https://api-t1.fyers.in/api/v3/direct-login' \
-  -H 'Content-Type: application/json' -H 'Accept: application/json' \
-  -H 'Authorization: Bearer dummy_invalid_token' \
-  -d '{"app_id":"SOFG221ZX4","redirect_uri":"https://evil.example.com/cb","user_id":"SOFG221ZX4","auth":"dummy","state":"poc","scope":"profile","nonce":"n1","response_type":"code"}' -w ' [HTTP %{http_code}]'
-=== v3 direct-login (api-t1) ===
-{"code":-441,"message":"invalid auth token","s":"error"} [HTTP 400]
-=== v3 direct-login bad scope ===
-{"code":-441,"message":"invalid auth token","s":"error"} [HTTP 400]
-[0m
-v3 differs from v2: `api-t1/api/v3/direct-login` is **auth-first** (`-441 "invalid auth token"`, HTTP 400) regardless of scope — no `-443` gate there. So v2 and v3 direct-login have divergent validation orders. Now confirming the SmartHunt-flagged `invest/admin` surface on api-i1 (new `-27` auth domain).
-[0m$ [0mtimeout 20 curl -s -m 15 'https://api-i1.fyers.in/invest/admin/v1/sgb/issue-list?is_active=1&issue_id=1&source=1' -w ' [HTTP %{http_code}]'; echo; sleep 4
-echo "=== sibling admin routes ==="
-for p in 'invest/admin/v1/gold/issue-list' 'invest/admin/v1/sgb/schemes' 'invest/admin/v1/sgb/issue-list?is_active=1' 'invest/admin/v1/etf/issue-list'; do
-  timeout 20 curl -s -m 15 "https://api-i1.fyers.in/$p" -w ' [HTTP %{http_code}]'; echo; sleep 3
-done
-{"s":"error","error_code":-27,"status_code":401,"message":"Could not authenticate the user"} [HTTP 401]
-=== sibling admin routes ===
-{"s":"error","error_code":-18,"status_code":502,"message":"Not Found"} [HTTP 404]
-{"s":"error","error_code":-18,"status_code":502,"message":"Not Found"} [HTTP 404]
-{"s":"error","error_code":-19,"status_code":400,"message":"issue_id is missing in request"} [HTTP 422]
-{"s":"error","error_code":-18,"status_code":502,"message":"Not Found"} [HTTP 404]
-[0m
-Two new api-i1 facts: admin surface `/invest/admin/v1/sgb/issue-list` returns `-27` (auth domain #13), and **`issue_id` is validated BEFORE auth** → `-19 "issue_id is missing in request"` (HTTP 422) with no token. Let me field-walk this admin endpoint's required-parameter schema (spaced, read-only).
-[0m$ [0mbase='https://api-i1.fyers.in/invest/admin/v1/sgb/issue-list'
-for q in 'issue_id=1' 'issue_id=1&is_active=1' 'issue_id=1&source=1' 'issue_id=abc&is_active=1&source=1' 'is_active=1&source=1&issue_id=1&extra=x' 'issue_id=1&is_active=1&source=2'; do
-  echo "=== $q ==="
-  timeout 20 curl -s -m 15 "$base?$q" -w ' [HTTP %{http_code}]'; echo; sleep 4
-done
-=== issue_id=1 ===
-{"s":"error","error_code":-19,"status_code":400,"message":"is_active is missing in request"} [HTTP 422]
-=== issue_id=1&is_active=1 ===
-{"s":"error","error_code":-19,"status_code":400,"message":"souce is missing in request"} [HTTP 422]
-=== issue_id=1&source=1 ===
-{"s":"error","error_code":-19,"status_code":400,"message":"is_active is missing in request"} [HTTP 422]
-=== issue_id=abc&is_active=1&source=1 ===
-{"s":"error","error_code":-27,"status_code":401,"message":"Could not authenticate the user"} [HTTP 401]
-=== is_active=1&source=1&issue_id=1&extra=x ===
-{"s":"error","error_code":-27,"status_code":401,"message":"Could not authenticate the user"} [HTTP 401]
-=== issue_id=1&is_active=1&source=2 ===
-{"s":"error","error_code":-27,"status_code":401,"message":"Could not authenticate the user"} [HTTP 401]
-[0m
-Clean three-gate schema walk on the **admin** surface: `issue_id` → `is_active` → `source`, all presence-only, then auth `-27`. The error text **`"souce is missing in request"`** (typo) leaks the internal variable name. Let me enumerate the rest of the `/invest/admin/` tree (spaced).
-[0m$ [0mfor p in \
- 'invest/admin/v1/sgb/issue-list' \
- 'invest/admin/v1/sgb/issue' \
- 'invest/admin/v1/sgb/application' \
- 'invest/admin/v1/gold' \
- 'invest/admin/v1/sgb/subscriptions' \
- 'invest/admin/v1/sgb/scheme' \
- 'invest/admin/v1/sgb/redemption' \
- 'invest/admin/v1/sovereign-gold-bond' \
- 'invest/admin/v1/sgb/issue-detail'; do
-  echo "=== $p ==="
-  timeout 20 curl -s -m 15 "https://api-i1.fyers.in/$p" -w ' [HTTP %{http_code}]'; echo; sleep 3
-done
-=== invest/admin/v1/sgb/issue-list ===
-{"s":"error","error_code":-19,"status_code":400,"message":"issue_id is missing in request"} [HTTP 422]
-=== invest/admin/v1/sgb/issue ===
-{"s":"error","error_code":-18,"status_code":502,"message":"Not Found"} [HTTP 404]
-=== invest/admin/v1/sgb/application ===
-{"s":"error","error_code":-18,"status_code":502,"message":"Not Found"} [HTTP 404]
-=== invest/admin/v1/gold ===
-{"s":"error","error_code":-18,"status_code":502,"message":"Not Found"} [HTTP 404]
-=== invest/admin/v1/sgb/subscriptions ===
-{"s":"error","error_code":-18,"status_code":502,"message":"Not Found"} [HTTP 404]
-=== invest/admin/v1/sgb/scheme ===
-{"s":"error","error_code":-18,"status_code":502,"message":"Not Found"} [HTTP 404]
-=== invest/admin/v1/sgb/redemption ===
-{"s":"error","error_code":-18,"status_code":502,"message":"Not Found"} [HTTP 404]
-=== invest/admin/v1/sovereign-gold-bond ===
-{"s":"error","error_code":-18,"status_code":502,"message":"Not Found"} [HTTP 404]
-=== invest/admin/v1/sgb/issue-detail ===
-{"s":"error","error_code":-18,"status_code":502,"message":"Not Found"} [HTTP 404]
-[0m
-Only `issue-list` is live under `sgb`. Let me probe other admin resource families (spaced).
-[0m$ [0mfor p in \
- 'invest/admin/v1' \
- 'invest/admin/v1/ncd' \
- 'invest/admin/v1/fds' \
- 'invest/admin/v1/etf' \
- 'invest/admin/v1/us-equity' \
- 'invest/admin/v1/reits' \
- 'invest/admin/v1/bond' \
- 'invest/admin/v1/schemes' \
- 'invest/admin/v1/sgb' \
- 'invest/admin/v1/sgb/issue-list?issue_id=1&is_active=1&source=1'; do
-  echo "=== $p ==="
-  timeout 20 curl -s -m 15 "https://api-i1.fyers.in/$p" -w ' [HTTP %{http_code}]'; echo; sleep 3
-done
-=== invest/admin/v1 ===
-error code: 502
- [HTTP 502]
-=== invest/admin/v1/ncd ===
-{"s":"error","error_code":-18,"status_code":502,"message":"Not Found"} [HTTP 404]
-=== invest/admin/v1/fds ===
-{"s":"error","error_code":-18,"status_code":502,"message":"Not Found"} [HTTP 404]
-=== invest/admin/v1/etf ===
-{"s":"error","error_code":-18,"status_code":502,"message":"Not Found"} [HTTP 404]
-=== invest/admin/v1/us-equity ===
-{"s":"error","error_code":-18,"status_code":502,"message":"Not Found"} [HTTP 404]
-=== invest/admin/v1/reits ===
-{"s":"error","error_code":-18,"status_code":502,"message":"Not Found"} [HTTP 404]
-=== invest/admin/v1/bond ===
-{"s":"error","error_code":-18,"status_code":502,"message":"Not Found"} [HTTP 404]
-=== invest/admin/v1/schemes ===
-{"s":"error","error_code":-18,"status_code":502,"message":"Not Found"} [HTTP 404]
-=== invest/admin/v1/sgb ===
-{"s":"error","error_code":-18,"status_code":502,"message":"Not Found"} [HTTP 404]
-=== invest/admin/v1/sgb/issue-list?issue_id=1&is_active=1&source=1 ===
-{"s":"error","error_code":-27,"status_code":401,"message":"Could not authenticate the user"} [HTTP 401]
-[0m
-[0m$ [0mecho "=== savedcharts.fyers.in ==="; timeout 20 curl -s -m 15 'https://savedcharts.fyers.in/' -o /tmp/opencode/savedcharts.html -w '[HTTP %{http_code}] size=%{size_download}\n'; 
-echo "=== insights.fyers.in ==="; timeout 20 curl -s -m 15 'https://insights.fyers.in/' -o /tmp/opencode/insights.html -w '[HTTP %{http_code}] size=%{size_download}\n'
-echo "=== insights.fyers.in/common.html ==="; timeout 20 curl -s -m 15 'https://insights.fyers.in/common.html' -w '[HTTP %{http_code}]\n' -o /dev/null
-echo "--- savedcharts scripts ---"; grep -o -P '<script[^>]*src="[^"]+"' /tmp/opencode/savedcharts.html | head; echo "--- insights scripts ---"; grep -o -P '<script[^>]*src="[^"]+"' /tmp/opencode/insights.html | head
-=== savedcharts.fyers.in ===
-[HTTP 200] size=3948
-=== insights.fyers.in ===
-[HTTP 200] size=2252
-=== insights.fyers.in/common.html ===
-[HTTP 404]
---- savedcharts scripts ---
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-70168752-16"
-<script src="/static/js/2.9b581022.chunk.js"
-<script src="/static/js/main.b586552c.chunk.js"
---- insights scripts ---
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-70168752-19"
-[0m
-Admin surface mapped — single live route `sgb/issue-list`. Now moving to the unexamined widget hosts: `savedcharts.fyers.in` and `insights.fyers.in`.
-[0m$ [0mtimeout 25 curl -s -m 20 'https://savedcharts.fyers.in/static/js/main.b586552c.chunk.js' -o /tmp/opencode/savedcharts-main.js && wc -c /tmp/opencode/savedcharts-main.js
-echo "=== API-ish strings ==="; grep -o -P '(/[a-zA-Z0-9_\-/]*(chart|image|chart-|api|saved|user|share)[a-zA-Z0-9_\-/]*|https?://[a-z0-9.\-]*fyers\.in/[a-zA-Z0-9_\-/]+)' /tmp/opencode/savedcharts-main.js | sort -u | head -60
-8013 /tmp/opencode/savedcharts-main.js
-=== API-ish strings ===
-//savedcharts
-/assets/savedChart
-https://api-t1.fyers.in/indus/user/v1/gallery
-[0m
-[0m$ [0mecho "=== full main.js ==="; cat /tmp/opencode/savedcharts-main.js | tr ',' '\n' | grep -i -E 'indus|gallery|savedChart|/assets|chart-|user_id|token|cookie' | head -40
-=== full main.js ===
-alt:"Gallery"
-n.getTokenHash=n.getTokenHash.bind(Object(g.a)(n))
-n.getCookie=n.getCookie.bind(Object(g.a)(n))
-[{key:"getTokenHash"
-a=decodeURIComponent(document.cookie).split(";")
-{tokenHash:JSON.parse(atob(n)).at_hash}):{tokenHash:""}}}
-{key:"getCookie"
-n=decodeURIComponent(document.cookie).split(";")
-t="https://login.fyers.in/?cb=https://savedcharts.fyers.in"
-n=this.getCookie("_FYERS");-1===document.cookie.indexOf("_FYERS")&&(window.location=t)
-fetch("https://api-t1.fyers.in/indus/user/v1/gallery"
-loginpath:"https://login.fyers.in/?cb=https://savedcharts.fyers.in"
-a=this.getTokenHash("_FYERS");a.length<=0?window.location="https://login.fyers.in/?cb=https://savedcharts.fyers.in":t=a.tokenHash;var o=this.state.photoIndex
-m=this.getCookie("_FYERS");console.log("cookie for delete"+m);var g={token_id:t
-images:d};fetch("https://api-t1.fyers.in/indus/user/v1/gallery"
-{src:"../assets/savedChart.png"
-[0m
-`savedcharts.fyers.in` references **`api-t1.fyers.in/indus/user/v1/gallery`** — a new indus host endpoint. Let me read the full bundle and probe that endpoint (read-only), plus the `/assets/savedChart
-[0m$ [0mecho "=== indus/user/v1/gallery ==="; timeout 20 curl -s -m 15 'https://api-t1.fyers.in/indus/user/v1/gallery' -w ' [HTTP %{http_code}]'; echo; sleep 3
-echo "=== with user_id param guess ==="; timeout 20 curl -s -m 15 'https://api-t1.fyers.in/indus/user/v1/gallery?user_id=9999999' -w ' [HTTP %{http_code}]'; echo; sleep 3
-echo "=== indus/user/v1 ? ==="; timeout 20 curl -s -m 15 'https://api-t1.fyers.in/indus/user/v1/gallery/saved' -w ' [HTTP %{http_code}]'; echo
-=== indus/user/v1/gallery ===
-{"code":-15,"message":"Please provide valid token","s":"error"} [HTTP 401]
-=== with user_id param guess ===
-{"code":-15,"message":"Please provide valid token","s":"error"} [HTTP 401]
-=== indus/user/v1 ? ===
-404 page not found [HTTP 404]
-[0m
-[0m→ [0mRead /tmp/opencode/insights.html
-[0m
-[0m$ [0mtimeout 20 curl -s -m 15 'https://insights.fyers.in/fundamentals/' -o /tmp/opencode/insights_fund.html -w '[HTTP %{http_code}] size=%{size_download}\n'
-echo "=== scripts ==="; grep -o -P '<script[^>]*src="[^"]+"' /tmp/opencode/insights_fund.html | head
-echo "=== symbol/param refs ==="; grep -o -P '(symbol|instrument|nse:[a-z]+|[a-z]{2}:[A-Z0-9\-]+|/data/[a-zA-Z0-9_/\-]+|api[a-z0-9./\-]*)' /tmp/opencode/insights_fund.html | sort -u | head -30
-[HTTP 200] size=19137
-=== scripts ===
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-70168752-19"
-<script src="https://assets.fyers.in/Lib/moengage/2.0/moengage.js"
-<script src="https://assets.fyers.in/global-components/global-footer/footer.js"
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
-<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"
-<script src="../js/main.js"
-=== symbol/param refs ===
-apis.com/ajax/libs/jquery/3.5.1/jquery.min.js
-apis.com/css2
-apitalization
-apitalization.
-symbol
-[0m
-[0m$ [0mtimeout 25 curl -s -m 20 'https://insights.fyers.in/js/main.js' -o /tmp/opencode/insights-main.js && wc -c /tmp/opencode/insights-main.js
-echo "=== endpoints ==="; grep -o -P '["'"'](https?://[a-z0-9.\-]*fyers\.(in|co\.in)[a-zA-Z0-9_\-/]*|/[a-zA-Z0-9_\-/]+(chart|data|fund|widget|symbol|fundamental)[a-zA-Z0-9_\-/]*)["'"']' /tmp/opencode/insights-main.js | sort -u | head -40
-echo "=== fetch/ajax urls ==="; grep -o -P "url\s*:\s*['\"][^'\"]+['\"]|url:\s*['\"][^'\"]+['\"]" /tmp/opencode/insights-main.js | sort -u | head -40
-23471 /tmp/opencode/insights-main.js
-/bin/bash: -c: line 3: unexpected EOF while looking for matching `''
-[0m
-[0m$ [0mcd /tmp/opencode && grep -oP 'https?://[a-z0-9.\-]*fyers\.(in|co\.in)[a-zA-Z0-9_\-/]*' insights-main.js | sort -u
-https://public.fyers.in/sym_details/BSE_CM
-https://trade.fyers.in/popout_chart/index
-https://tradingview.fyers.in/economic-calendar/
-https://tradingview.fyers.in/forex/
-https://tradingview.fyers.in/fundamentals/
-https://tradingview.fyers.in/technicals/
-[0m
-[0m$ [0mcd /tmp/opencode && echo "=== ajax/url patterns ==="; grep -oP '(url|href)\s*[:=]\s*[^,;]{0,120}' insights-main.js | grep -i -P 'api|/data|json|symbol|fund|\.js|\.php|\.aspx' | sort -u | head -30
-echo; echo "=== tradingview.fyers.in ==="; timeout 20 curl -s -m 15 'https://tradingview.fyers.in/' -o tv.html -w '[HTTP %{http_code}] size=%{size_download}\n'
-grep -oP '<title>[^<]*</title>' tv.html 2>/dev/null | head -2
-=== ajax/url patterns ===
-href= "https://www.tradingview.com/symbols/"+menu+"/"
-href= "https://www.tradingview.com/symbols/"+menu+"/financials-overview/"
-href= "https://www.tradingview.com/symbols/"+menu+"/technicals/"
-url = "https://public.fyers.in/sym_details/BSE_CM.json"
-url: "https://public.fyers.in/sym_details/BSE_CM.json"
-
-=== tradingview.fyers.in ===
-[HTTP 000] size=0
-[0m
-`tradingview.fyers.in` is a **new host** referenced by the widget. Let me probe it and extract the fundamentals data-fetch URL from main.js.
-[0m$ [0mcd /tmp/opencode && echo "=== fetch/ajax/getJSON ==="; grep -oP '(fetch\(|\.ajax\(|getJSON\(|\.get\(|\.post\()[^)]{0,140}' insights-main.js | sort -u | head -20
-echo; echo "=== tradingview retry ==="; timeout 30 curl -s -m 25 'https://tradingview.fyers.in/' -o tv2.html -w '[HTTP %{http_code}] size=%{size_download}\n' -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120 Safari/537.36'
-head -c 400 tv2.html 2>/dev/null
-=== fetch/ajax/getJSON ===
-.ajax({
-.get('company'
-fetch(proxyurl + url
-
-=== tradingview retry ===
-[HTTP 000] size=0
-[0m
-[0m$ [0mcd /tmp/opencode && echo "=== proxyurl def ==="; grep -oP '.{0,60}proxyurl.{0,120}' insights-main.js | head -5
-echo "=== tradingview.fyers.in DNS ==="; getent hosts tradingview.fyers.in || echo "NO A RECORD"; timeout 15 curl -s -m 12 -o /dev/null -w 'code=%{http_code}\n' 'https://tradingview.fyers.in/technicals/' -A 'Mozilla/5.0'
-=== proxyurl def ===
-      // const proxyurl = "https://cors-anywhere.herokuapp.com/";
-      // fetch(proxyurl + url) 
-=== tradingview.fyers.in DNS ===
-NO A RECORD
-code=000
-[0m
-[0m$ [0mtimeout 40 curl -s -m 35 'https://api-d1-cdn.fyers.in/indus/v1/config' -o /tmp/opencode/indus_config.json && wc -c /tmp/opencode/indus_config.json
-echo "=== indus/user refs ==="; grep -oP 'indus/user/[a-zA-Z0-9_\-/]*' /tmp/opencode/indus_config.json | sort -u
-echo "=== indus/gallery refs ==="; grep -oP '"[^"]*gallery[^"]*"' /tmp/opencode/indus_config.json | sort -u | head
-echo "=== savedchart refs ==="; grep -oP '"[^"]*saved[Cc]hart[^"]*"' /tmp/opencode/indus_config.json | sort -u | head
-114475 /tmp/opencode/indus_config.json
-=== indus/user refs ===
-indus/user/option-settings
-indus/user/v1/chart-settings
-indus/user/v1/savechart
-indus/user/v1/user-profile
-=== indus/gallery refs ===
-=== savedchart refs ===
-"base_savedcharts"
-"https://savedcharts.fyers.in"
-[0m
-`tradingview.fyers.in` is dead (no A record); `proxyurl` is a commented-out CORS workaround; widgets fetch public symbol data only. Now pulling the current `indus/v1/config` to enumerate the `indus/user/*` family behind the gallery endpoint, and starting the MCP Windows .exe download in parallel.
-[0m$ [0mfor p in 'indus/user/v1/chart-settings' 'indus/user/v1/savechart' 'indus/user/v1/user-profile' 'indus/user/option-settings' 'indus/user/v1/gallery'; do
-  echo "=== $p ==="
-  timeout 20 curl -s -m 15 "https://api-t1.fyers.in/$p" -w ' [HTTP %{http_code}]'; echo; sleep 3
-done
-=== indus/user/v1/chart-settings ===
-{"code":-15,"message":"Please provide valid token","s":"error"} [HTTP 401]
-=== indus/user/v1/savechart ===
-404 page not found [HTTP 404]
-=== indus/user/v1/user-profile ===
-{"code":-15,"message":"Please provide valid token","s":"error"} [HTTP 401]
-=== indus/user/option-settings ===
- [HTTP 404]
-=== indus/user/v1/gallery ===
-{"code":-15,"message":"Please provide valid token","s":"error"} [HTTP 401]
-[0m
-[0m$ [0mtimeout 110 curl -s -m 105 -o /tmp/opencode/FYERS-MCP.exe 'https://assets.fyers.in/mcp/windows/1.0.0/FYERS-Claude-MCP-Installer-v1.0.0.exe' -w '[HTTP %{http_code}] size=%{size_download}\n'
-[HTTP 200] size=77235112
-[0m
-Uniform `-15` auth-gate on the `indus/user/*` family (chart-settings, user-profile, gallery) — per-user saved-chart/IDOR candidates behind auth. Now the Windows MCP installer static pass (H8).
-[0m$ [0mcd /tmp/opencode && strings -n 8 FYERS-MCP.exe > mcp_exe_strings.txt && wc -l mcp_exe_strings.txt
-echo "=== fyers/mcp strings ==="; grep -i -E 'mcp\.fyers|fia_token|fia|claude_desktop_config|mcp-remote|oauth' mcp_exe_strings.txt | sort -u | head -40
-19051 mcp_exe_strings.txt
-=== fyers/mcp strings ===
-9~vBnFia
-}A4:)fIA
-[0m
-[0m$ [0mcd /tmp/opencode && file FYERS-MCP.exe
-echo "=== urls in strings ==="; grep -oP 'https?://[a-zA-Z0-9.\-/_]+' mcp_exe_strings.txt | sort -u | head -30
-echo "=== utf16 ==="; strings -e l -n 6 FYERS-MCP.exe | grep -i -E 'fyers|mcp|node|claude' | head -20
-echo "=== generic installers ==="; grep -i -E 'nsis|electron|\.msi|\.dmg|\.pkg|postinstall|node\.exe|npx|curl|wget' mcp_exe_strings.txt | sort -u | head -20
-FYERS-MCP.exe: PE32 executable (GUI) Intel 80386, for MS Windows, Nullsoft Installer self-extracting archive, 5 sections
-=== urls in strings ===
-http://cacerts.digicert.com/DigiCertAssuredIDRootCA.crt0E
-http://cacerts.digicert.com/DigiCertTrustedG4TimeStampingRSA4096SHA2562025CA1.crt0_
-http://cacerts.digicert.com/DigiCertTrustedRootG4.crt0C
-http://crl3.digicert.com/DigiCertAssuredIDRootCA.crl0
-http://crl3.digicert.com/DigiCertTrustedG4TimeStampingRSA4096SHA2562025CA1.crl0
-http://crl3.digicert.com/DigiCertTrustedRootG4.crl0
-http://ocsp.digicert.com0
-http://ocsp.digicert.com0A
-http://ocsp.digicert.com0C
-https://fyers.in0
-=== utf16 ===
-FYERS Securities Private Limited
-Windows installer for Claude Desktop with FYERS MCP integration
- 2025 FYERS Securities Private Limited. All rights reserved.
- is a registered trademark of FYERS Securities Private Limited. Claude
-FYERS Claude Desktop Installer
-=== generic installers ===
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?><assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0"><assemblyIdentity version="1.0.0.0" processorArchitecture="*" name="Nullsoft.NSIS.exehead" type="win32"/><description>Nullsoft Install System v3.04</description><dependency><dependentAssembly><assemblyIdentity type="win32" name="Microsoft.Windows.Common-Controls" version="6.0.0.0" processorArchitecture="*" publicKeyToken="6595b64144ccf1df" language="*" /></dependentAssembly></dependency><trustInfo xmlns="urn:schemas-microsoft-com:asm.v3"><security><requestedPrivileges><requestedExecutionLevel level="requireAdministrator" uiAccess="false"/></requestedPrivileges></security></trustInfo><compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1"><application><supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}"/><supportedOS Id="{1f676c76-80e1-4239-95bb-83d0f6d0da78}"/><supportedOS Id="{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}"/><supportedOS Id="{35138b9a-5d96-4fbd-8e2d-a2440225f93a}"/></application></compatibility></assembly>
-JNX=,Npx
-Npx8f06p.
-k	ssnPXmi
-[0m
-[0m$ [0mcd /tmp/opencode && (which 7z 7zz 7zr 2>/dev/null; which unzip unsquashfs cabextract 2>/dev/null; echo "---"); mkdir -p mcp_x && (7z x -y -o mcp_x FYERS-MCP.exe 2>&1 | tail -5 || 7zz x -y -o mcp_x FYERS-MCP.exe 2>&1 | tail -5 || 7zr x -y -o mcp_x FYERS-MCP.exe 2>&1 | tail -5)
-/usr/bin/7z
-/usr/bin/7zr
-/usr/bin/unzip
-/usr/bin/unsquashfs
----
-
-
-Command Line Error:
-Too short switch:
--o
-[0m
-NSIS self-extracting archive requiring admin. Let me unpack it to inspect the embedded payload and install script (mirrors the Mac postinstall analysis).
-[0m$ [0mcd /tmp/opencode && 7z x -y -o/tmp/opencode/mcp_x FYERS-MCP.exe 2>&1 | tail -20; echo "=== contents ==="; ls -la mcp_x/
-Size = 76819672
-Packed Size = 76819672
-Virtual Size = 76819672
-Offset = 407040
---
-Path = [0]
-Type = Nsis
-Physical Size = 76819670
-Tail Size = 2
-Method = Deflate
-Solid = -
-Headers Size = 178860
-Embedded Stub Size = 0
-SubType = NSIS-3 Unicode
-
-Everything is Ok
-
-Files: 14
-Size:       77848662
-Compressed: 77235112
-=== contents ===
-total 368
-drwxr-xr-x 2 runner runner   4096 Aug  6 07:30 $PLUGINSDIR
-drwxr-xr-x 2 runner runner   4096 Aug  6 07:30 $R0
-drwxr-xr-x 4 runner runner   4096 Aug  6 07:30 .
-drwxr-xr-x 3 runner runner   4096 Aug  6 07:29 ..
--rw-r--r-- 1 runner runner 359270 Sep 25  2025 uninstallerIcon.ico
-[0m
-[0m$ [0mcd /tmp/opencode/mcp_x && find . -type f | head -30 && echo "=== sizes ===" && du -sh * 2>/dev/null && echo "=== \$PLUGINSDIR ===" && ls -la '$PLUGINSDIR' 2>/dev/null && echo "=== \$R0 ===" && find '$R0' -type f 2>/dev/null | head
-./$R0/Uninstall FYERS Claude Desktop Installer.exe
-./uninstallerIcon.ico
-./$PLUGINSDIR/modern-wizard.bmp
-./$PLUGINSDIR/app-64.7z
-./$PLUGINSDIR/nsis7z.dll
-./$PLUGINSDIR/WinShell.dll
-./$PLUGINSDIR/nsExec.dll
-./$PLUGINSDIR/license.html
-./$PLUGINSDIR/System.dll
-./$PLUGINSDIR/nsProcess.dll
-./$PLUGINSDIR/nsDialogs.dll
-./$PLUGINSDIR/UAC.dll
-./$PLUGINSDIR/EmbedHTML.dll
-./$PLUGINSDIR/StdUtils.dll
-=== sizes ===
-74M	$PLUGINSDIR
-520K	$R0
-352K	uninstallerIcon.ico
-=== $PLUGINSDIR ===
-total 75184
-drwxr-xr-x 2 runner runner     4096 Aug  6 07:30 .
-drwxr-xr-x 4 runner runner     4096 Aug  6 07:30 ..
--rw-r--r-- 1 runner runner   101376 Aug  6 07:29 EmbedHTML.dll
--rw-r--r-- 1 runner runner   102400 Aug  6 07:29 StdUtils.dll
--rw-r--r-- 1 runner runner    12288 Aug  6 07:29 System.dll
--rw-r--r-- 1 runner runner    14848 Aug  6 07:29 UAC.dll
--rw-r--r-- 1 runner runner     3072 Aug  6 07:29 WinShell.dll
--rw-r--r-- 1 runner runner 76251468 Sep 26  2025 app-64.7z
--rw-r--r-- 1 runner runner     1608 Sep 26  2025 license.html
--rw-r--r-- 1 runner runner    19252 Sep 24  2025 modern-wizard.bmp
--rw-r--r-- 1 runner runner     9728 Aug  6 07:29 nsDialogs.dll
--rw-r--r-- 1 runner runner     6656 Aug  6 07:29 nsExec.dll
--rw-r--r-- 1 runner runner     4608 Aug  6 07:29 nsProcess.dll
--rw-r--r-- 1 runner runner   434176 Aug  6 07:29 nsis7z.dll
-=== $R0 ===
-$R0/Uninstall FYERS Claude Desktop Installer.exe
-[0m
-[0m$ [0mcd /tmp/opencode && 7z x -y -o/tmp/opencode/mcp_payload 'mcp_x/$PLUGINSDIR/app-64.7z' 2>&1 | tail -8; echo "=== top-level ==="; ls -la mcp_payload/ | head -40
-Blocks = 83
-
-Everything is Ok
-
-Folders: 7
-Files: 83
-Size:       265000019
-Compressed: 76251468
-=== top-level ===
-total 220128
-drwxr-xr-x 4 runner runner      4096 Aug  6 07:30 .
-drwxr-xr-x 4 runner runner      4096 Aug  6 07:30 ..
--rw-r--r-- 1 runner runner 176596688 Sep 26  2025 FYERS Claude Desktop Installer.exe
--rw-r--r-- 1 runner runner      1096 Sep 26  2025 LICENSE.electron.txt
--rw-r--r-- 1 runner runner   9174266 Sep 26  2025 LICENSES.chromium.html
--rw-r--r-- 1 runner runner    154426 Sep 26  2025 chrome_100_percent.pak
--rw-r--r-- 1 runner runner    235060 Sep 26  2025 chrome_200_percent.pak
--rw-r--r-- 1 runner runner   4916712 Sep 26  2025 d3dcompiler_47.dll
--rw-r--r-- 1 runner runner   2866176 Sep 26  2025 ffmpeg.dll
--rw-r--r-- 1 runner runner  10717680 Sep 26  2025 icudtl.dat
--rw-r--r-- 1 runner runner    479232 Sep 26  2025 libEGL.dll
--rw-r--r-- 1 runner runner   7692800 Sep 26  2025 libGLESv2.dll
-drwxr-xr-x 2 runner runner      4096 Sep 26  2025 locales
-drwxr-xr-x 4 runner runner      4096 Sep 26  2025 resources
--rw-r--r-- 1 runner runner   5281234 Sep 26  2025 resources.pak
--rw-r--r-- 1 runner runner    306214 Sep 26  2025 snapshot_blob.bin
--rw-r--r-- 1 runner runner    679161 Sep 26  2025 v8_context_snapshot.bin
--rw-r--r-- 1 runner runner   5312000 Sep 26  2025 vk_swiftshader.dll
--rw-r--r-- 1 runner runner       106 Sep 26  2025 vk_swiftshader_icd.json
--rw-r--r-- 1 runner runner    954368 Sep 26  2025 vulkan-1.dll
-[0m
-The payload is `app-64.7z` (76 MB). Extracting to inspect embedded contents (Node/Claude installers, config write
-[0m$ [0mcd /tmp/opencode/mcp_payload/resources && find . -maxdepth 3 -type f | head -40 && echo "=== sizes ===" && du -sh * 2>/dev/null
-./app.asar
-./app-update.yml
-./elevate.exe
-./assets/FYERSLOGO.jpg
-./assets/fyers-logo.jpg
-./assets/fyers-installer-icon.ico
-./assets/license.html
-./assets/welcome.html
-=== sizes ===
-4.0K	app-update.yml
-164K	app.asar
-56K	app.asar.unpacked
-404K	assets
-116K	elevate.exe
-[0m
-[0m$ [0mcd /tmp/opencode/mcp_payload/resources && echo "=== app-update.yml ==="; cat app-update.yml
-echo "=== app.asar strings (mcp/fyers/oauth/token/urls) ==="; strings -n 6 app.asar | grep -i -E 'mcp\.fyers|fia|fia_token|oauth|client_secret|mcp-remote|claude_desktop_config|https?://[a-z0-9.\-]*fyers' | sort -u | head -40
-=== app-update.yml ===
-owner: fyers
-repo: claude-installer
-provider: github
-updaterCacheDirName: fyers-claude-installer-updater
-=== app.asar strings (mcp/fyers/oauth/token/urls) ===
-      <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4QAqRXhpZgAASUkqAAgAAAABADEBAgAHAAAAGgAAAAAAAABQaWNhc2EAAP/iAdhJQ0NfUFJPRklMRQABAQAAAchsY21zAhAAAG1udHJSR0IgWFlaIAfiAAMAFAAJAA4AHWFjc3BNU0ZUAAAAAHNhd3NjdHJsAAAAAAAAAAAAAAAAAAD21gABAAAAANMtaGFuZJ2RAD1AgLA9QHQsgZ6lIo4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACWRlc2MAAADwAAAAX2NwcnQAAAEMAAAADHd0cHQAAAEYAAAAFHJYWVoAAAEsAAAAFGdYWVoAAAFAAAAAFGJYWVoAAAFUAAAAFHJUUkMAAAFoAAAAYGdUUkMAAAFoAAAAYGJUUkMAAAFoAAAAYGRlc2MAAAAAAAAABXVSR0IAAAAAAAAAAAAAAAB0ZXh0AAAAAENDMABYWVogAAAAAAAA81QAAQAAAAEWyVhZWiAAAAAAAABvoAAAOPIAAAOPWFlaIAAAAAAAAGKWAAC3iQAAGNpYWVogAAAAAAAAJKAAAA+FAAC2xGN1cnYAAAAAAAAAKgAAAHwA+AGcAnUDgwTJBk4IEgoYDGIO9BHPFPYYahwuIEMkrClqLn4z6zmzP9ZGV002VHZcF2QdbIZ1Vn6NiCySNpyrp4yy276ZysfXZeR38fn////bAIQAAwICCAUGBQUFBgYFBQUFBQUFBQUFBQcHBgUFBQUFBQUFBQUFBgUFBQUFBQUFCgUFBwgJCQkFBgsNCggNBggJCAEDBAQGBQYIBgYICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI/8AAEQgDhAOEAwEiAAIRAQMRAf/EAB0AAQEAAQUBAQAAAAAAAAAAAAABAgMFBwgJBgT/xABLEAEAAQICAQ4MBAQGAQMFAAAAAQIDBBHRBQYIEhQhMTJUcXKSk7EHExc0NTZBUVNVYYEVInORFhihwSMkJTNCUiZDYvJjg7Lh8P/EABwBAQACAgMBAAAAAAAAAAAAAAABBgUHAgMIBP/EADsRAQABAgEHCQYHAQACAwAAAAABAgMRBAUGE0FRUhIUITEzcXKS0RYyNZGx4RUiNFRhgaFTQsEjYvD/2gAMAwEAAhEDEQA/APjwHstqwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAVM2Nde1jOYmqPdTGc/tDT3ZHwbvUq0Oiu/RR70xDnFEz1Q18zNobsp+Dd6tWg3ZT8K71atDp57Z44c9VXua+Zm0N2U/Cu9WrQbsp+Fd6tWg57Z44NTXulr5mbQ3ZT8K71atBuyn4V3q1aDnlnjg1Ne6WvmZtDdlPwrvVq0G7KfhXerVoOe2eOP8NTXulr5mbQ3ZT8K71atBuyn4V3q1aDnlnjg1Ne6WvmZtDdlPwrvVq0G7KfhXerVoOe2eODU17pa+Zm0N2U/Cu9WrQbsp+Fd6tWg57Z44NTXulr5mbQ3ZT8K71atBuyn4V3q1aDntnjg1Ne6WvmZtDdlPwrvVq0G7KfhXerVoOeWeODU17pa+Zm0N2U/Cu9WrQbsp+Fd6tWg57Z44/w1Ne6WvmZtDdlPwrvVq0G7KfhXerVoOeWeODU17pa+Zm0N2U/Cu9WrQbsp+Fd6tWg57Z44NTXulr5mbQ3ZT8K71atBuyn4V3q1aDntnjg1Ne6WvmZtDdlPwrvVq0G7KfhXerVoOe2eODU17pa+aZtHdkfBu9WrQbsj4N3qVaDnlnjg1Ve5r5pm0d2U/Cu9WrQTjI+Dd6tWg55Z44NTXulr5jQjFx8K796atDVift9Jd1F+iv3ZiXCaJjrhkIxruxTvzTVX9KImZ/aHZVVFMYy4xGLPNM2juun4N3q1aDdkfBu9SrQ+Xnlnjh26qrc1tsZtLdcfBu9SrQm7Kfg3erVoOeWeODVVbmvmZtDdlPwrvVq0G7KfhXerVoOe2eODU17mvmZtDdlPwrvVq0G7KfhXerVoOeWeODU17pa+Zm0N2U/Cu9WrQbsp+Fd6tWg55Z44NTXulr5mbQ3ZT8K71atBuyn4V3q1aDntnjg1Ne6WvmZtDdlPwrvVq0G7KfhXerVo...[TRUNC]
-      <p class="t&c-links"> <a href="https://fyers.in/terms-and-conditions/" target="_blank">license agreement</a> </p>
-      args: ['mcp-remote', 'https://mcp.fyers.in/mcp']
-    this.configPath = path.join(this.configDirectory, 'claude_desktop_config.json');
-  "homepage": "https://fyers.in",
-  ; Delete "$APPDATA\Claude\claude_desktop_config.json"
-[0m
-The Windows MCP installer confirms the same pattern as the Mac `.pkg` — writes `claude_desktop_config.json` with `["mcp-remote","https://mcp.fyers.in/mcp"]`, **no FIA_TOKEN/client_secret embedded**. Let me extract `app.asar` cleanly to confirm the exact write path and update channel
-[0m$ [0mcd /tmp/opencode && (npx -y asar list mcp_payload/resources/app.asar 2>/dev/null | head -20) || python3 -c "
-import json,sys
-f=open('mcp_payload/resources/app.asar','rb').read()
-hdr=''''; i=f.find('{'); 
-# asar header json ends then u32 len
-import struct
-# first 16 bytes: 4 len + 4 hdr len? simply locate 'files'
-hdr_start=f.find(b'{\"files\"')
-print('hdr_start', hdr_start)
-"; echo "--- try node asar extract ---"; (npx -y @electron/asar list mcp_payload/resources/app.asar 2>&1 | head -25)
-/package.json
-/src
-/src/renderer
-/src/renderer/index.html
-/src/renderer/renderer.js
-/src/renderer/styles.css
-/src/main
-/src/main/main.js
-/src/main/preload.js
-/src/installer
-/src/installer/claudeInstaller.js
-/src/installer/download.js
-/src/installer/logger.js
-/src/installer/mcpConfig.js
-/src/installer/nodeInstaller.js
-/src/installer/orchestrator.js
-/src/installer/systemInfo.js
-/src/installer/utils.js
-/src/installer/nsis
-/src/installer/nsis/installer.nsh
---- try node asar extract ---
-/package.json
-/src
-/src/renderer
-/src/renderer/index.html
-/src/renderer/renderer.js
-/src/renderer/styles.css
-/src/main
-/src/main/main.js
-/src/main/preload.js
-/src/installer
-/src/installer/claudeInstaller.js
-/src/installer/download.js
-/src/installer/logger.js
-/src/installer/mcpConfig.js
-/src/installer/nodeInstaller.js
-/src/installer/orchestrator.js
-/src/installer/systemInfo.js
-/src/installer/utils.js
-/src/installer/nsis
-/src/installer/nsis/installer.nsh
-/node_modules
-/node_modules/fs-extra
-/node_modules/fs-extra/LICENSE
-/node_modules/fs-extra/package.json
-/node_modules/fs-extra/lib
-[0m
-[0m$ [0mcd /tmp/opencode && npx -y @electron/asar extract mcp_payload/resources/app.asar mcp_src 2>&1 | tail -2; echo "=== mcpConfig.js ==="; cat mcp_src/src/installer/mcpConfig.js 2>/dev/null | head -80
-=== mcpConfig.js ===
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
-
-// Get the proper npx path for Windows
-function getNpxCommand() {
-  if (process.platform === 'win32') {
-    const nodejsPath = process.env.ProgramFiles ? path.join(process.env.ProgramFiles, 'nodejs') : 'C:\\Program Files\\nodejs';
-    return path.join(nodejsPath, 'npx.cmd');
-  }
-  return 'npx';
-}
-
-const MCP_CONFIGURATION = {
-  mcpServers: {
-    'FYERS-MCP': {
-      command: getNpxCommand(),
-      args: ['mcp-remote', 'https://mcp.fyers.in/mcp']
-    }
-  }
-};
-
-class MCPConfigurator {
-  constructor(logger) {
-    this.logger = logger;
-    const appData = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
-    this.configDirectory = path.join(appData, 'Claude');
-    this.configPath = path.join(this.configDirectory, 'claude_desktop_config.json');
-  }
-
-  async ensureConfiguration() {
-    // Fix npm directory issue on Windows first
-    if (process.platform === 'win32') {
-      await this.fixNpmDirectories();
-    }
-
-    await fs.promises.mkdir(this.configDirectory, { recursive: true });
-
-    let existingConfig;
-    if (fs.existsSync(this.configPath)) {
-      try {
-        const raw = await fs.promises.readFile(this.configPath, 'utf8');
-        existingConfig = JSON.parse(raw);
-        await this.backupExistingConfig();
-      } catch (error) {
-        this.logger.warn('Failed to parse existing Claude config, creating backup', { error: error.message });
-        await this.createInvalidBackup();
-      }
-    }
-
-    const merged = this.mergeConfig(existingConfig || {});
-    await fs.promises.writeFile(this.configPath, JSON.stringify(merged, null, 2), 'utf8');
-    this.logger.info('Claude MCP configuration updated', { configPath: this.configPath });
-
-    return {
-      status: 'updated',
-      configPath: this.configPath
-    };
-  }
-
-  mergeConfig(existing) {
-    const merged = { ...existing };
-    merged.mcpServers = {
-      ...(existing.mcpServers || {}),
-      ...MCP_CONFIGURATION.mcpServers
-    };
-    return merged;
-  }
-
-  async backupExistingConfig() {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const backupPath = `${this.configPath}.${timestamp}.bak`;
-    await fs.promises.copyFile(this.configPath, backupPath);
-    this.logger.info('Created Claude config backup', { backupPath });
-  }
-
-  async createInvalidBackup() {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const backupPath = `${this.configPath}.${timestamp}.invalid`;
-    try {
-[0m
-[0m$ [0mcd /tmp/opencode && echo "=== download.js (urls) ==="; grep -oP 'https?://[^"'"' ]+' mcp_src/src/installer/download.js | sort -u
-echo "=== orchestrator.js (urls) ==="; grep -oP 'https?://[^"'"' ]+' mcp_src/src/installer/orchestrator.js | sort -u
-echo "=== claudeInstaller.js (urls) ==="; grep -oP 'https?://[^"'"' ]+' mcp_src/src/installer/claudeInstaller.js | sort -u
-echo "=== nodeInstaller.js ==="; grep -oP 'https?://[^"'"' ]+' mcp_src/src/installer/nodeInstaller.js | sort -u
-echo "=== package.json ==="; cat mcp_src/package.json
-/bin/bash: -c: line 2: syntax error near unexpected token `('
-/bin/bash: -c: line 2: `echo "=== orchestrator.js (urls) ==="; grep -oP 'https?://[^"'"' ]+' mcp_src/src/installer/orchestrator.js | sort -u'
-[0m
-[0m$ [0mcd /tmp/opencode && for f in download.js orchestrator.js claudeInstaller.js nodeInstaller.js; do echo "=== $f ==="; grep -oP 'https?://[^\s"'\'']+' "mcp_src/src/installer/$f" | sort -u; done
-echo "=== package.json ==="; cat mcp_src/package.json 2>/dev/null | head -40
-=== download.js ===
-=== orchestrator.js ===
-=== claudeInstaller.js ===
-https://storage.googleapis.com/osprey-downloads-c02f6a0d-347c-492b-a752-3e0651722e97/nest-win-x64/Claude-Setup-x64.exe
-https://storage.googleapis.com/osprey-downloads-c02f6a0d-347c-492b-a752-3e0651722e97/nest/Claude-Setup.exe
-=== nodeInstaller.js ===
-https://nodejs.org/dist/v${NODE_VERSION}`;
-=== package.json ===
-{
-  "name": "fyers-claude-installer",
-  "version": "1.0.0",
-  "description": "Windows installer for Claude Desktop with FYERS MCP integration",
-  "main": "src/main/main.js",
-  "author": "FYERS Securities Private Limited",
-  "license": "MIT",
-  "homepage": "https://fyers.in",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/fyers/claude-installer"
-  },
-  "dependencies": {
-    "fs-extra": "^11.2.0",
-    "winreg": "^1.2.4"
-  }
-}
-[0m
-[0m$ [0mcd /tmp/opencode && grep -i -E 'mcp|fyers|config|delete|uninstall' mcp_src/src/installer/nsis/installer.nsh | head -20; echo "=== main.js mcp refs ==="; grep -oP '.{0,40}mcp\.fyers\.in.{0,40}' mcp_src/src/main/main.js | head; grep -oP 'https?://[^\s"'\'']+' mcp_src/src/main/main.js | sort -u | head
-DetailPrint "Configuring FYERS Claude Desktop"
-  StrCpy $0 "$LOCALAPPDATA\FYERS"
-  FileOpen $1 "$0\fyers_claude_installer_nsis.log" w
-!macro customUnInstall
-  ; Preserve Claude configuration by default. Uncomment to remove.
-  ; Delete "$APPDATA\Claude\claude_desktop_config.json"
-    !insertmacro MUI_HEADER_TEXT "FYERS Claude Desktop Installer" "Install Claude Desktop with FYERS MCP integration"
-    !insertmacro MUI_HEADER_TEXT "FYERS Claude Desktop" "Setup is configuring your workspace"
-=== main.js mcp refs ===
-[0m
-H8 is now fully closed on the installer side: `mcpConfig.js` writes `%APPDATA%\Claude\claude_desktop_config.json` with only `["mcp-remote","https://mcp.fyers.in/mcp"]`, downloads official Anthropic/Node.js installers, and **embeds no credentials**. Let me verify the nsis install script for the uninstall path, then write up findings.
+t me verify the nsis install script for the uninstall path, then write up findings.
 [0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && cat >> findings_deepseek.md << 'EOF'
 
 # POC round 2026-08-06 07:xx UTC — H1 direct-login pre-auth field-walk (v2 vs v3) + api-i1 invest/admin schema oracle + indus/user domain + Windows MCP installer pass
@@ -6592,3 +5653,880 @@ STATUS_STATE: HIGH_POTENTIAL
 NEXT_STEP_1: Operator dispatches scope-confirmation query (package C: signup/v2 KYC, api-testing-prod, mcp.fyers.in, /invest/admin/*, /cdsl/dev/*, journal-server, open-account/staging) then submits `reports/submission-package_fyers-bb.md` (A1–A5 + B + C + D) via forms.fyers.in BugBountyForm1.
 NEXT_STEP_2: Next run restarts RECON on an unexplored in-scope surface — `data.fyers.in/fy/v1/fundtx/*` full family, `api-t1.fyers.in/nucleus/v1/fia/*` FIA-assistant, `user/v3/app/*` OAuth app registry, or remaining `api-a1-prod.fyers.in/myaccount/prod/*` routes — spaced, read-only.
 NEXT_STEP_3: Exclusions unchanged (SmartHunt SSTI false positive, third-party hosts, api-a1.fydev.tech, public config artifacts); guardrails hold (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume).
+
+===== RUN 2026-08-08 07:24:48 UTC =====
+Model: deepseek | Phase: POC | Target: fyers.in
+
+[0m
+> build · deepseek-v4-flash-free
+[0m
+[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && cat surface-map-new-hosts.md 2>/dev/null | head -80
+# New host surface discovered 2026-08-05 (manual deep-dig round)
+
+Read-only verified. Program-consistent scope: target + subdomains.
+
+## Superhuman / Grammarly
+- `dox.grammarly.com` — LIVE undiscovered API (doc-processing service). Stack: nginx-clojure + Jetty (`x-powered-by: Jetty`), AWS-style `x-request-id`, `default-src 'none'` CSP. Gate: `{"status":"error","info":"missing required headers"}` on every path except `/health` → 200 `{"status":"200 ok"}`. With `Referer`/`Origin` the error changes to `"unknown client type"` → there is a required client-type header (not in list tried: X-Client-Type/X-Grammarly-*/User-Agent/Api-Key/Bearer). Gate closed read-only; hostile-but-real service discovery.
+- Gateway alias cluster all route to same TGW (`{"error_msg":"404 Route Not Found"}`, `/health`=200, `/user/settings`=401): `api.grammarly.com`, `gate.grammarly.com`, `gates.grammarly.com`, `goldengate.grammarly.com`, `irbis.grammarly.com`, `discount.grammarly.com`, `auth.grammarly.com`, `gateway.grammarly.com`.
+- `apps-public.grammarly.com` → 401 (real auth service, 0b).
+- `applet-bundles*`, `apps-uploads` → S3 (NoSuchKey). `chargeback-prevention/datareport/fridge` → 403 nginx.
+- `developer.grammarly.com` → 200 public API docs (Review API etc).
+- Coda: `acme.coda.io`, `head.coda.io` → live Coda app SPAs (canary/test domains); `help.coda.io`→support, `community.coda.io`→forum, `build-links.coda.io`→404, `api.coda.io`/`developers.coda.io` = no A record (deprecated post-acquisition). `codapacks.com`, `help.coda.io` (Zendesk) resolve.
+- `g-mail.internal.grammarly.com` (cert, internal), `access-manager.private.grammarly.com`, `auth-private`, `facade-private` (certs only; edge 403/000).
+- Superhuman: `docs.superhuman.com` = Coda ("kr") CloudFront docs, CSP `script-src 'none'`, SPA, auth 302 → mediator CAPI. All gateway base routes (`/nomos/v1/*`, `/scim/credentials`, `/ssoConfigurations`, `/domains`, `/user/*`, `/auth/v3/*`, `/passport/*`) 401; only `/health` and `/user/location/data-regulation`(=200 `{"dataRegulation":false}`) are unauthenticated.
+
+## FYERS (40 hosts from `indus/v1/config` + certspotter)
+- `api-y1.fyers.in` → **default RHEL Apache "Test Page"** (7.1KB), `/index.html` 200 everything else 404. Publicly exposed test host.
+- `dev.fyers.in` → **default nginx "Welcome" page** (1.5KB). Publicly exposed dev host.
+- `data.fyers.in` → fund-transfer/quotes backend. `fy/v1/fundtx/v1/{view,bankdetails,marginutilized,addfunds,withdraw}` all session-gated (`withCredentials`, POST; 500 "Invalid Request, please provide valid method" pre-auth). Login redirect: `login.fyers.in/?cb=https://fundtransfer.fyers.in`.
+- `fundtransfer.fyers.in` SPA (Add/Withdraw funds, UPI/netbank, jQuery). `/addfunds`, `/bankdetails`, `/withdraw`.
+- `mtfddpi.fyers.in` — Flutter app with **DigiLock CDSL + Digio eSign SDK** (`app.digio.in/sdk/v11/digio.js`, digilocker) — the EDIS/eSign flow mimo is chasing.
+- `debt.fyers.in` — Debt Market SPA (Flutter). `marketsmith.fyers.in` — product subscriptions page. `insights.fyers.in` — "Trading Widgets" iframe host. `savedcharts.fyers.in` — React SPA (small, image gallery, `_FYERS` cookie-token). `status.fyers.in` — status page (components enum, ids only). `instaoptions.fyers.in` — discontinued notice. `open-account.fyers.in` — account opening SPA (58KB). `partners.fyers.in` — Partners Dashboard v3.0 SPA.
+- Zoho-hosted: `people/admin/works/projects.coda.meetings, cliq`(302), `workdrive`, `recruit`, `forms`, `learn` (404-notfound), `supportdesk` — third-party platforms under same apex.
+- `api-d1.fyers.in` → CF 530/1016; `api-t1-cdn` → 404 (CDN); `betatrade/datapub/instantpayout` → no DNS.
+- All + config: `api-t1/t2/a1/a1-prod/g1/i1/y1`, `api-d1/` etc.
+
+## Closed gates (read-only, no leak)
+- `dox` client-type header unknown; `nomos` 401-auth; fundtx session-gated; Discourse search no secrets; superhuman `.grammarlyaws` 000; `ignite` (mimo EDIS) unvalidated.
+[0m
+[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && cat state_deepseek.json 2>/dev/null; echo "==="; ls -la reports/ 2>/dev/null; echo "==="; wc -l findings_deepseek.md 2>/dev/null; echo "==="; ls knowledge/ scripts/ 2>/dev/null
+{"target": "fyers.in", "phase": "POC", "status": "HIGH_POTENTIAL", "next_steps": ["Operator dispatches scope-confirmation query (package C: signup/v2 KYC, api-testing-prod, mcp.fyers.in, /invest/admin/*, /cdsl/dev/*, journal-server, open-account/staging) then submits `reports/submission-package_fyers-bb.md` (A1\u2013A5 + B + C + D) via forms.fyers.in BugBountyForm1.", "Next run restarts RECON on an unexplored in-scope surface \u2014 `data.fyers.in/fy/v1/fundtx/*` full family, `api-t1.fyers.in/nucleus/v1/fia/*` FIA-assistant, `user/v3/app/*` OAuth app registry, or remaining `api-a1-prod.fyers.in/myaccount/prod/*` routes \u2014 spaced, read-only.", "Exclusions unchanged (SmartHunt SSTI false positive, third-party hosts, api-a1.fydev.tech, public config artifacts); guardrails hold (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume)."]}===
+total 16
+drwxr-xr-x 2 runner runner 4096 Aug  8 07:15 .
+drwxr-xr-x 8 runner runner 4096 Aug  8 07:15 ..
+-rw-r--r-- 1 runner runner 7614 Aug  8 07:15 analyst-latest.txt
+===
+507 findings_deepseek.md
+===
+knowledge/:
+index.md
+
+scripts/:
+sync-issues.py
+[0m
+[0m$ [0mcd /tmp/opencode && curl -sk --max-time 30 -o cfg.gz 'https://config.fyers.in/config/config.gz' && ls -la cfg.gz && (gunzip -c cfg.gz > cfg.json 2>/dev/null || zcat cfg.gz > cfg.json) && wc -c cfg.json
+-rw-r--r-- 1 runner runner 151599 Aug  8 07:16 cfg.gz
+
+gzip: cfg.gz: not in gzip format
+[0m
+State confirms phase **POC** (deepest) → per the ladder I restart **RECON** on a different unexplored surface this run: the `nucleus/v1/fia/*` FIA-assistant family and `user/v3/app/*` OAuth app-registry, surfaced from the public config artifacts. First, re-fetch the configs and re-extract those route families, plus check for any new hosts
+[0m$ [0mcd /tmp/opencode && curl -sk --max-time 30 'https://api-t1.fyers.in/indus/v1/config' -o indus.json && wc -c indus.json
+0 indus.json
+[0m
+[0m$ [0mcd /tmp/opencode && file cfg.gz; head -c 200 cfg.gz; echo; echo "==="; file indus.json; head -c 300 indus.json
+cfg.gz: JSON text data
+{
+    "T2T": {
+        "BSE": "-TS|-ZP|-MT|-Z|-ST|-T|-R|-XT",
+        "NSE": "-BE|-BZ|-ST"
+    },
+    "ab_feature_set": {
+        "all_all_automate_backtesting": true,
+        "all_all_smart_tp_sl": t
+===
+indus.json: empty
+[0m
+[0m$ [0mcd /tmp/opencode && mv cfg.gz cfg.json && python3 - << 'EOF'
+import json,re
+s=open('cfg.json',encoding='utf-8',errors='ignore').read()
+print("len",len(s))
+# count hosts/urls
+urls=re.findall(r'https://[a-z0-9.\-]+\.fyers\.in[^"\'\\\\\s,]*', s)
+hosts=sorted(set(re.findall(r'https://([a-z0-9.\-]+\.fyers\.in)', s)))
+print("URLs:",len(urls),"hosts:",len(hosts))
+for h in hosts: print("HOST:",h)
+EOF
+len 151599
+URLs: 1074 hosts: 40
+HOST: alerts.fyers.in
+HOST: api-a1-prod.fyers.in
+HOST: api-a1.fyers.in
+HOST: api-d1.fyers.in
+HOST: api-g1.fyers.in
+HOST: api-i1.fyers.in
+HOST: api-t1-cdn.fyers.in
+HOST: api-t1.fyers.in
+HOST: api-t2.fyers.in
+HOST: api-y1.fyers.in
+HOST: api.fyers.in
+HOST: app.fyers.in
+HOST: assets.fyers.in
+HOST: automate-chn.fyers.in
+HOST: betatrade.fyers.in
+HOST: community.fyers.in
+HOST: config.fyers.in
+HOST: data.fyers.in
+HOST: datapub.fyers.in
+HOST: debt.fyers.in
+HOST: dev.fyers.in
+HOST: direct.fyers.in
+HOST: forms.fyers.in
+HOST: fundtransfer.fyers.in
+HOST: insights.fyers.in
+HOST: instaoptions.fyers.in
+HOST: ipo.fyers.in
+HOST: login.fyers.in
+HOST: marketsmith.fyers.in
+HOST: mtfddpi.fyers.in
+HOST: myaccount.fyers.in
+HOST: myapi.fyers.in
+HOST: open-account.fyers.in
+HOST: pledge.fyers.in
+HOST: public.fyers.in
+HOST: savedcharts.fyers.in
+HOST: screeners.fyers.in
+HOST: signup.fyers.in
+HOST: support.fyers.in
+HOST: trade.fyers.in
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+s=open('cfg.json',encoding='utf-8',errors='ignore').read()
+for pat in ['nucleus','fia','user/v3/app','user/v2/app','fundtx','myaccount/prod','automate','wh00','fredo','freude','journal','signup/v2','screeners','direct','public.fyers','myapi','apo/v1','v2/']:
+    urls=sorted(set(re.findall(r'https://[a-z0-9.\-]+\.fyers\.in[^"\'\\\\\s,]*'+re.escape(pat)+r'[^"\'\\\\\s,]*', s)))
+    print(f"### {pat}: {len(urls)}")
+    for u in urls[:60]: print("  ",u)
+EOF
+### nucleus: 15
+   https://api-t1.fyers.in/nucleus/v1/available_tools
+   https://api-t1.fyers.in/nucleus/v1/cancel-chat
+   https://api-t1.fyers.in/nucleus/v1/chat
+   https://api-t1.fyers.in/nucleus/v1/chat/auto-suggest
+   https://api-t1.fyers.in/nucleus/v1/chat/forward-thor
+   https://api-t1.fyers.in/nucleus/v1/conversation
+   https://api-t1.fyers.in/nucleus/v1/drawings
+   https://api-t1.fyers.in/nucleus/v1/feedback
+   https://api-t1.fyers.in/nucleus/v1/fia/chart-insights
+   https://api-t1.fyers.in/nucleus/v1/fia/option-chain-insights
+   https://api-t1.fyers.in/nucleus/v1/history
+   https://api-t1.fyers.in/nucleus/v1/history/search
+   https://api-t1.fyers.in/nucleus/v1/ipo-status
+   https://api-t1.fyers.in/nucleus/v1/oldfiachat/history
+   https://api-t1.fyers.in/nucleus/v1/prompts
+### fia: 4
+   https://api-g1.fyers.in/settings/fia_favourite_screeners
+   https://api-t1.fyers.in/nucleus/v1/fia/chart-insights
+   https://api-t1.fyers.in/nucleus/v1/fia/option-chain-insights
+   https://api-t1.fyers.in/nucleus/v1/oldfiachat/history
+### user/v3/app: 9
+   https://api-t1.fyers.in/user/v3/app/all
+   https://api-t1.fyers.in/user/v3/app/create
+   https://api-t1.fyers.in/user/v3/app/create-trading-app
+   https://api-t1.fyers.in/user/v3/app/delete
+   https://api-t1.fyers.in/user/v3/app/get-common-apps
+   https://api-t1.fyers.in/user/v3/app/logout
+   https://api-t1.fyers.in/user/v3/app/update
+   https://api-t1.fyers.in/user/v3/app/update-trading-app
+   https://api-t1.fyers.in/user/v3/app/updateAppStatus
+### user/v2/app: 0
+### fundtx: 1
+   https://api.fyers.in/fydev/v1/fundtx/v1/bankdetails
+### myaccount/prod: 6
+   https://api-a1-prod.fyers.in/myaccount/prod/my-funds
+   https://api-a1-prod.fyers.in/myaccount/prod/realtime-funds
+   https://api-a1-prod.fyers.in/myaccount/prod/user-funds
+   https://api-a1-prod.fyers.in/myaccount/prod/user-withdrawal-history
+   https://api-a1-prod.fyers.in/myaccount/prod/withdraw-fund
+   https://api-a1-prod.fyers.in/myaccount/prod/withdrawal-history
+### automate: 46
+   https://api-t1.fyers.in/indus/data/v1/search/automate/underlying?symbol=
+   https://api-t2.fyers.in/automate/backtest/history
+   https://api-t2.fyers.in/automate/backtest/preflight
+   https://api-t2.fyers.in/automate/backtest/start
+   https://api-t2.fyers.in/automate/copy?strategy_id={strategyId}
+   https://api-t2.fyers.in/automate/details?strategy_id={strategyId}&is_system={isSystem}
+   https://api-t2.fyers.in/automate/draft?strategy_id={strategyId}
+   https://api-t2.fyers.in/automate/explore
+   https://api-t2.fyers.in/automate/export
+   https://api-t2.fyers.in/automate/get-configuration?task_variant=MultilegOptions&task_id=PlaceOrder
+   https://api-t2.fyers.in/automate/get-configuration?task_variant={taskvariant}&task_id={taskid}
+   https://api-t2.fyers.in/automate/get-nodes
+   https://api-t2.fyers.in/automate/my
+   https://api-t2.fyers.in/automate/my/activity
+   https://api-t2.fyers.in/automate/my/activity?strategy_id={strategyId}
+   https://api-t2.fyers.in/automate/my/automation
+   https://api-t2.fyers.in/automate/my/automation/execute
+   https://api-t2.fyers.in/automate/my/automation/publish
+   https://api-t2.fyers.in/automate/my/automation/restore?strategy_id={strategyId}
+   https://api-t2.fyers.in/automate/my/automation/unpublish
+   https://api-t2.fyers.in/automate/my/automation?strategy_id={automationId}
+   https://api-t2.fyers.in/automate/my/automation?strategy_id={strategyId}
+   https://api-t2.fyers.in/automate/my/draft/purge?strategy_id={strategyId}
+   https://api-t2.fyers.in/automate/my/drafts
+   https://api-t2.fyers.in/automate/my/has-automations
+   https://api-t2.fyers.in/automate/my/pnl
+   https://api-t2.fyers.in/automate/my/strategy/activity-timeline?strategy_id={strategyId}&node_id={nodeId}
+   https://api-t2.fyers.in/automate/my/strategy/changelog?strategy_id={strategyId}
+   https://api-t2.fyers.in/automate/my/strategy/timeline?strategy_id={strategyId}
+   https://api-t2.fyers.in/automate/schedule/cancel
+   https://api-t2.fyers.in/automate/schedule/create
+   https://api-t2.fyers.in/automate/strategy/pnl?strategy_id={strategyId}
+   https://api-t2.fyers.in/automate/tagpositionbook
+   https://api-t2.fyers.in/automate/workflow/multi-stop
+   https://api-t2.fyers.in/automate/workflow/stop
+   https://api-t2.fyers.in/automate/workflows
+   https://api-t2.fyers.in/automate/workflows?strategy_id={strategyId}
+   https://automate-chn.fyers.in/automate/backtest/cancel
+   https://automate-chn.fyers.in/automate/backtest/result
+   https://automate-chn.fyers.in/automate/backtest/status
+   https://automate-chn.fyers.in/automate/backtest/trade-book-export
+   https://automate-chn.fyers.in/automate/backtest/trade-book/{backtest_id}
+   https://automate-chn.fyers.in/automate/backtest/{backtest_id}/calendar/day/{day}
+   https://automate-chn.fyers.in/automate/backtest/{backtest_id}/overview
+   https://support.fyers.in/portal/en/kb/automate
+   https://support.fyers.in/portal/en/kb/automate/backtest
+### wh00: 0
+### fredo: 0
+### freude: 0
+### journal: 0
+### signup/v2: 64
+   https://api-a1.fyers.in/signup/v2/additional-info/save
+   https://api-a1.fyers.in/signup/v2/bank-details/initiate-digio-rpd
+   https://api-a1.fyers.in/signup/v2/bank-details/penny-drop
+   https://api-a1.fyers.in/signup/v2/bank-details/poll
+   https://api-a1.fyers.in/signup/v2/bank-details/setu-penny-drop
+   https://api-a1.fyers.in/signup/v2/change-referral-code
+   https://api-a1.fyers.in/signup/v2/email/send-otp
+   https://api-a1.fyers.in/signup/v2/email/verify-otp
+   https://api-a1.fyers.in/signup/v2/guest/login
+   https://api-a1.fyers.in/signup/v2/identity-details/initiate-digilocker
+   https://api-a1.fyers.in/signup/v2/identity-details/save
+   https://api-a1.fyers.in/signup/v2/identity-details/save-digilocker-details
+   https://api-a1.fyers.in/signup/v2/identity-details/validate-dob
+   https://api-a1.fyers.in/signup/v2/ipv/save
+   https://api-a1.fyers.in/signup/v2/it-name/fetch
+   https://api-a1.fyers.in/signup/v2/levels
+   https://api-a1.fyers.in/signup/v2/nomination/save
+   https://api-a1.fyers.in/signup/v2/nri/additional-details/submit
+   https://api-a1.fyers.in/signup/v2/nri/address-details/submit
+   https://api-a1.fyers.in/signup/v2/nri/application-submit
+   https://api-a1.fyers.in/signup/v2/nri/bank-details/fetch
+   https://api-a1.fyers.in/signup/v2/nri/bank-details/submit
+   https://api-a1.fyers.in/signup/v2/nri/document-details/submit
+   https://api-a1.fyers.in/signup/v2/nri/fix-issue
+   https://api-a1.fyers.in/signup/v2/nri/get-document
+   https://api-a1.fyers.in/signup/v2/nri/ipv/submit
+   https://api-a1.fyers.in/signup/v2/nri/nomination-details/submit
+   https://api-a1.fyers.in/signup/v2/nri/pan-details/submit
+   https://api-a1.fyers.in/signup/v2/nri/pan/verify
+   https://api-a1.fyers.in/signup/v2/nri/segment-details/submit
+   https://api-a1.fyers.in/signup/v2/nri/status/poll
+   https://api-a1.fyers.in/signup/v2/nri/update-mobile
+   https://api-a1.fyers.in/signup/v2/nri/upload
+   https://api-a1.fyers.in/signup/v2/nri/vkyc-fetch
+   https://api-a1.fyers.in/signup/v2/nri/vkyc-request
+   https://api-a1.fyers.in/signup/v2/send-otp
+   https://api-a1.fyers.in/signup/v2/social/login
+   https://api-a1.fyers.in/signup/v2/update-user-type
+   https://api-a1.fyers.in/signup/v2/user/account_aggregation_start
+   https://api-a1.fyers.in/signup/v2/user/activate-derivatives
+   https://api-a1.fyers.in/signup/v2/user/aggregator-status
+   https://api-a1.fyers.in/signup/v2/user/bank-details/save
+   https://api-a1.fyers.in/signup/v2/user/change-esign-status
+   https://api-a1.fyers.in/signup/v2/user/create-pin
+   https://api-a1.fyers.in/signup/v2/user/esign-document
+   https://api-a1.fyers.in/signup/v2/user/esign-success
+   https://api-a1.fyers.in/signup/v2/user/esign/accept-name-mismatch
+   https://api-a1.fyers.in/signup/v2/user/get-assets
+   https://api-a1.fyers.in/signup/v2/user/get-details-for-ipv-verification
+   https://api-a1.fyers.in/signup/v2/user/get-pincode-data
+   https://api-a1.fyers.in/signup/v2/user/hyperverge-poll
+   https://api-a1.fyers.in/signup/v2/user/identity-details/edit/pan
+   https://api-a1.fyers.in/signup/v2/user/logout
+   https://api-a1.fyers.in/signup/v2/user/pdf/generate
+   https://api-a1.fyers.in/signup/v2/user/pdf/poll
+   https://api-a1.fyers.in/signup/v2/user/review-data
+   https://api-a1.fyers.in/signup/v2/user/segments/save
+   https://api-a1.fyers.in/signup/v2/user/skip-derivatives
+   https://api-a1.fyers.in/signup/v2/user/status/onb-status
+   https://api-a1.fyers.in/signup/v2/user/status/poll
+### screeners: 81
+   https://api-g1.fyers.in/settings/fia_favourite_screeners
+   https://api-g1.fyers.in/settings/screeners/custom/favourites
+   https://api-g1.fyers.in/settings/screeners/custom/favourites/v2
+   https://api-g1.fyers.in/settings/screeners/favourites
+   https://api-g1.fyers.in/settings/screeners/favourites/:unique-key
+   https://api-g1.fyers.in/settings/screeners/favourites/v2
+   https://api-g1.fyers.in/settings/screeners/favourites/v2/:unique-key
+   https://api-g1.fyers.in/settings/screeners/predefined
+   https://api-g1.fyers.in/settings/screeners/predefined/config
+   https://api-t1-cdn.fyers.in/v1/screeners/SWOT
+   https://api-t1-cdn.fyers.in/v1/screeners/about
+   https://api-t1-cdn.fyers.in/v1/screeners/eod-technicals
+   https://api-t1-cdn.fyers.in/v1/screeners/fundamentals/company-financials
+   https://api-t1-cdn.fyers.in/v1/screeners/fundamentals/key-ratio/
+   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/abandoned-baby-bottom
+   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/abandoned-baby-top
+   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/bearish-engulfing
+   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/bearish-harami
+   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/bearish-harami-cross
+   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/black-marubozu
+   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/bullish-engulfing-pattern
+   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/bullish-harami
+   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/bullish-harami-cross
+   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/bullish-kicking
+   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/candlestick-strength
+   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/dark-cloud-cover
+   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/downside-tasuki-gap
+   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/dragonfly-doji
+   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/hammer
+   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/hanging-man
+   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/identical-three-crows
+   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/inverted-hammer
+   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/morning-star
+   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/piercing-line
+   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/shooting-star
+   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/three-white-soldiers
+   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/upside-tasuki-gap
+   https://api-t1-cdn.fyers.in/v1/screeners/fy-screeners/candlestick/white-marubozu
+   https://api-t1-cdn.fyers.in/v1/screeners/similar
+   https://screeners.fyers.in/koshi/cug/async/screeners/
+   https://screeners.fyers.in/koshi/v2/async/screeners/
+   https://screeners.fyers.in/koshi/v2/screeners/
+   https://screeners.fyers.in/koshi/v2/screeners/about
+   https://screeners.fyers.in/koshi/v2/screeners/block-deals
+   https://screeners.fyers.in/koshi/v2/screeners/company-details
+   https://screeners.fyers.in/koshi/v2/screeners/company-financial/balance-sheet
+   https://screeners.fyers.in/koshi/v2/screeners/company-financial/cashflow
+   https://screeners.fyers.in/koshi/v2/screeners/company-financial/fundamental/balance-sheet
+   https://screeners.fyers.in/koshi/v2/screeners/company-financial/fundamental/cashflow
+   https://screeners.fyers.in/koshi/v2/screeners/company-financial/fundamental/pnl-annual
+   https://screeners.fyers.in/koshi/v2/screeners/company-financial/fundamental/pnl-quarterly
+   https://screeners.fyers.in/koshi/v2/screeners/company-financial/pnl
+   https://screeners.fyers.in/koshi/v2/screeners/company-financial/quarterly
+   https://screeners.fyers.in/koshi/v2/screeners/companyFinancials
+   https://screeners.fyers.in/koshi/v2/screeners/config
+   https://screeners.fyers.in/koshi/v2/screeners/corporate-details/announcements
+   https://screeners.fyers.in/koshi/v2/screeners/corporate-details/annual-reports
+   https://screeners.fyers.in/koshi/v2/screeners/corporate-details/investor-presentations
+   https://screeners.fyers.in/koshi/v2/screeners/dividends
+   https://screeners.fyers.in/koshi/v2/screeners/financial-overview-chart
+### direct: 8
+   https://api-t1.fyers.in/api/v3/generate-authcode?client_id=EFR7964223-101&redirect_uri=https://ipo.fyers.in&response_type=code&state=sample_state&agent=Mobile&token_id=
+   https://api-t1.fyers.in/api/v3/generate-authcode?client_id=GT2V66D5Y4-101&redirect_uri=https://myaccount.fyers.in/&response_type=code&state=Ledger&agent=Mobile&token_id=
+   https://api-t1.fyers.in/api/v3/generate-authcode?client_id=GT2V66D5Y4-101&redirect_uri=https://myaccount.fyers.in/&response_type=code&state=sample_state&agent=Mobile&token_id=
+   https://api-t1.fyers.in/api/v3/generate-authcode?client_id=GT2V66D5Y4-101&redirect_uri=https://myaccount.fyers.in/verified-day-pnl/&response_type=code&state=sample_state&agent=Mobile&token_id=
+   https://api-t1.fyers.in/api/v3/generate-authcode?client_id=SOFG221ZX4-101&redirect_uri=https://pledge.fyers.in/index.html&response_type=code&state=sample_state&agent=Mobile&token_id=
+   https://api-t1.fyers.in/api/v3/generate-authcode?client_id=V71C1UQU24-101&redirect_uri=https://direct.fyers.in/auth/redirect&response_type=code&state=sample_state&agent=Mobile&token_id=
+   https://api.fyers.in/api/v2/direct-login
+   https://api.fyers.in/api/v2/generate-authcode?client_id=GT2V66D5Y4-101&redirect_uri=https://myaccount.fyers.in/&response_type=code&state=sample_state&agent=Mobile&token_id=
+### public.fyers: 0
+### myapi: 0
+### apo/v1: 0
+### v2/: 258
+   https://api-a1.fyers.in/manage/account/v2/client/details
+   https://api-a1.fyers.in/manage/account/v2/update/user
+   https://api-a1.fyers.in/reports/v2/api/benchmark/indexes
+   https://api-a1.fyers.in/reports/v2/api/config
+   https://api-a1.fyers.in/reports/v2/api/expense_summary
+   https://api-a1.fyers.in/reports/v2/api/global_pnl
+   https://api-a1.fyers.in/reports/v2/api/ledger
+   https://api-a1.fyers.in/reports/v2/api/order_book
+   https://api-a1.fyers.in/reports/v2/api/ordersbook
+   https://api-a1.fyers.in/reports/v2/api/request_report/bonus
+   https://api-a1.fyers.in/reports/v2/api/request_report/buyback
+   https://api-a1.fyers.in/reports/v2/api/request_report/capitalreduction
+   https://api-a1.fyers.in/reports/v2/api/request_report/demerger
+   https://api-a1.fyers.in/reports/v2/api/request_report/dividend
+   https://api-a1.fyers.in/reports/v2/api/request_report/merger
+   https://api-a1.fyers.in/reports/v2/api/request_report/rightsissues
+   https://api-a1.fyers.in/reports/v2/api/request_report/stocksplit
+   https://api-a1.fyers.in/reports/v2/api/statements/contract_notes
+   https://api-a1.fyers.in/reports/v2/api/statements/holding_statements
+   https://api-a1.fyers.in/reports/v2/api/summary/global_pnl
+   https://api-a1.fyers.in/reports/v2/api/summary/orderbook
+   https://api-a1.fyers.in/reports/v2/api/summary/tradebook
+   https://api-a1.fyers.in/reports/v2/api/tradebook_report
+   https://api-a1.fyers.in/reports/v2/api/turnover_report
+   https://api-a1.fyers.in/reports/v2/api/unique-symbols
+   https://api-a1.fyers.in/reports/v2/api/value_curve
+   https://api-a1.fyers.in/reports/v2/api/verified_pnl
+   https://api-a1.fyers.in/reports/v2/api/verified_pnl/delete
+   https://api-a1.fyers.in/reports/v2/api/verified_pnl/download
+   https://api-a1.fyers.in/reports/v2/api/verified_pnl/history
+   https://api-a1.fyers.in/reports/v2/api/verified_pnl/share
+   https://api-a1.fyers.in/reports/v2/live/api/pnl
+   https://api-a1.fyers.in/reports/v2/live/api/pnl/history
+   https://api-a1.fyers.in/reports/v2/live/api/pnl/summary
+   https://api-a1.fyers.in/reports/v2/live/api/positions
+   https://api-a1.fyers.in/signup/v2/additional-info/save
+   https://api-a1.fyers.in/signup/v2/bank-details/initiate-digio-rpd
+   https://api-a1.fyers.in/signup/v2/bank-details/penny-drop
+   https://api-a1.fyers.in/signup/v2/bank-details/poll
+   https://api-a1.fyers.in/signup/v2/bank-details/setu-penny-drop
+   https://api-a1.fyers.in/signup/v2/change-referral-code
+   https://api-a1.fyers.in/signup/v2/email/send-otp
+   https://api-a1.fyers.in/signup/v2/email/verify-otp
+   https://api-a1.fyers.in/signup/v2/guest/login
+   https://api-a1.fyers.in/signup/v2/identity-details/initiate-digilocker
+   https://api-a1.fyers.in/signup/v2/identity-details/save
+   https://api-a1.fyers.in/signup/v2/identity-details/save-digilocker-details
+   https://api-a1.fyers.in/signup/v2/identity-details/validate-dob
+   https://api-a1.fyers.in/signup/v2/ipv/save
+   https://api-a1.fyers.in/signup/v2/it-name/fetch
+   https://api-a1.fyers.in/signup/v2/levels
+   https://api-a1.fyers.in/signup/v2/nomination/save
+   https://api-a1.fyers.in/signup/v2/nri/additional-details/submit
+   https://api-a1.fyers.in/signup/v2/nri/address-details/submit
+   https://api-a1.fyers.in/signup/v2/nri/application-submit
+   https://api-a1.fyers.in/signup/v2/nri/bank-details/fetch
+   https://api-a1.fyers.in/signup/v2/nri/bank-details/submit
+   https://api-a1.fyers.in/signup/v2/nri/document-details/submit
+   https://api-a1.fyers.in/signup/v2/nri/fix-issue
+   https://api-a1.fyers.in/signup/v2/nri/get-document
+[0m
+Now probing the two target families read-only for gate characterization — spaced, empty bodies only
+[0m$ [0mfor ep in "nucleus/v1/fia/chart-insights" "nucleus/v1/fia/option-chain-insights" "nucleus/v1/prompts" "nucleus/v1/available_tools" "nucleus/v1/history/search" "nucleus/v1/chat/auto-suggest"; do echo "--- GET $ep ---"; curl -sk --max-time 15 -w ' code=%{http_code}\n' "https://api-t1.fyers.in/$ep"; sleep 4; echo "--- POST {} $ep"; curl -sk --max-time 15 -w ' code=%{http_code}\n' -X POST -H 'Content-Type: application/json' -d '{}' "https://api-t1.fyers.in/$ep"; sleep 4; done
+--- GET nucleus/v1/fia/chart-insights ---
+{"code":-1,"message":"Invalid token or authentication failed","s":"error"} code=401
+--- POST {} nucleus/v1/fia/chart-insights
+404 page not found code=404
+--- GET nucleus/v1/fia/option-chain-insights ---
+{"code":-1,"message":"Invalid token or authentication failed","s":"error"} code=401
+--- POST {} nucleus/v1/fia/option-chain-insights
+404 page not found code=404
+--- GET nucleus/v1/prompts ---
+{"code":-1,"message":"Invalid token or authentication failed","s":"error"} code=401
+--- POST {} nucleus/v1/prompts
+404 page not found code=404
+--- GET nucleus/v1/available_tools ---
+{"code":-1,"message":"Invalid token or authentication failed","s":"error"} code=401
+--- POST {} nucleus/v1/available_tools
+404 page not found code=404
+--- GET nucleus/v1/history/search ---
+{"code":-1,"message":"Invalid token or authentication failed","s":"error"} code=401
+--- POST {} nucleus/v1/history/search
+{"code":-1,"message":"Invalid token or authentication failed","s":"error"} code=401
+--- GET nucleus/v1/chat/auto-suggest ---
+404 page not found code=404
+--- POST {} nucleus/v1/chat/auto-suggest
+{"code":-1,"message":"Invalid token or authentication failed","s":"error"} code=401
+[0m
+[0m$ [0mfor ep in "user/v3/app/all" "user/v3/app/get-common-apps" "user/v3/app/create" "user/v3/app/updateAppStatus" "user/v3/app/logout"; do echo "--- GET $ep ---"; curl -sk --max-time 15 -w ' code=%{http_code}\n' "https://api-t1.fyers.in/$ep"; sleep 4; echo "--- POST {} $ep"; curl -sk --max-time 15 -w ' code=%{http_code}\n' -X POST -H 'Content-Type: application/json' -d '{}' "https://api-t1.fyers.in/$ep"; sleep 4; done
+--- GET user/v3/app/all ---
+{"s":"error","code":-16,"message":"Token is Invalid or Expired"} code=401
+--- POST {} user/v3/app/all
+404 page not found code=404
+--- GET user/v3/app/get-common-apps ---
+{"s":"error","code":-16,"message":"Token is Invalid or Expired"} code=401
+--- POST {} user/v3/app/get-common-apps
+404 page not found code=404
+--- GET user/v3/app/create ---
+404 page not found code=404
+--- POST {} user/v3/app/create
+{"s":"error","code":-16,"message":"Token is Invalid or Expired"} code=401
+--- GET user/v3/app/updateAppStatus ---
+404 page not found code=404
+--- POST {} user/v3/app/updateAppStatus
+{"s":"error","code":-16,"message":"Token is Invalid or Expired"} code=401
+--- GET user/v3/app/logout ---
+404 page not found code=404
+--- POST {} user/v3/app/logout
+{"s":"error","code":-16,"message":"Token is Invalid or Expired"} code=401
+[0m
+[0m$ [0mfor h in "myapi.fyers.in" "direct.fyers.in" "public.fyers.in" "alerts.fyers.in"; do echo "=== $h ==="; getent ahostsv4 "$h" | head -2; curl -skI --max-time 12 "https://$h/" | grep -iE 'HTTP/|server:|location:|content-type:' | head -5; sleep 3; done; echo "=== screeners.fyers.in root ==="; curl -skI --max-time 12 'https://screeners.fyers.in/' | grep -iE 'HTTP/|server:|content-type:|cf-ray' | head -4
+=== myapi.fyers.in ===
+104.18.5.135    STREAM myapi.fyers.in
+104.18.5.135    DGRAM  
+HTTP/2 200 
+content-type: text/html
+server: cloudflare
+=== direct.fyers.in ===
+104.18.4.135    STREAM direct.fyers.in
+104.18.4.135    DGRAM  
+HTTP/2 301 
+content-type: text/html; charset=UTF-8
+location: https://fyers.in/web/mutual-funds/home
+server: cloudflare
+=== public.fyers.in ===
+104.18.5.135    STREAM public.fyers.in
+104.18.5.135    DGRAM  
+HTTP/2 404 
+server: cloudflare
+=== alerts.fyers.in ===
+104.18.5.135    STREAM alerts.fyers.in
+104.18.5.135    DGRAM  
+HTTP/2 301 
+content-type: text/html; charset=UTF-8
+location: https://fyers.in/web/orders/stocks_and_fno/alerts
+server: cloudflare
+=== screeners.fyers.in root ===
+HTTP/2 404 
+content-type: text/plain; charset=utf-8
+server: cloudflare
+cf-ray: a27cc028fbbd32f0-IAD
+[0m
+[0m$ [0mecho "=== myapi body ==="; curl -sk --max-time 12 'https://myapi.fyers.in/' | grep -oiE '<title>[^<]*</title>|document.title\s*=\s*["'"'"'][^'"'"']+' | head -3; curl -sk --max-time 12 'https://myapi.fyers.in/' | grep -oE 'https://[a-z0-9.\-]*fyers\.in[a-z0-9./\-?=&_]*' | sort -u | head -12; sleep 3; echo "=== screeners koshi v2 config ==="; curl -sk --max-time 15 -w ' code=%{http_code}\n' 'https://screeners.fyers.in/koshi/v2/screeners/config'; sleep 3; echo "=== screeners about ==="; curl -sk --max-time 15 -w ' code=%{http_code}\n' 'https://screeners.fyers.in/koshi/v2/screeners/about'
+=== myapi body ===
+<title>API - FYERS</title>
+grep: Invalid range end
+=== screeners koshi v2 config ===
+{"code":-16,"message":"Could not authenticate the user","s":"","data":null} code=401
+=== screeners about ===
+{"code":-16,"message":"Could not authenticate the user","s":"","data":null} code=401
+[0m
+[0m$ [0mcd /tmp/opencode && curl -sk --max-time 12 -o myapi.html 'https://myapi.fyers.in/' && wc -c myapi.html && python3 - << 'EOF'
+import re
+s=open('myapi.html',encoding='utf-8',errors='ignore').read()
+print(re.sub(r'\s+',' ',s)[:1200])
+print('---links---')
+for m in sorted(set(re.findall(r'(?:href|src|action)="([^"]+)"', s))):
+    if 'fyers' in m or 'api' in m.lower(): print(m)
+EOF
+2423 myapi.html
+<!doctype html><html lang="en"><head><meta charset="utf-8"/><link rel="icon" href="./favicon.ico"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#000000"/><meta name="description" content="Start Algo trading or integrate with third-party platforms using FYERS API, for absolutely free."/><link rel="apple-touch-icon" href="https://assets.fyers.in/images/logo.svg"/><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script><link rel="canonical" href="https://myapi.fyers.in/"><link rel="stylesheet" href="https://assets.fyers.in/toasters/toaster.css"/><script src="https://assets.fyers.in/toasters/toaster.js" type="text/javascript"></script><script type="text/javascript" src="https://assets.fyers.in/Lib/analytics/Analytics.js"></script><script async src="https://www.googletagmanager.com/gtag/js?id=G-EZMQJVF57D"></script><script>function gtag(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],gtag("js",new Date),gtag("config","G-EZMQJVF57D")</script><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/><title>API - FYERS</title
+---links---
+https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js
+https://assets.fyers.in/Lib/analytics/Analytics.js
+https://assets.fyers.in/images/logo.svg
+https://assets.fyers.in/toasters/toaster.css
+https://assets.fyers.in/toasters/toaster.js
+https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap
+https://myapi.fyers.in/
+[0m
+`myapi.fyers.in` = the OAuth app-registry SPA ("API - FYERS"). Statically mining its bundles for the app-registry/config surface
+[0m$ [0mcd /tmp/opencode && curl -sk --max-time 12 -o myapi.html 'https://myapi.fyers.in/index.html' 2>/dev/null; python3 - << 'EOF'
+import re
+s=open('myapi.html',encoding='utf-8',errors='ignore').read()
+for m in re.findall(r'src="([^"]+\.js[^"]*)"', s): print("JS:",m)
+EOF
+for js in $(python3 -c "import re;print(' '.join(re.findall(r'src=\"([^\"]+\.js[^\"]*)\"', open('myapi.html').read())))"); do echo "=== $js ==="; curl -sk --max-time 20 -o "$(basename ${js%%\?*})" "https://myapi.fyers.in/${js#./}" && wc -c "$(basename ${js%%\?*})"; sleep 2; done
+JS: https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js
+JS: https://assets.fyers.in/toasters/toaster.js
+JS: https://assets.fyers.in/Lib/analytics/Analytics.js
+JS: /static/js/main.9314ac5d.js
+=== https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js ===
+1485 jquery.min.js
+=== https://assets.fyers.in/toasters/toaster.js ===
+1485 toaster.js
+=== https://assets.fyers.in/Lib/analytics/Analytics.js ===
+1485 Analytics.js
+=== /static/js/main.9314ac5d.js ===
+1485 main.9314ac5d.js
+[0m
+[0m$ [0mcd /tmp/opencode && head -c 200 main.9314ac5d.js; echo; echo "==="; curl -sk --max-time 20 -w ' code=%{http_code} size=%{size_download}\n' -o main.js 'https://myapi.fyers.in/static/js/main.9314ac5d.js'; ls -la main.js
+<!doctype html><html lang="en"><head><meta charset="utf-8"/><link rel="icon" href="./favicon.ico"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content=
+===
+ code=200 size=1566261
+-rw-r--r-- 1 runner runner 1566261 Aug  8 07:20 main.js
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+s=open('main.js',encoding='utf-8',errors='ignore').read()
+print("len",len(s))
+urls=sorted(set(re.findall(r'https://[a-z0-9.\-]+\.fyers\.in[^"\'\\\\\s,]*', s)))
+print("fyers urls:",len(urls))
+for u in urls: print(" ",u)
+print("--- path constants ---")
+paths=sorted(set(re.findall(r'["\'](/[a-z0-9_\-/]+/[a-z0-9_\-/]+(?:/\{[^}]*\})?[a-z0-9_\-/]*)["\']', s)))
+for p in paths[:90]: print(" ",p)
+EOF
+len 1566261
+fyers urls: 49
+  https://alerts.fyers.in
+  https://api-connect-docs.fyers.in/
+  https://api-t1.fyers.in/api/v2/user
+  https://api-t1.fyers.in/gk/verify_token
+  https://assets.fyers.in
+  https://assets.fyers.in/Marcom_Avatar/Images/fyers-api-c.svg
+  https://assets.fyers.in/Marcom_Avatar/Images/fyers-api-go.svg
+  https://assets.fyers.in/images/Fyers-Myapi/api-connect.svg
+  https://assets.fyers.in/images/Fyers-Myapi/icon-algorthmic-trading.svg
+  https://assets.fyers.in/images/Fyers-Myapi/icon-free.svg
+  https://assets.fyers.in/images/Fyers-Myapi/icon-platforms.svg
+  https://assets.fyers.in/images/Fyers-Myapi/icon-robust.svg
+  https://assets.fyers.in/images/Fyers-Myapi/icon-simple.svg
+  https://assets.fyers.in/images/Fyers-Myapi/icon-startups.svg
+  https://assets.fyers.in/images/Fyers-Myapi/illustration-corporate.svg
+  https://assets.fyers.in/images/Fyers-Myapi/node-js.svg
+  https://assets.fyers.in/images/Fyers-Myapi/python.svg
+  https://assets.fyers.in/images/Fyers-Myapi/rest.svg
+  https://assets.fyers.in/images/global-header/fyers-pledge-icon.svg
+  https://assets.fyers.in/images/pledge/logo-holiday-calender.svg
+  https://assets.fyers.in/images/pledge/logo-insight.svg
+  https://assets.fyers.in/images/pledge/logo-noticeboard.svg
+  https://assets.fyers.in/images/pledge/logo-sos.svg
+  https://assets.fyers.in/images/website/Fyers-sgb-icon.svg
+  https://assets.fyers.in/images/website/api/integration-methods/c-sharp.svg
+  https://assets.fyers.in/images/website/api/integration-methods/java.svg
+  https://assets.fyers.in/images/website/api/integration-methods/js.svg
+  https://assets.fyers.in/images/website/icon-brokerage-calculator.svg
+  https://assets.fyers.in/images/website/icon-fyers-api.svg
+  https://assets.fyers.in/images/website/icon-fyers-app.svg
+  https://assets.fyers.in/images/website/icon-fyers-direct.svg
+  https://assets.fyers.in/images/website/icon-fyers-one.svg
+  https://assets.fyers.in/images/website/icon-fyers-web.svg
+  https://assets.fyers.in/images/website/icon-ipo.svg
+  https://assets.fyers.in/images/website/icon-link-next.svg
+  https://assets.fyers.in/images/website/icon-margin-calculator.svg
+  https://assets.fyers.in/images/website/icon-ofs.svg
+  https://assets.fyers.in/images/website/icon-price-alerts.svg
+  https://community.fyers.in/fyers-api-rha0riqv
+  https://direct.fyers.in
+  https://insights.fyers.in
+  https://ipo.fyers.in
+  https://login.fyers.in/?cb=
+  https://myapi.fyers.in
+  https://ofs.fyers.in
+  https://pledge.fyers.in
+  https://sgb.fyers.in/
+  https://support.fyers.in
+  https://trade.fyers.in
+--- path constants ---
+  /json/pointer
+  /properties/headers/
+  /properties/parameters/
+  /properties/responses/
+  /properties/schemas/
+[0m
+New hosts referenced by the SPA: `api-connect-docs.fyers.in` (API docs portal — could hold the OpenAPI spec), `ofs.fyers.in`, `sgb.fyers.in`. Checking DNS/
+[0m$ [0mfor h in "api-connect-docs.fyers.in" "ofs.fyers.in" "sgb.fyers.in"; do echo "=== $h ==="; getent ahostsv4 "$h" 2>/dev/null | head -1 || echo "NO A"; curl -skI --max-time 12 "https://$h/" 2>/dev/null | grep -iE 'HTTP/|server:|location:|content-type:' | head -4; sleep 3; done
+=== api-connect-docs.fyers.in ===
+104.18.4.135    STREAM api-connect-docs.fyers.in
+HTTP/2 200 
+content-type: text/html
+server: cloudflare
+=== ofs.fyers.in ===
+104.18.5.135    STREAM ofs.fyers.in
+HTTP/2 200 
+content-type: text/html
+server: cloudflare
+=== sgb.fyers.in ===
+104.18.5.135    STREAM sgb.fyers.in
+HTTP/2 200 
+content-type: text/html
+server: cloudflare
+[0m
+[0m$ [0mcd /tmp/opencode && curl -sk --max-time 15 -o docs.html 'https://api-connect-docs.fyers.in/' && python3 - << 'EOF'
+import re
+s=open('docs.html',encoding='utf-8',errors='ignore').read()
+t=re.search(r'<title>(.*?)</title>',s,re.S)
+print('title:', t.group(1) if t else None)
+print(re.sub(r'\s+',' ',s)[:700])
+for m in sorted(set(re.findall(r'(?:href|src)="([^"]+)"', s))):
+    if 'swagger' in m.lower() or 'openapi' in m.lower() or m.endswith('.json') or 'assets/' in m or m.startswith('/assets/'):
+        print(m)
+EOF
+title: FYERS - Born to Trade
+<!DOCTYPE html> <html lang=""> <head> <meta charset="utf-8" /> <meta http-equiv="X-UA-Compatible" content="IE=edge" /> <title>FYERS - Born to Trade</title> <meta name="viewport" content="width=device-width" /> <meta name="generator" content="Docusaurus" /> <meta name="description" content="Born to Trade" /> <meta property="og:title" content="Fyers · Your gateway to investing - Free investment in Equity Delivery" /> <meta property="og:type" content="website" /> <meta property="og:url" content="https://your-docusaurus-test-site.com/" /> <meta property="og:description" content="Your gateway to investing - Free investment in Equity Delivery" /> <meta property="og:image" content="https://your-doc
+https://fyers.in/wp-content/plugins/tlp-team/assets/vendor/font-awesome/css/font-awesome.min.css?ver=2.5.2
+[0m
+[0m$ [0mcd /tmp/opencode && JS=$(python3 -c "
+import re
+s=open('docs.html').read()
+for m in re.findall(r'src=\"(/assets/js/[^\"]+)\"', s): print(m)
+" | head -1); echo "JS=$JS"; curl -sk --max-time 20 -o docs-main.js "https://api-connect-docs.fyers.in$JS" && wc -c docs-main.js && python3 - << 'EOF'
+import re
+s=open('docs-main.js',encoding='utf-8',errors='ignore').read()
+print("len",len(s))
+for kw in ['swagger','openapi','/swagger','oas','.yaml','.yml','api/v2','generate-authcode','token','app-id']:
+    hits=[m.start() for m in re.finditer(re.escape(kw),s,re.I)]
+    print(f"### {kw}: {len(hits)}")
+    for i in hits[:3]:
+        print('  ',' '.join(s[max(0,i-100):i+150].split())[:240])
+EOF
+JS=
+10904 docs-main.js
+len 10903
+### swagger: 0
+### openapi: 0
+### /swagger: 0
+### oas: 0
+### .yaml: 0
+### .yml: 0
+### api/v2: 0
+### generate-authcode: 0
+### token: 0
+### app-id: 0
+[0m
+[0m$ [0mcd /tmp/opencode && curl -sk --max-time 12 'https://api-connect-docs.fyers.in/sitemap.xml' -o dp-sitemap.xml; python3 - << 'EOF'
+import re
+s=open('dp-sitemap.xml',encoding='utf-8',errors='ignore').read()
+urls=re.findall(r'<loc>([^<]+)</loc>', s)
+print("sitemap URLs:",len(urls))
+for u in urls[:80]: print(" ",u)
+EOF
+sitemap URLs: 18
+  https://your-docusaurus-test-site.com/help
+  https://your-docusaurus-test-site.com/index
+  https://your-docusaurus-test-site.com/users
+  https://your-docusaurus-test-site.com/blog/2017/10/24/new-version-1.0.0
+  https://your-docusaurus-test-site.com/blog/2017/09/26/adding-rss
+  https://your-docusaurus-test-site.com/blog/2017/09/25/testing-rss
+  https://your-docusaurus-test-site.com/blog/2017/04/10/blog-post-two
+  https://your-docusaurus-test-site.com/blog/2016/03/11/blog-post
+  https://your-docusaurus-test-site.com/docs/order
+  https://your-docusaurus-test-site.com/docs/hosted-page
+  https://your-docusaurus-test-site.com/docs/custom-page
+  https://your-docusaurus-test-site.com/docs/orders
+  https://your-docusaurus-test-site.com/docs/positions
+  https://your-docusaurus-test-site.com/docs/funds
+  https://your-docusaurus-test-site.com/docs/holdings
+  https://your-docusaurus-test-site.com/docs/trades
+  https://your-docusaurus-test-site.com/docs/parameters
+  https://your-docusaurus-test-site.com/docs/methods
+[0m
+[0m$ [0mcd /tmp/opencode && for p in "docs/methods" "docs/orders" "docs/parameters" "docs/funds"; do echo "=== $p ==="; curl -sk --max-time 12 "https://api-connect-docs.fyers.in/$p" -o dp.html; python3 - << EOF
+import re,html
+s=open('dp.html',encoding='utf-8',errors='ignore').read()
+m=re.search(r'<main[^>]*>(.*?)</main>',s,re.S)
+body=m.group(1) if m else s
+body=re.sub(r'<script.*?</script>|<style.*?</style>','',body,flags=re.S)
+txt=re.sub(r'\s+',' ',re.sub(r'<[^>]+>',' ',body)).strip()
+print(txt[:900])
+print('code links:', sorted(set(re.findall(r'https?://[a-z0-9.\-/]+fyers[a-z0-9.\-]*\.[a-z.]+[^"\s<]*',s)))[:8])
+EOF
+sleep 2; done
+=== docs/methods ===
+302 Moved Temporarily 302 Moved Temporarily Code: Found Message: Resource Found RequestId: 5EVF0Y42TY5NWZX8 HostId: ZUvHZxDufm/c952wnvtR3tUb6tAs9Qk1BIeTzfUh3aRQddYkNuLM25ldU8IzySUTGbotUDQ24Xw=
+code links: []
+=== docs/orders ===
+302 Moved Temporarily 302 Moved Temporarily Code: Found Message: Resource Found RequestId: Q913P3ESPBBTKXWD HostId: ilDvFB4mkw6HB1F2OUkJSWQD3XPuvZdsL0oX16dd6NmMFlWlwuAMgqYxKaa+hy8+B2lJgoOrYyECOjm9E4okzK+mKpT9s/xX
+code links: []
+=== docs/parameters ===
+302 Moved Temporarily 302 Moved Temporarily Code: Found Message: Resource Found RequestId: KB8YJETXJGCVT5ZX HostId: WhHKtT3HNkiaOzkLqVwem10ZH1Q/ThDdVPN9NsxdT/HAv8+a5BsQuijXPDbBG/3/l+wYClCYPo94bwbiRj8IpmfDDys9TPUT
+code links: []
+=== docs/funds ===
+302 Moved Temporarily 302 Moved Temporarily Code: Found Message: Resource Found RequestId: SVABQRRTZB37T6F5 HostId: KkFLaWGm8+5C6iqoHOj2nmQ4o26eq1B1RCIbN8teMCJnx2B7C8+T6Mv1mK2O3gqKN+UqRHNOzcLwVOITjfScXI/k2oHfYQtQ
+code links: []
+[0m
+[0m$ [0mcd /tmp/opencode && for p in "docs/orders" "docs/methods" "docs/parameters" "docs/funds"; do echo "=== $p ==="; curl -skL --max-time 15 "https://api-connect-docs.fyers.in/$p/" -o dp2.html; python3 - << 'EOF'
+import re
+s=open('dp2.html',encoding='utf-8',errors='ignore').read()
+m=re.search(r'<main[^>]*>(.*?)</main>',s,re.S) or re.search(r'<body[^>]*>(.*?)</body>',s,re.S)
+body=m.group(1) if m else s
+body=re.sub(r'<script.*?</script>|<style.*?</style>','',body,flags=re.S)
+txt=re.sub(r'\s+',' ',re.sub(r'<[^>]+>',' ',body)).strip()
+print('TXT:',txt[:600])
+hl=sorted(set(re.findall(r'target="_blank" href="([^"]+)"',s)+re.findall(r'<a href="([^"]+)"',s)))
+print('links:', [h for h in hl if 'fyers' in h or h.startswith('/')][:12])
+EOF
+sleep 2; done
+=== docs/orders ===
+TXT: Fyers API Docs Demo › Hosted Pages Order Placement Order Placement Branded buttons Order Placement - Custom Buttons Hosted Pages How to host a page? Orders Positions Funds Holdings Trades Appendix Parameters Methods Orders The orders page contains all the orders placed by the user in the current trading session. This page contains all orders placed across the exchanges (NSE, BSE, MCX) and will display orders irrespective of the order status (Market, Limit, Stop and Stoplimit). This fully loaded orders page will provide the user with the following functionality: View all orders Modify / Cancel 
+links: ['/', '/demo.html', 'https://myapi.fyers.in']
+=== docs/methods ===
+TXT: Fyers API Docs Demo › Appendix Order Placement Order Placement Branded buttons Order Placement - Custom Buttons Hosted Pages How to host a page? Orders Positions Funds Holdings Trades Appendix Parameters Methods Methods These are the list of methods which can be used by your website / app after importing the FYERS API Connect plugin. Methods Arguments &nbsp; Fyers.ready() function() Fyers wrapper that loads the assets asynchronously inside the function scope add() Object Adds an object {} with the parameters for single trading entry to the basket. link() element_selector Links the html element
+links: ['/', '/demo.html', 'https://myapi.fyers.in']
+=== docs/parameters ===
+TXT: Fyers API Docs Demo › Appendix Order Placement Order Placement Branded buttons Order Placement - Custom Buttons Hosted Pages How to host a page? Orders Positions Funds Holdings Trades Appendix Parameters Methods Parameters The API Connect parameters follow the same input parameters format as the underlying FYERS API. You can refer to the API Docs here parameter &nbsp; symbol Trading symbol (Ex:NSE:SBIN-EQ) product Order variety (INTRADAY, AMO, Bo, Co. Defaults to INTRADAY) price For Limit orders order_type Order type (MARKET, LIMIT etc.) stoploss Stoploss price (for BO) stop_price For SL, SL-M
+links: ['/', '/demo.html', 'https://myapi.fyers.in', 'https://myapi.fyers.in/docs/#order-placement-guide', 'https://myapi.fyers.in/docs/#order-types', 'https://myapi.fyers.in/docs/#price-validations', 'https://myapi.fyers.in/docs/#product-types', 'https://myapi.fyers.in/docs/#symbology-format']
+=== docs/funds ===
+TXT: Fyers API Docs Demo › Hosted Pages Order Placement Order Placement Branded buttons Order Placement - Custom Buttons Hosted Pages How to host a page? Orders Positions Funds Holdings Trades Appendix Parameters Methods Funds The funds page contains the entire fund related information of the user. Branded button for Funds page You can use the branded button for the hosted funds page &lt;fyers-button data-open="funds" data-fyers="API_KEY"&gt;&lt;/fyers-button&gt; Custom button for Funds page You can create a custom button for the hosted funds page and assign it to the same functionality. &lt;!--A c
+links: ['/', '/demo.html', 'https://myapi.fyers.in']
+[0m
+[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && cat >> findings_deepseek.md << 'EOF'
+
+# RECON round 2026-08-08 07:2x UTC — nucleus/v1 FIA-assistant family (auth fingerprint #21) + user/v3/app OAuth registry gate + api-connect-docs host (restart on unexplored surface)
+- **`api-t1.fyers.in/nucleus/v1/*` (FIA assistant / copilot chat family) gate mapped — NEW auth fingerprint #21.** Routes (from config.gz, 15): `{chat,chat/auto-suggest,chat/forward-thor,cancel-chat,conversation,drawings,feedback,fia/chart-insights,fia/option-chain-insights,history,history/search,ipo-status,oldfiachat/history,prompts,available_tools}`. Probe (GET + POST {},\ spaced): GET on `fia/*`, `prompts`, `available_tools`, `history/search` → **HTTP 401 `{"code":-1,"message":"Invalid token or authentication failed","s":"error"}`** — message/fingerprint distinct from trade-core `-16 "Token is Invalid or Expired"` and from `gk/verify_token` contract; GET-only routes respond 404 to POST (e.g. `fia/chart-insights`, `prompts`); POST-accepting (`history/search`, `chat/auto-suggest`) also → `-1` first. **Auth-first, no pre-auth oracle, no chat-history/prompt data reachable.** OA per-instance data (`conversation`, `history`, `drawings`) is object-keyed under an authenticated session → same conditional-IDOR class as H13/H18 (own-account/FYERS-side only; not executed).
+- **`user/v3/app/*` OAuth app-registry gate mapped (trade-core, no new fingerprint).** Routes (9): `{all,create,delete,update,logout,get-common-apps,create-trading-app,update-trading-app,updateAppStatus}` on api-t1. GET on read routes (`all`, `get-common-apps`) → **401 `{"s":"error","code":-16,"message":"Token is Invalid or Expired"}`** (standard trade-core domain); POST {}\ robust 404 on the GET-only routes and `-16` on POST routes. Auth-first; ties H1/H2 OAuth app-management surface to the same trade-core gate; backend app listing object-keyed by `app_id` only behind session.
+- **NEW static host (in-scope): `api-connect-docs.fyers.in` — stale "FYERS API Connect" widget-docs.** Docusaurus scaffold (sitemap still says `your-docusaurus-test-site.com`), static pages for the legacy hosted-button widget (`<fyers-button data-open="funds" data-fyers="API_KEY">`), referencing `myapi.fyers.in/docs` (the real API docs). No surface, no secrets; public legacy docs — informational recon artifact, include in scope-confirmation only if the Connect widget parser is ever re-surfaced.
+- **Sibling host checks (config.gz 40-host list crosscheck):** `myapi.fyers.in` = "API - FYERS" dev-site (React SPA, marketing + `myapi/docs` anchors, `api-t1/gk/api/v2/user` + `ck/verify_token` only backend refs); `direct.fyers.in` → 301 → `fyers.in/web/mutual-funds/home`; `alerts.fyers.in` → 301 → `fyers.in/web/orders/stocks_and_fno/alerts`; `ofs.fyers.in` → 200 SPA; `sgb.fyers.in` → 200 SPA (SGB portal); `public.fyers.in` → 404 (dead/roll-aside); `screeners.fyers.in` `koshi/v2/screeners/{config,about}` → auth-first `-16` (401). No pre-auth data on any.
+- **Notable negative:** config.gz does NOT list `api-testing-prod.fyers.in` (confirms it surfaced only via the `open-account.fyers.in` bundle) — it stays in scope-confirmation C (already added). `fundtx` only one stale ref in config.gz (`api.fyers.in/fydev/v1/fundtx/v1/bankdetails`).
+EOF
+echo appended; tail -2 findings_deepseek.md
+appended
+- **Sibling host checks (config.gz 40-host list crosscheck):** `myapi.fyers.in` = "API - FYERS" dev-site (React SPA, marketing + `myapi/docs` anchors, `api-t1/gk/api/v2/user` + `ck/verify_token` only backend refs); `direct.fyers.in` → 301 → `fyers.in/web/mutual-funds/home`; `alerts.fyers.in` → 301 → `fyers.in/web/orders/stocks_and_fno/alerts`; `ofs.fyers.in` → 200 SPA; `sgb.fyers.in` → 200 SPA (SGB portal); `public.fyers.in` → 404 (dead/roll-aside); `screeners.fyers.in` `koshi/v2/screeners/{config,about}` → auth-first `-16` (401). No pre-auth data on any.
+- **Notable negative:** config.gz does NOT list `api-testing-prod.fyers.in` (confirms it surfaced only via the `open-account.fyers.in` bundle) — it stays in scope-confirmation C (already added). `fundtx` only one stale ref in config.gz (`api.fyers.in/fydev/v1/fundtx/v1/bankdetails`).
+[0m
+Docusaurus docs host is a stale static "FYERS API Connect" widget-docs fork (references `myapi.fyers.in/docs`); it's a recon artifact, no new API surface. Recording findings and re-creating the (wiped) submission package with this run's surface additions
+[0m← [0mWrite reports/submission-package_fyers-bb.md
+Wrote file successfully.
+[0m
+[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && python3 - << 'EOF'
+import json
+st={"target":"fyers.in","phase":"RECON","status":"HIGH_POTENTIAL","next_steps":[
+ "SURFACE (next on this surface): mine the `myapi.fyers.in` docs anchors + `api-connect-docs.fyers.in` static bundles for any leftover API endpoints/flows referenced (read-only), and finish mapping `nucleus/v1/*` request/response shapes from the fyers.in/web Flutter bundle (fia/*, history, conversation) for a data-keying analysis (own-account class).",
+ "Operator: dispatch scope-confirmation query (package C1-C8, incl. api-testing-prod & api-connect-docs) then submit `reports/submission-package_fyers-bb.md` (re-created this run; A1-A5 + B + C + D) via forms.fyers.in BugBountyForm1 before any own-account validation.",
+ "Exclusions unchanged: SmartHunt SSTI false positive, third-party hosts, api-a1.fydev.tech, public config artifacts; guardrails (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume) hold. New signature #21 (nucleus -1 'Invalid token...') recorded."]}
+open('state_deepseek.json','w').write(json.dumps(p,indent=0))
+print("state written")
+EOF
+cat state_deepseek.json
+Traceback (most recent call last):
+  File "<stdin>", line 6, in <module>
+NameError: name 'p' is not defined
+[0m
+[0m← [0mWrite state_deepseek.json
+Wrote file successfully.
+[0m
+[0m← [0mEdit state_deepseek.json
+Index: /home/runner/work/fyers-recon/fyers-recon/state_deepseek.json
+===================================================================
+--- /home/runner/work/fyers-recon/fyers-recon/state_deepseek.json
++++ /home/runner/work/fyers-recon/fyers-recon/state_deepseek.json
+@@ -1,1 +1,1 @@
+-{"target": "fyers.in", "phase": "RECON", "status": "HIGH_POTENTIAL", "next_steps": ["Advance to SURFACE on the nucleus/v1 FIA/copilot family: mine the fyers.in/web Flutter bundle for the exact request/response shapes of `nucleus/v1/fia/*`, `history`, `conversation`, `drawings` (data-keying analysis; own-account IDOR class), plus myapi.fyers.in JS bundles for any referenced app-registry endpoints (read-only, spaced).", "Operator: dispatch scope-confirmation query (package C1-C8, incl. api-testing-prod and api-connect-docs.hosts) then submit the re-created `reports/submission-package_fyers-bb.md` (A1-A5 + B + C + D) via forms.fyers.in BugBountyForm1 before any own-account validation.", "Exclusions unchanged: SmartHunt SSTI false positive (3x triaged, CF 1015), third-party hosts, api-f1.fydev.tech, public config artifacts; guardrails (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume) hold. New auth fingerprint #21 (nucleus -1) recorded this run."]}
+\ No newline at end of file
++{"target": "fyers.in", "phase": "RECON", "status": "HIGH_POTENTIAL", "next_steps": ["Advance to SURFACE on the nucleus/v1 FIA/copilot family: mine the fyers.in/web Flutter bundle for the exact request/response shapes of `nucleus/v1/fia/*`, `history`, `conversation`, `drawings` (data-keying analysis; own-account IDOR class), plus myapi.fyers.in JS bundles for any referenced app-registry endpoints (read-only, spaced).", "Operator: dispatch scope-confirmation query (package C1-C8, incl. api-testing-prod and api-connect-docs.hosts) then submit the re-created `reports/submission-package_fyers-bb.md` (A1-A5 + B + C + D) via forms.fyers.in BugBountyForm1 before any own-account validation.", "Exclusions unchanged: SmartHunt SSTI false positive (3x triaged, CF 1015), third-party hosts, api-a1.fydev.tech, public config artifacts; guardrails (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume) hold. New auth fingerprint #21 (nucleus -1) recorded this run."]}
+\ No newline at end of file
+
+[0m
+[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && git status --short | head; echo "==="; cat state_deepseek.json; echo; echo "==="; git add -A -n 2>/dev/null | head -20
+M findings_deepseek.md
+ M state_deepseek.json
+?? ctx-findings_deepseek.txt
+?? ctx-research_deepseek.txt
+?? raw_deepseek.txt
+?? reports/submission-package_fyers-bb.md
+?? research-prompt.txt
+===
+{"target": "fyers.in", "phase": "RECON", "status": "HIGH_POTENTIAL", "next_steps": ["Advance to SURFACE on the nucleus/v1 FIA/copilot family: mine the fyers.in/web Flutter bundle for the exact request/response shapes of `nucleus/v1/fia/*`, `history`, `conversation`, `drawings` (data-keying analysis; own-account IDOR class), plus myapi.fyers.in JS bundles for any referenced app-registry endpoints (read-only, spaced).", "Operator: dispatch scope-confirmation query (package C1-C8, incl. api-testing-prod and api-connect-docs.hosts) then submit the re-created `reports/submission-package_fyers-bb.md` (A1-A5 + B + C + D) via forms.fyers.in BugBountyForm1 before any own-account validation.", "Exclusions unchanged: SmartHunt SSTI false positive (3x triaged, CF 1015), third-party hosts, api-a1.fydev.tech, public config artifacts; guardrails (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume) hold. New auth fingerprint #21 (nucleus -1) recorded this run."]}
+===
+add 'findings_deepseek.md'
+add 'state_deepseek.json'
+add 'ctx-findings_deepseek.txt'
+add 'ctx-research_deepseek.txt'
+add 'raw_deepseek.txt'
+add 'reports/submission-package_fyers-bb.md'
+add 'research-prompt.txt'
+[0m
+[0m← [0mEdit state_deepseek.json
+Index: /home/runner/work/fyers-recon/fyers-recon/state_deepseek.json
+===================================================================
+--- /home/runner/work/fyers-recon/fyers-recon/state_deepseek.json
++++ /home/runner/work/fyers-recon/fyers-recon/state_deepseek.json
+@@ -1,1 +1,1 @@
+-{"target": "fyers.in", "phase": "RECON", "status": "HIGH_POTENTIAL", "next_steps": ["Advance to SURFACE on the nucleus/v1 FIA/copilot family: mine the fyers.in/web Flutter bundle for the exact request/response shapes of `nucleus/v1/fia/*`, `history`, `conversation`, `drawings` (data-keying analysis; own-account IDOR class), plus myapi.fyers.in JS bundles for any referenced app-registry endpoints (read-only, spaced).", "Operator: dispatch scope-confirmation query (package C1-C8, incl. api-testing-prod and api-connect-docs.hosts) then submit the re-created `reports/submission-package_fyers-bb.md` (A1-A5 + B + C + D) via forms.fyers.in BugBountyForm1 before any own-account validation.", "Exclusions unchanged: SmartHunt SSTI false positive (3x triaged, CF 1015), third-party hosts, api-a1.fydev.tech, public config artifacts; guardrails (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume) hold. New auth fingerprint #21 (nucleus -1) recorded this run."]}
+\ No newline at end of file
++{"target": "fyers.in", "phase": "RECON", "status": "HIGH_POTENTIAL", "next_steps": ["Advance to SURFACE on the nucleus/v1 FIA/copilot family: mine the fyers.in/web Flutter bundle for the exact request/response shapes of `nucleus/v1/fia/*`, `history`, `conversation`, `drawings` (data-keying analysis; own-account IDOR class), plus myapi.fyers.in JS bundles for any referenced app-registry endpoints (read-only, spaced).", "Operator: dispatch scope-confirmation query (package C1-C8, incl. api-testing-prod and api-connect-docs.fyers.in) then submit the re-created `reports/submission-package_fyers-bb.md` (A1-A5 + B + C + D) via forms.fyers.in BugBountyForm1 before any own-account validation.", "Exclusions unchanged: SmartHunt SSTI false positive (3x triaged, CF 1015), third-party hosts, api-a1.fydev.tech, public config artifacts; guardrails (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume) hold. New auth fingerprint #21 (nucleus -1) recorded this run."]}
+\ No newline at end of file
+
+[0m
+# Target: fyers.in
+# Current Phase: RECON (restart on unexplored surface — nucleus FIA family + OAuth app registry + docs host)
+
+## Key Findings
+- **NEW auth fingerprint #21: `api-t1.fyers.in/nucleus/v1/*` (FIA-assistant / copilot-chat family, 15 routes incl. `fia/chart-insights`, `fia/option-chain-insights`, `chat`, `history`, `conversation`, `drawings`, `prompts`).** All routes auth-first: GET and the POST-accepting routes → HTTP 401 `{"code":-1,"message":"Invalid token or authentication failed","s":"error"}` — a message variant distinct from trade-core `-16 "Token is Invalid or Expired"`. GET-only routes return 404 to POST. No pre-auth oracle, no data reachable. Per-session `conversation`/`history`/`drawings` data is object-keyed → same conditional-IDOR class as H13/H18 (own-account/FYERS-side only).
+- **`user/v3/app/*` OAuth app-registry gate mapped (trade-core, standard):** read routes `all`, `get-common-apps` → 401 `-16`; write routes POST-only → 401 `-16`. Auth-first; configures the H1/H2 OAuth app-management surface; backend app objects keyed by session only (no new oracle).
+- **NEW in-scope host: `api-connect-docs.fyers.in` — stale "FYERS API Connect" widget-docs (Docusaurus, still `your-docusaurus-test-site.com` in sitemap).** Static legacy docs for the hosted-button widget (`<fyers-button data-fyers="API_KEY">`), references `myapi.fyers.in/docs`. No new interface/secrets — informational.
+- **Sibling-host crosscheck (config.gz 40 hosts):** `myapi.fyers.in` = "API - FYERS" dev-site (React SPA); `direct.fyers.in`→301 `fyers.in/web/mutual-funds/home`; `alerts.fyers.in`→301 web alerts SPA; `ofs.fyers.in`, `sgb.fyers.in`→200 SPAs; `public.fyers.in`→404; `screeners.fyers.in` koshi v2 → auth-first `-16` (401). No pre-auth data on any.
+- **Negative:** config.gz does NOT contain `api-testing-prod.fyers.in` (confirms it surfaced only via the open-account bundle → stays in scope-confirmation C). Submission package re-created on disk (A1–A5 + B + C(1–8) + D).
+
+## API Endpoints (gate-characterized this run)
+- `api-t1.fyers.in/nucleus/v1/{fia/chart-insights, fia/option-chain-insights, prompts, available_tools, history/search, chat/auto-suggest}` — 401 `-1` (auth-first; GET-only 404 to POST)
+- `api-t1.fyers.in/user/v3/app/{all, get-common-apps, create, updateAppStatus, logout}` — 401 `-16` trade-core
+- `api-connect-docs.fyers.in/docs/{orders,methods,parameters,funds}/` — public legacy widget docs (static)
+- `screeners.fyers.in/koshi/v2/screeners/{config,about}` — 401 `-16`
+
+## Hypotheses
+### H18-adjacent — nucleus/v1 conversation/history/drawings object-keyed IDOR (conditional, new surface)
+Reasoning: FIA copilot stores per-user `conversation`/`history`/`drawings`; no per-object owner check demonstrated behind the uniform `-1` gate; the family was not yet inspected for object-id keying (data-keying analysis next).
+Impact: cross-account read of chat history/drawings → program Medium (conditional; own-account/FYERS-side only).
+Test: own-account baseline conversation → foreign conversation-id request in own session → 200-with-data vs 403/404 delta. NOT executed.
+
+## CVSS Candidates
+- [H17 signup/v2 req_id IDOR] — 8.1–9.1 (conditional) · [H19 api-testing-prod unauth upload/SSRF] — 5.3–7.5 (conditional)
+- [H13/H15/H18 IDOR family] — 5.3–7.5 (conditional; own-account/FYERS-side)
+- [nucleus conversation IDOR] — 5.3–6.5 (conditional, pending shape analysis)
+- [Informational bundle B1–B8] — informational/low
+
+---
+## STATE UPDATE FOR NEXT RUN
+STATUS_TARGET: fyers.in
+STATUS_PHASE: RECON
+STATUS_STATE: HIGH_POTENTIAL
+
+NEXT_STEP_1: Advance to SURFACE on nucleus/v1 — mine the fyers.in/web Flutter bundle for exact request/response shapes of `fia/*`, `history`, `conversation`, `drawings` (data-keying analysis) + myapi.fyers.in JS bundles for referenced app-registry endpoints (read-only, spaced).
+NEXT_STEP_2: Operator dispatches scope-confirmation query (package C1–C8 incl. api-testing-prod and api-connect-docs.fyers.in) then submits the re-created `reports/submission-package_fyers-bb.md` (A1–A5 + B + C + D) via forms.fyers.in BugBountyForm1 before any own-account validation.
+NEXT_STEP_3: Exclusions unchanged (SmartHunt SSTI false positive 3× triaged, third-party hosts, api-a1.fydev.tech, public config artifacts); guardrails hold (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume). New auth fingerprint #21 (nucleus `-1`) recorded.
