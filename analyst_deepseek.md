@@ -592,3 +592,55 @@ testability: HUMAN_ONLY (AUTH_HELPED)
 [RISK] fyers: 66 — estate now ~42 hosts / ≥22 auth fingerprint domains, with six conditional object-keyed IDOR candidates (H13/H15/H17/H18/H21/H22 — H17 top-severity at 8.1–9.1 if unmasked PAN/eSign) plus the estate's only fully-unauthenticated tier (api-testing-prod H19: SSRF + KYC object-write, 5.3–7.5) now joined by a new live eIPO order surface (api-i1). Offsets: zero exploits executed or proven, every high-value path is researcher-execution-prohibited pending authorization, all live gates re-confirmed auth-first (#19/#20/#21 + new `-100`/`-441`), jhelum public feed is public-by-design with no leak, SSTI/third-party/method-gate classes rejected, and the 401-in-HTTP-200 wrap exposes no data.
 
 ===== ANALYST 2026-08-08 11:50:43 UTC =====
+
+===== ANALYST 2026-08-08 13:26:35 UTC =====
+[RISK] computation deferred to end per format.
+[NEW] `api-i1.fyers.in` — eIPO investment microservice gateway, surfaced from `ipo.fyers.in` SPA bundle (`pages/home-*.js`, 197 KB). Bases: `/invest/v1/ipo` ("normal"), `/investment/jhelum/v1/api` ("ipo"), `/investment/tapi/v1` ("common", prefix `/eipo`). Host absent from both `indus/v1/config` and `config.gz` (scope-confirm C9).
+[NEW] `ipo.fyers.in` — Next.js "Apply for IPOs" SPA, routes `{/home,/ipo,/orders,/details,/updateipo}`; auth = raw `Authorization` header (no Bearer) from localStorage, via `POST api-t1.fyers.in/api/v3/validate-authcode` (`{grant_type:"authorization_code",appIdHash,code}`).
+[CHANGED] api-i1 fingerprint family (new): `-100 "Authorisation token required."` (tapi trade ops, auth-first), `-441 "auth code is required"` (validate-authcode gate), FullFastAPI/Pydantic field-required full-field oracles (HTTP 400/422), and `investors-details` 401-in-HTTP-200 wrap (mirror of realtime-funds pattern).
+[NEW] `/invest/v1/ipo/{place-order,order-book}` POST `{}` → 31-field Pydantic schema-oracle PRE-AUTH (validation-before-auth, no token check observed at any depth) — new class instance; do NOT send valid order payload pre-auth.
+[NEW] `investment/foyer/v1/api/offer_list` + `offer_details` → HTTP 200 PUBLIC live IPO feed (`LEAP`, `isin:"INE00GO01025"`, bid dates, UUID `offer_id`); invalid `offer_id` → `error_code:-99 "No record found"` empty (no leak) — public-by-design, informational.
+[NEW] Dev/twin host records (OUT OF SCOPE, not tested): `api-i1.fyers.co.in` (staging), `api-i1.fydev.tek` (dev) in bundle config.
+[CHANGED] Phase → HYPOTHESIS IN_PROGRESS (was POC/EXHAUSTED); submission package re-created + extended (A1–A7/H22 + B9 + F + E.7; wiped by env reset previously).
+[PRIO] api-test-105.fyers.in KYC upload tier (H19) — 7.75 = attack 7, business 8, tech 8, gate 10, cloud 7, fresh 6 — estate-only no-漏洞; SSRF + unauth object-write/clobber; host absent everywhere.
+[PRIO] api-i1.fyers.in eIPO gateway (H22) — 6.60 = attack 6, business 6, tech 7, gate 3, cloud 7, fresh 10 — new live ordered surface; public feed + schema oracles.
+[PRIO] api-a1.fyers.in/signup/v2 KYC req_id (H17) — 6.30 = attack 7, business 9, tech 7, gate 1, cloud 6, fresh 5 — highest CVSS potential; HUMAN-only.
+[HYP] H19 — Unauthenticated server-side URL fetch (SSRF) + object-write into KYC upload tier
+class: SSRF
+asset: api-testing-prod.fyers.in/signup/upload/api/v1/{pdf/is-password-protected, user/general/upload-image, user/fetch-pan, signature-to-bmp, user/general/zip-all-images}
+confidence: 55
+reasoning: The SMSP bundle's single `L()` ajax wrapper carries `Access-Token`/`Authorization` yet the service rejected no token mode at any depth (`{}`→400 code 403/402, empty-fields+dummy-token→400 `403 "Invalid File Pars"`, nulls→500/501, `zip-all-images {}`→200 no-auth). `is-password-protected` POSTs a caller-supplied `file_url` for a server-side fetch; `signature-to-bmp` uses a hardcoded cross-caller key `user/signature/bmp`.
+evidence_needed: Distinct status/body across `file_url` 3-case diff-oracle; object persisted under caller key and retrievable without token; fetch host allow-list behavior.
+verify_steps: PASSIVE — already-baselined branch oracle: `POST /pdf/is-password-protected` body `{"file_url":""}` then `{"file_url":"not-a-url"}`, spaced ≥5s, NO valid/external URL, no outbound fetch, no file/upload/OTS side-effects. Real-fetch/storage confirm = AUTH_HELPED/FYERS-side only (prohibited to me otherwise).
+impact: blinds SSRF from CF-fronted KYC microservice + unauth write/clobj into KYC doc tier → program Medium–High (conditional); CVSS 5.3–7.5.
+testability: PASSIVE (branch oracle) → HUMAN
+[HYP] H22 — eIPO order/offer object-keyed IDOR (validation-before-auth admitted on /invest order paths)
+class: IDOR
+asset: api-i1.fyers.in — /invest/v1/ipo/{place-order,order-book} + investment/shutdown/tapi/v1/eipo/{order-book,cancel-order,modify-order} + investment/foyer/v1/api/offer_details
+confidence: 45
+reasoning: Objects keyed by client-supplied `OrderId`/`order_id` (tapi/eipo) and UUID `offer_id` (offer metas); tapi/eipo is auth-first `-100` (no pre-auth oracle), but `/invest/v1/ipo` runs the 31-field FastAPI oracle with no auth gate observed pre-validation, so auth-ordering on `/v1/ipo` paths is unproven; per-object owner scoping undetermined behind gate.
+evidence_needed: Own-session tapi `order-book` returns own order; same session with a foreign `OrderId`/`order_id` → 200-with-data (IDOR) vs 403/404/`-100` (fixed).
+verify_steps: AUTH_HELPED — own-account baseline `POST /investment/event/tasia/v1/eipo/order-book` {pageNumber:1,…} then foreign-id substitution; `DELETE /eipo/cancel-order?order_id=<FOREIGN>&offer_id=<F>`; NEVER pre-auth valid order payload; cross-account execution prohibited (FYERS-side only); nothing executed yet.
+impact: cross-account eIPO order read/cancel; object keys on a new live surface → program Medium (conditional); CVSS 5.3–6.5.
+testability: AUTH_HELPED
+[HYP] H17 — signup/v2 KYC application-object IDOR (req_id-keyed cross-app eSign/PDF/status)
+class: IDOR
+asset: api.pre.uba France .in/signup/v2/user/{esign-document, pdf/generate, pdf/poll, status/poll} + /nri/get-document (的 req_id via digio_doc_id/live-verification)
+confidence: 45
+reasoning: Application objects keyed by client-supplied `req_id` across the eSign/PDF/status DB; gate #19 (400 code=1050 "Your session has expired...") only requires a valid signup session, silent on intra-session object ownership; bundle (E1) shows `req_id` straight from client; `esign-document {}` → 401/1050 — no pre-auth reach.
+evidence_needed: Applicant-A sedert 二 B-keyed non-empty eSign/PDF/status/get-document (2xx-with-data) for B's req_id; fixed if 403/404/session-expired on foreign id.
+verify_steps: HUMAN_SIDE — two own test applicants; under A substitute B's req_id (E1 shapes); own-accounts only, no OTP, no real e-sign action; NOT executed by me.
+impact: cross-account unmasked PAN/eSign/PDF → program Critical (PAN disclosure) / High; CVSS 8.1–9.1 (conditional).
+testability: AUTH_HELPED (skip, no long-term)
+[PARKED] `api-i1.fyers.co.in` (staging) + `api-i1.fyder.tech` (dev) — out of scope (non `*.yes.in`); record-not-test.
+[PARKED] jhelum offer_list/offer_details — public-by-design IPO feed with no leak (`-99 "No records found"` on bad id); informational B9 only.
+[PARKED] `validate-authcode` / `issue-list` "IssueId field is required" / `-441` — pure auth/gate/validation responses, no impact; fingerprint notes only.
+[PARKED] nucleus H21 — survives criteria but below top-3 this run; carries unchanged.
+[FINAL] re-ranked: H19 (55, SSRF/unauth-write, of my legal-probe) > H17 (45, req_id→PAN/eSign, highest CVSS 8.1–9.1) > H22 (45, eIPO order IDOR, new surface) > H21 (45, nucleus, carried). All conditional, all researcher-execution/pending authorization.
+[NEXT] SCAN: extract exact tapi/eipo request/response shapes from `ipo.fyers.in/_next/static/chunks/pages/orders-*.js`, `updateipo-*.js` and `details-*.js` (route-map from `_buildManifest.js`) — read-only, resolve the `order-book` "0/1 (get-orders)" body 1x1x, order-id/offer-id key model, and field types for place/m condition; then pin H22 A/E designs without any network call against the order surface.
+[LEARN] ACCEPTED validation-before-auth class @ api-i1.fyers.in/invest/v1/ipo — 31-field Pydantic field-required oracle runs when no auth token is checked; schema disclosure only.
+[LEARN] ACCEPTED public-friend class @ api-i1.fyers/.../jhelum/v1/api — offer_list/offer_details unauth by design; invalid offer → `-99` no data, no leak.
+[LEARN] ACCEPTED auth-first-gate class @ api-i1.fyers/.../eipo trade ops — `-100 "Authorisation token required."` on order-book/cancel/place; no pre-auth data.
+[LEARN] ACCEPTED 401-in-HTTP-200 wrap class @ api-i1.fyers.inv/invest/.../investors-details — authog error wrapped HTTP 200, mirrors realtime-funds.
+[LEARN] REJECTED data-disclosure/MISCONFIG @ api/issue-list|issue-details oracle — "IssueId is required" returns  default validation only.
+[RISK] fyers: 67 — estate now ~42 hosts / ≥22 auth-fingerprint domains with seven conditional object-keyed IDOR candidates (H13/H15/H17/H18/H21/H22; top severity H17 8.1–9.1 if unmasked PAN/eSign) plus the I only error-缺 tier (api-testing-prod H19 SSRF+KYC write 5.3–7.5) and a new live eIPO order surface (api-i1). Everything so far: zero proven exploits; all high-value object paths are researcher-execution-prohibited pending authorization; all live gates re-confirmed auth-first/validation-only (new -100/-80/-441, #19/#20/#21), jhelum feed public-with-no-leak, third-party/method-gate/SSTI classes rejected.
