@@ -1,1 +1,10 @@
-{"target": "fyers.in", "phase": "SURFACE", "status": "HIGH_POTENTIAL", "next_steps": ["Operator submits the re-created official-form package after dispatching the scope-confirmation query (signup/v2 KYC, mcp.fyers.in, `/invest/admin/*`, `/cdsl/dev/*`).", "Recon on an unexplored live surface from the static inventory: `journal.fyers.in/journal/?token=`, `charts-cdn.fyers.in`, `trade2.fyers.in`, or `nucleus/v1/fia/*` (read-only, low-volume, spaced).", "Own-account/FYERS-side validation only for program-confirmed in-scope items; no cross-account execution. Excluded: SSTI false positive; third-party hosts."]}
+{
+  "target": "fyers.in",
+  "phase": "HYPOTHESIS",
+  "status": "HIGH_POTENTIAL",
+  "next_steps": [
+    "H18 design \u2014 own-account notes-list baseline, then cross-account `note/edit/{id}` + `note/delete/{id}` + `upload-document` file-access delta (FYERS-side/own-account only); append to submission package as 4th conditional IDOR.",
+    "Add H18 client primitives (apex `_FYERS=-1` cross-property logout, hardcoded OAuth `state=sample_state`, missing Referrer-Policy) to the informational/hardening bundle.",
+    "Extend scope-confirmation query to include journal.fyers.in journal-server; then submit package. Excluded: SSTI false positive; third-party hosts; trade2.fyers.in (dead)."
+  ]
+}
