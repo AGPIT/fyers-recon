@@ -1,1004 +1,4 @@
-.fyers.in/fy/cdsl/dev/*
-[✓] Enumerate api-i1 mf/txn/v1 + tapi IPO + api/beta + api-y1 pre-auth
-[✓] Probe api-y1.fyers.in trade/v3 vs api-t2, api-t1/vagator split
-[✓] Compile report + update findings/state
-[0m
-# Target: fyers.in
-# Current Phase: SURFACE (IN_PROGRESS)
 
-## Key Findings
-- **H10 closed (downgraded).** `scheme_code` is the chart table selector — `scheme_code=47941&period=1Y` returns real public NAV history; strings/nonexistent codes → empty `nav_history[]` (parameterized, **no injection**). The raw SQL-1103 error only fires on the plan_id-only/`scheme_code`-absent fallback path with an empty interpolated table name. ⇒ engine disclosure + benign error oracle, no SQLi. CVSS 3.9–4.1.
-- **H11 cdsl/dev route-validity oracle mapped.** Three-way discriminator: valid path+method → `"Invalid Input Format"`; wrong method → `"Invalid request method"`; unknown resource → `"Invalid resource"`. Valid routes: `cdslEdis/{index,details,tpin}`, `edis/{index,details,tpin}` (POST JSON); `pledge/{userdata,status,reqdetails}`, `unpledge/status` (GET); `pledge/setup`/`unpledge/setup` (POST). **No progressive field oracle** — every body shape returns uniform error, no auth fingerprint. Schema disclosure only. CVSS 5.5 (downgraded).
-- **`api/beta/*` dead backend** — uniform 502 across all 8 routes (GET/POST). `api-y1/trade/v3/*` → 404 (Apache Test Page host, config entries don't resolve).
-- **New auth fingerprint #12:** `api-i1/fy/mf/v1/holdings` → `-15 "Could not authenticate the user"` (trade-core domain on api-i1, distinct from its 40101/-101/-100).
-- **`vagator/v2/guest_user/login_v2`** → `-1024 "please provide a valid mobile number"` (validation-before-auth phone oracle, pre-auth).
-- Confirmed stable: api-a1 send_otp 404, api-g1 `-401`, quantainer `-401`, `indus/v1/config` live (now with `ab_feature_set` product matrix).
-
-## API Endpoints
-- `/mf/data/v2/scheme/details/chart?scheme_code={int}&period={1M,3M,6M,1Y,3Y,5Y}` (GET, no-auth) — public NAV history; SQL-1103 error on plan_id-only path
-- `/fy/cdsl/dev/{cdslEdis,edis}/{index,details,tpin}` (POST), `/fy/cdsl/dev/{pledge}/{userdata,status,reqdetails}` (GET), `unpledge/status` (GET) — route/method oracle, no auth
-- `/api/beta/*` (any method) — 502 dead
-- `/vagator/v2/guest_user/login_v2` (POST) — `-1024` phone-validation oracle
-- `/fy/mf/v1/holdings` (api-i1) — `-15` trade-core auth gate
-
-## Hypotheses
-### H10: chart SQL error-shape oracle (resolved — downgraded)
-**Reasoning:** table name is selected by `scheme_code` only; param is parameterized. **Impact:** SQL Server engine/error-shape disclosure on public endpoint (3.9–4.1); no query-control demonstrated.
-### H11: cdsl/dev EDIS/TPIN validation-before-auth (resolved — downgraded)
-**Reasoning:** dev-stage routes validate input with no auth fingerprint, but no key-branching exists to walk the schema and no data path is reachable pre-auth. **Impact:** route/method schema disclosure (5.5). Any real impact needs a valid client/TPIN → behind auth.
-### H1 (carried): open redirect / OAuth code interception on login host — remains the top candidate.
-
-## CVSS Candidates
-- [H1 OAuth code interception] — CVSS 8.1–9.0 (conditional on code-delivery to attacker URI)
-- [H1 open redirect on login host] — CVSS 6.1 (confirmed step-1)
-- [H8 MCP FIA_TOKEN scoping / tool ATO] — CVSS 6.5–8.0 (conditional)
-- [H11 cdsl/dev schema disclosure] — CVSS 5.5 (downgraded)
-- [H8 MCP unauth identity/capability disclosure] — CVSS 5.3
-- [H10 chart SQL error oracle] — CVSS 3.9–4.1 (downgraded)
-
----
-## STATE UPDATE FOR NEXT RUN
-STATUS_TARGET: fyers.in
-STATUS_PHASE: HYPOTHESIS
-STATUS_STATE: HIGH_POTENTIAL
-
-NEXT_STEP_1: Promote H1 to POC-design phase: construct exact curl sequences (generate-authcode with hostile redirect_uri + state, then the client-side JS delivery analysis) as a documented PoC design, and enumerate the reserved-`cb` denylist from `login.min.js` for a full open-redirect whitelist; assign CVSS.
-NEXT_STEP_2: Full static pass of the Windows MCP .exe (77 MB) for FIA_TOKEN/OAuth scopes + local-token storage, to firm up H8 conditional rating.
-NEXT_STEP_3: Re-diff `indus/v1/config` for newly added hosts (check `api-y1` trade routes' true home, `debt.fyers.in` backend) and enumerate `insights.fyers.in` / `savedcharts.fyers.in` widget surfaces for token-bearing endpoints (guest-created content IDOR).
-
-===== RUN 2026-08-06 01:17:10 UTC =====
-Model: deepseek | Phase: HYPOTHESIS | Target: fyers.in
-
-[0m
-> build · deepseek-v4-flash-free
-[0m
-[0m$ [0mls -la /tmp/opencode/ 2>/dev/null | head -40; echo "==="; ls -la /home/runner/work/fyers-recon/fyers-recon/
-total 16
-drwxr-xr-x  2 runner runner  4096 Aug  6 01:03 .
-drwxrwxrwt 14 root   root   12288 Aug  6 01:03 ..
-===
-total 1172
-drwxr-xr-x 4 runner runner   4096 Aug  6 01:03 .
-drwxr-xr-x 3 runner runner   4096 Aug  6 01:03 ..
-drwxr-xr-x 7 runner runner   4096 Aug  6 01:03 .git
-drwxr-xr-x 3 runner runner   4096 Aug  6 01:03 .github
--rw-r--r-- 1 runner runner  35084 Aug  6 01:03 ctx-findings_deepseek.txt
--rw-r--r-- 1 runner runner 120000 Aug  6 01:03 ctx-research_deepseek.txt
--rw-r--r-- 1 runner runner  35084 Aug  6 01:03 findings_deepseek.md
--rw-r--r-- 1 runner runner  11010 Aug  6 01:03 findings_mimo.md
--rw-r--r-- 1 runner runner     44 Aug  6 01:03 raw_deepseek.txt
--rw-r--r-- 1 runner runner 162189 Aug  6 01:03 research-prompt.txt
--rw-r--r-- 1 runner runner 588177 Aug  6 01:03 research_deepseek.md
--rw-r--r-- 1 runner runner 203851 Aug  6 01:03 research_mimo.md
--rw-r--r-- 1 runner runner      0 Aug  6 01:03 run-log.md
--rw-r--r-- 1 runner runner    802 Aug  6 01:03 state_deepseek.json
--rw-r--r-- 1 runner runner    318 Aug  6 01:03 state_mimo.json
--rw-r--r-- 1 runner runner   3986 Aug  6 01:03 surface-map-new-hosts.md
-[0m
-[0m→ [0mRead state_deepseek.json
-[0m
-[0m# [0mTodos
-[•] Re-fetch login.min.js and statically extract reserved-cb denylist + redirect_uri/cb/state handling
-[ ] Recover exact generate-authcode / validate-authcode request shapes from v3 OpenAPI spec
-[ ] Construct H1 POC design doc (exact curl sequence, success indicators, CVSS) and append to findings
-[ ] Read-only confirmation of login.fyers.in open-redirect primitive (cb param) if rate limits allow
-[ ] Update state + findings files
-[0m
-[0m$ [0mgrep -n -i "cb\|denylist\|reserved\|redirect_uri\|callback" /home/runner/work/fyers-recon/fyers-recon/ctx-research_deepseek.txt | head -40
-grep: /home/runner/work/fyers-recon/fyers-recon/ctx-research_deepseek.txt: binary file matches
-[0m
-[0m$ [0mcd /tmp/opencode && curl -s -m 30 -o sso.js "https://login.fyers.in/new-sso/17.0/api_v3_login/login.min.js?v=1.3" -w "HTTP %{http_code} sz=%{size_download}\n"
-HTTP 200 sz=313193
-[0m
-[0m$ [0mcd /tmp/opencode && python3 -c "
-s=open('sso.js',encoding='utf-8',errors='ignore').read()
-print('len',len(s))
-print(s[:400])
-"
-len 313193
-(function(_0x375ad7,_0x42bb10){var _0xbce834=_0x5d29,_0x3c6bff=_0x375ad7();while(!![]){try{var _0x5d866a=parseInt(_0xbce834(0x226))/0x1*(parseInt(_0xbce834(0x2cf))/0x2)+-parseInt(_0xbce834(0x338))/0x3+-parseInt(_0xbce834(0x3ea))/0x4+parseInt(_0xbce834(0x38b))/0x5+parseInt(_0xbce834(0x5d1))/0x6*(-parseInt(_0xbce834(0x2f4))/0x7)+-parseInt(_0xbce834(0x4dd))/0x8*(-parseInt(_0xbce834(0x538))/0x9)+parse
-[0m
-[0m✱ [0mGrep "reserved|denylist|cb"[90m in ctx-research_deepseek.txt · 95 matches[0m
-[0m
-[0m$ [0mwhich node python3; node --version 2>/dev/null; python3 --version
-/usr/local/bin/node
-/usr/bin/python3
-v22.23.1
-Python 3.12.3
-[0m
-[0m← [0mWrite /tmp/opencode/harness.js
-Wrote file successfully.
-[0m
-[0m$ [0mcd /tmp/opencode && node harness.js 2>&1 | head -30
-evaluated OK
-_0x598237 undefined
-_0x1ca863 undefined
-_0x3571a4 undefined
-_0x4185 undefined
-_0x5d29 undefined
-_0xe74da undefined
-_0x1aa379 undefined
-[0m
-[0m$ [0mcd /tmp/opencode && python3 -c "
-s=open('sso.js',encoding='utf-8',errors='ignore').read()
-import re
-# find all function decoder definitions
-for m in re.finditer(r'function (_0x[a-z0-9]+)\(', s):
-    print(m.start(), m.group(1))
-" | head -40
-1547 _0x382781
-1772 _0x1de6cb
-1851 _0xe5b290
-2224 _0x3aad47
-2296 _0x1eba82
-3419 _0x59c401
-3488 _0x3c4fe6
-3709 _0x2a9df1
-3906 _0xc9bb
-4220 _0x10e9dd
-4593 _0x562fad
-4946 _0x41373e
-5257 _0x2f5335
-6819 _0x449666
-7088 _0x3a0b6f
-7378 _0x5dae63
-7590 _0x4b3c67
-7782 _0x29b0c8
-8704 _0x2fc91d
-8984 _0x5822fe
-9150 _0x186d92
-9303 _0x5a8926
-10490 _0x94c773
-10787 _0x287550
-11012 _0xa778d3
-12651 _0x22cab6
-15111 _0x55fcb0
-21218 _0x5c60cb
-22218 _0x539478
-25326 _0x178fe0
-25551 _0x108334
-36450 _0x3a87ca
-36675 _0x1b4590
-39763 _0x35804e
-40670 _0x41561b
-41018 _0x5c396d
-41640 _0x21f525
-42193 _0x206bb7
-42596 _0x3e3f83
-42707 _0x4604f5
-[0m
-[0m$ [0mcd /tmp/opencode && grep -o "_0x598237=[^;]\{0,80\}" sso.js | head -3; echo "==="; grep -o "_0x598237=function[^;]\{0,120\}" sso.js | head -2; echo "==="; python3 -c "
-s=open('sso.js',encoding='utf-8',errors='ignore').read()
-i=s.find('_0x598237=')
-print(repr(s[i-200:i+300]))"
-===
-===
-''
-[0m
-[0m$ [0mcd /tmp/opencode && python3 -c "
-s=open('sso.js',encoding='utf-8',errors='ignore').read()
-import re
-idxs=[m.start() for m in re.finditer(r'_0x598237',s)]
-print('occurrences',len(idxs))
-for i in idxs[:3]:
-    print(repr(s[i-100:i+120]))
-    print('---')
-"
-occurrences 0
-[0m
-[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
-s=open('sso.js',encoding='utf-8',errors='ignore').read()
-import re
-# find includes( checks with a preceding array literal of short strings
-for m in re.finditer(r'(\[[^\]]{5,160}\])\[\x27includes\x27\]\(([^)]{1,120})\)', s):
-    arr=m.group(1); arg=m.group(2)
-    print('ARR',arr[:150])
-    print('ARG',arg[:100])
-    print('ctx:',repr(s[max(0,m.start()-250):m.start()])[-250:])
-    print('===')
-EOF
-(no output)
-[0m
-[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
-s=open('sso.js',encoding='utf-8',errors='ignore').read()
-import re
-# find any 'includes' usage
-idx=[m.start() for m in re.finditer(r'includes', s)]
-print('includes count:', len(idx))
-for i in idx[:20]:
-    print(repr(s[max(0,i-160):i+80]))
-    print('---')
-EOF
-includes count: 3
-"237),_0x2facff(0x2e9),_0x2facff(0x2ce),_0x2facff(0x1fa),'getElementById',_0x2facff(0x410),'metaKey',_0x2facff(0x5b3),_0x2facff(0x49f),'param',_0x2facff(0x5c9),'includes',_0x2facff(0x62f),_0x2facff(0x602),'keydown',_0x2facff(0x608),_0x2facff"
----
-"x4ac),'button','handleCreatePinResponse',_0x5d532d(0x644),'addEventListener','handleTOTPContentDisplay','displayDefaultPage',_0x5d532d(0x502),_0x5d532d(0x4f4),'includes',_0x5d532d(0x33c),_0x5d532d(0x446),_0x5d532d(0x443),_0x5d532d(0x4ba),_0"
----
-"/right-arrow-sso.svg','__createPinService','.register_now','https://assets.fyers.in/images/website/marketsmith.svg','#ffffff','maxLength','sendOTPMobileLogin','includes','floor','156UfvBDP','DOMContentLoaded','<img\\x20src=','https://api-t1."
----
-[0m
-[0m← [0mWrite /tmp/opencode/harness.js
-Wrote file successfully.
-[0m
-[0m$ [0mcd /tmp/opencode && node harness.js 2>&1 | head -20
-evaluated OK
-decoder-like globals: _0x5d29, _0xbcc9
-[0m
-[0m← [0mWrite /tmp/opencode/dump.js
-Wrote file successfully.
-[0m
-[0m$ [0mcd /tmp/opencode && node dump.js 2>&1 | head -80
-decoded strings: 1258
-maxIdx 6a0
-0x1bb => "https://api-t1.fyers.in"
-0x1be => "https://assets.fyers.in/styles/fyers-web.css"
-0x1c6 => "https://assets.fyers.in/images/website/permission/bg.svg"
-0x1d5 => "https://assets.fyers.in/images/sf-success.svg"
-0x1e3 => "query"
-0x1fa => "state"
-0x212 => "querySelectorAll"
-0x214 => "https://api-t2.fyers.co.in/vagator/v2"
-0x22e => "code_challenge"
-0x23c => "<img id=\"reload-qr\" src=\"https://assets.fyers.in/fy_ui/qr_login/qr-refresh-final.svg\" alt=\"Reload QR\" style=\"cursor: pointer;\" />"
-0x241 => ">\n      <a href=\"#\" class=\"d-flex justify-content-between align-items-center\">\n        <div class=\"d-flex w-100\">\n          <div class=\"client-img\">\n            "
-0x247 => "https://app.fyers.in/profile/unfreeze"
-0x24c => "https://signup.fyers.in/"
-0x24e => "https://assets.fyers.in/images/website/go-charting.svg"
-0x251 => "https://assets.fyers.in/images/favicon.png"
-0x26f => "href"
-0x277 => "https://trade.fyers.in/lib/popper/popper.min.js"
-0x2ac => "https://api-t1.fydev.tech/api/v3"
-0x2b4 => "https://trade.fyers.co.in/lib/jquery/1.12.4/jquery.min.js"
-0x2ba => "https://assets.fyers.in/images/favicon-16.png"
-0x2c4 => "https://assets.fyers.in/images/pledge/logo-sos.svg"
-0x2cd => "https://trade.fyers.in"
-0x2e0 => "trader_redirection"
-0x2fe => "https://api.fyers.in/api/v2/token"
-0x306 => "https://assets.fyers.in/images/website/icon-fyers-api-bridge.svg"
-0x30c => "https://assets.fyers.in/images/website/marketsmith.svg"
-0x310 => "includes"
-0x315 => "https://api-t1.fyers.in/tradingview/auth"
-0x31a => "location"
-0x31b => "https://api-t1.fydev.tech/vagator/dev"
-0x31e => "client_id_flow"
-0x32e => "https://trade.fyers.in/lib/jquery/1.12.4/jquery.min.js"
-0x334 => "https://api-t1.fyers.in/api/v3"
-0x336 => "https://api.fyers.in/api/v2/direct-login"
-0x33e => "redirect"
-0x345 => "https://open-an-account.fyers.in"
-0x347 => "deleteMyaccountQueries"
-0x361 => "https://trade.fyers.in/"
-0x36c => "https://api-t1.fydev.tech/tradingview/auth"
-0x37e => "https://dev.fyers.in/new-sso-test/images/info.svg"
-0x388 => "redirect_uri"
-0x38f => "delete"
-0x394 => "https://fyers.in/web"
-0x39c => "https://api-t1.fydev.tech/api/v3/direct-login"
-0x3b3 => "client_id_pattern"
-0x3ba => "#fy_client_id-error"
-0x3cb => "https://assets.fyers.in/images/website/quicko.svg"
-0x3cd => "login_client_id_fromQr"
-0x3ec => "redirectUrl"
-0x3f0 => "deleteCookie"
-0x3f4 => "\" target=\"_blank\"><img src=\"https://assets.fyers.in/new-login/images/Download_on_the_App_Store_Badge.svg\" alt=\"Download on the App Store\"></a>\n        </div>\n      </section>\n    </div>\n  "
-0x3f6 => "https://api-t2.fydev.tech/vagator/v2"
-0x3fa => "https://api-t2.fyers.in/vagator/v2"
-0x427 => "We have blocked your account for security reasons. Please get in touch with customer services. <a href='https://fyers.in/support/' target='_blank'> here</a>"
-0x430 => "querySelector"
-0x431 => "wss://socket.fyers.in"
-0x437 => "https://fyers.in/web/markets/home"
-0x445 => "https://api-t1.fyers.in/api/v3/token"
-0x449 => "client_id"
-0x44b => "https://assets.fyers.in/images/website/icon-fia.png"
-0x46a => "https://api-t1.fyers.in/tradingview/auth/token"
-0x471 => "https://api-t1.fyers.co.in/tradingview/auth"
-0x475 => "https://api-t1.fyers.co.in/api/v3/token"
-0x47d => "replaceState"
-0x4a6 => "redirectUrl_web"
-0x4ad => "removeQueryString"
-0x4b5 => "unfreeze_redirect_url"
-0x4d0 => "https://api-t1.fyers.co.in/api/v2/direct-login"
-0x4d7 => "web_redirection"
-0x4e4 => "https://assets.fyers.in/images/website/icon-my-account.svg"
-0x4e6 => "https://assets.fyers.in/images/website/icon-ofs.svg"
-0x4f1 => "redirectUrl_trader"
-0x4f4 => "cquery"
-0x4f6 => "search"
-0x50f => "\" target=\"_blank\"><img src=\"https://assets.fyers.in/new-login/images/Google_Play_Store_badge.svg\" alt=\"Get it on Google Play\"></a>\n          <a href=\""
-0x510 => "queryString"
-0x532 => "https://api-t1.fyers.co.in/api/v3/direct-login"
-0x53a => "redirection_url"
-[0m
-[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
-import json,re
-s=open('sso.js',encoding='utf-8',errors='ignore').read()
-t=json.load(open('string_table.json'))
-# exact 'cb' string?
-for k,v in t.items():
-    if v=='cb': print('EXACT cb at',k)
-# reverse map: index->string
-rev={int(k):v for k,v in t.items()}
-def dec(i):
-    return rev.get(i, None)
-# replace _0x5d29(0xHEX) with decoded value
-code=re.sub(r"_0x5d29\((0x[0-9a-fA-F]+)\)", lambda m: json.dumps(rev.get(int(m.group(1),16), m.group(0))), s)
-open('sso.deob.js','w',encoding='utf-8').write(code)
-print('len deob', len(code))
-# now find redirect_uri / cb logic
-import re
-i=code.find("'redirect_uri'")
-print('redirect_uri occurrences:', len(re.findall(r"redirect_uri",code)))
-print('cb string occurrences:', len(re.findall(r"'cb'",code)))
-EOF
-len deob 313193
-redirect_uri occurrences: 7
-cb string occurrences: 23
-[0m
-[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
-code=open('sso.deob.js',encoding='utf-8',errors='ignore').read()
-import re
-for m in re.finditer(r"'redirect_uri'", code):
-    i=m.start()
-    print("=== redirect_uri ctx ===")
-    print(code[max(0,i-400):i+250].replace(';',';\n')[:1200])
-    print("-----")
-    break
-# find the location.href assignment near redirect_uri/cb
-for m in re.finditer(r"'cb'", code):
-    i=m.start()
-    seg=code[max(0,i-300):i+300]
-    if 'href' in seg or 'redirect' in seg or 'location' in seg:
-        print("=== cb ctx ===")
-        print(seg.replace(';',';\n'))
-        print("-----")
-EOF
-=== redirect_uri ctx ===
-0821(0x570),_0x150821(0x535),_0x150821(0x553),_0x150821(0x31c),_0x150821(0x4bd),'-1007',_0x150821(0x40b),_0x150821(0x557),_0x150821(0x2d5),_0x150821(0x1fd),'8J63IXLPIS',_0x150821(0x26f),_0x150821(0x626),_0x150821(0x1eb),_0x150821(0x1c3),_0x150821(0x428),_0x150821(0x1f7),'getItem',_0x150821(0x575),_0x150821(0x205),_0x150821(0x4fc),_0x150821(0x55b),_0x150821(0x356),_0x150821(0x34e),_0x150821(0x482),'redirect_uri',_0x150821(0x69f),'.permision-cancel',_0x150821(0x55a),_0x150821(0x2c5),'addClass',_0x150821(0x1b7),_0x150821(0x459),'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<input\x20type=\x22hidden\x22\x20name=\x22scope\x22\x20value=
------
-=== cb ctx ===
-83(0x274)][_0x145a83(0x262)],0x2),_0x2ad248[_0x53965f(0x1e6)][_0x145a83(0x274)][_0x53965f(0x31f)]&&_0x2bcd1c[_0x145a83(0x1f3)][_0x145a83(0x22e)](_0x145a83(0x259),_0x2ad248['data'][_0x145a83(0x274)][_0x145a83(0x259)],_0x49a813[_0x145a83(0x2a6)]),document[_0x145a83(0x1f8)][_0x145a83(0x275)]=_0x7a64ef['cb'];
-else{if(_0x7a64ef[_0x145a83(0x263)]&&(_0x7a64ef[_0x145a83(0x263)][_0x145a83(0x20b)](_0x145a83(0x234))!=-0x1||_0x7a64ef['redirect_uri'][_0x145a83(0x20b)](_0x145a83(0x20c))!=-0x1))_0x2bcd1c[_0x145a83(0x1f3)][_0x145a83(0x253)](_0x145a83(0x28b)),_0x2bcd1c[_0x53965f(0x55a)][_0x145a83(0x22e)](_0x145
------
-=== cb ctx ===
-c[_0x1f610f(0x1f3)][_0x1f610f(0x22e)](_0x1a7755(0x31f),_0xc84310[_0x1a7755(0x1e6)][_0x1f610f(0x259)],_0x49a813[_0x1a7755(0x38c)]),_0xc84310[_0x1f610f(0x274)][_0x1f610f(0x283)]&&_0x2bcd1c[_0x1f610f(0x1f3)][_0x1f610f(0x22e)](_0x1f610f(0x237),_0xc84310[_0x1a7755(0x1e6)]['device_id'],0x1e);
-if(_0x551fa4['cb'])document[_0x1f610f(0x1f8)][_0x1f610f(0x275)]=_0x551fa4['cb'];
-else{if(_0x551fa4[_0x1f610f(0x263)]&&_0x551fa4[_0x1f610f(0x263)][_0x1f610f(0x20b)](_0x1f610f(0x234))!=-0x1&&_0x551fa4[_0x1f610f(0x263)][_0x1f610f(0x20b)](_0x1f610f(0x20c))!=-0x1)document['location'][_0x1f610f(0x275)]=_0x551fa4[_0x1f6
------
-=== cb ctx ===
-310[_0x1a7755(0x1e6)][_0x1f610f(0x259)],_0x49a813[_0x1a7755(0x38c)]),_0xc84310[_0x1f610f(0x274)][_0x1f610f(0x283)]&&_0x2bcd1c[_0x1f610f(0x1f3)][_0x1f610f(0x22e)](_0x1f610f(0x237),_0xc84310[_0x1a7755(0x1e6)]['device_id'],0x1e);
-if(_0x551fa4['cb'])document[_0x1f610f(0x1f8)][_0x1f610f(0x275)]=_0x551fa4['cb'];
-else{if(_0x551fa4[_0x1f610f(0x263)]&&_0x551fa4[_0x1f610f(0x263)][_0x1f610f(0x20b)](_0x1f610f(0x234))!=-0x1&&_0x551fa4[_0x1f610f(0x263)][_0x1f610f(0x20b)](_0x1f610f(0x20c))!=-0x1)document['location'][_0x1f610f(0x275)]=_0x551fa4[_0x1f610f(0x263)];
-else{if(_0x551fa4[_0x1f610f(0x28d)]&&_0x551fa4[_0
------
-=== cb ctx ===
-274)][_0x46e61a(0x21c)],_0x414b45=_0x455c39[_0x46e61a(0x274)][_0x46e61a(0x236)];
-if(_0x584de7&&_0x414b45){var _0x5027c6=_0x2bcd1c[_0x46e61a(0x1f3)][_0x46e61a(0x27f)]();
-if(_0x5027c6&&_0x5027c6[_0x46e61a(0x263)]){location[_0x46e61a(0x275)]=_0x5027c6['redirect_uri'];
-return;
-}else{if(_0x5027c6&&_0x5027c6['cb']){location[_0x46e61a(0x275)]=_0x5027c6['cb'];
-return;
-}else{_0x3f51f8[_0x46e61a(0x1f3)][_0x46e61a(0x20e)]();
-return;
-}}}else{if(_0x414b45){typeof window!==_0x46e61a(0x267)&&typeof window[_0x46e61a(0x280)]===_0x46e61a(0x278)&&window[_0x46e61a(0x280)](_0x46e61a(0x1f2));
-var _0x577c9b=_0x2bcd1c[_0x46e6
------
-=== cb ctx ===
-_0x46e61a(0x274)][_0x46e61a(0x236)];
-if(_0x584de7&&_0x414b45){var _0x5027c6=_0x2bcd1c[_0x46e61a(0x1f3)][_0x46e61a(0x27f)]();
-if(_0x5027c6&&_0x5027c6[_0x46e61a(0x263)]){location[_0x46e61a(0x275)]=_0x5027c6['redirect_uri'];
-return;
-}else{if(_0x5027c6&&_0x5027c6['cb']){location[_0x46e61a(0x275)]=_0x5027c6['cb'];
-return;
-}else{_0x3f51f8[_0x46e61a(0x1f3)][_0x46e61a(0x20e)]();
-return;
-}}}else{if(_0x414b45){typeof window!==_0x46e61a(0x267)&&typeof window[_0x46e61a(0x280)]===_0x46e61a(0x278)&&window[_0x46e61a(0x280)](_0x46e61a(0x1f2));
-var _0x577c9b=_0x2bcd1c[_0x46e61a(0x1f3)][_0x46e61a(0x213)](_0x28f892(0x31f
------
-[0m
-[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
-import json,re
-s=open('sso.js',encoding='utf-8',errors='ignore').read()
-t={int(k):v for k,v in json.load(open('string_table.json')).items()}
-# replace ANY _0xNAME(0xHEX) where 0xHEX in table
-def repl(m):
-    idx=int(m.group(1),16)
-    if idx in t: return json.dumps(t[idx])
-    return m.group(0)
-code=re.sub(r"_0x[0-9a-f]{4,8}\((0x[0-9a-fA-F]+)\)", repl, s)
-open('sso.deob2.js','w',encoding='utf-8').write(code)
-print('remaining decoder calls:', len(re.findall(r"_0x[0-9a-f]{4,8}\(0x", code)))
-# find the redirect logic block: if(...['redirect_uri']) location.href=...
-i=code.find("'redirect_uri'")
-# search for the 'redirect_uri' + 'cb' combined navigation logic
-import re
-for m in re.finditer(r"'redirect_uri'", code):
-    seg=code[max(0,m.start()-600):m.start()+600]
-    if "'cb'" in seg and 'href' in seg:
-        print("=== NAV LOGIC ===")
-        print(seg)
-        print("==========")
-EOF
-remaining decoder calls: 3306
-[0m
-[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
-import re,json
-s=open('sso.js',encoding='utf-8',errors='ignore').read()
-code=open('sso.deob2.js',encoding='utf-8',errors='ignore').read()
-remain=re.findall(r"_0x[0-9a-f]{4,8}\((0x[0-9a-fA-F]+)\)", code)
-print('remaining idx:', len(remain))
-from collections import Counter
-c=Counter(int(x,16) for x in remain)
-print('unique remaining idx:', len(c))
-print('top values:', sorted(c.items(), key=lambda x:-x[1])[:10])
-t={int(k):v for k,v in json.load(open('string_table.json')).items()}
-for i,n in sorted(c.items())[:20]:
-    print(hex(i), 'in table?', i in t, 'count', n)
-# what is _0xbcc9?
-import re
-m=re.search(r"_0xbcc9=function[^;]{0,200}", s)
-print(m.group(0) if m else 'no _0xbcc9 def')
-EOF
-remaining idx: 3306
-unique remaining idx: 328
-top values: [(381, 115), (249, 115), (221, 109), (340, 58), (290, 53), (124, 47), (181, 46), (305, 44), (299, 38), (331, 35)]
-0x6f in table? False count 1
-0x70 in table? False count 4
-0x71 in table? False count 1
-0x72 in table? False count 1
-0x73 in table? False count 1
-0x74 in table? False count 1
-0x75 in table? False count 1
-0x76 in table? False count 1
-0x77 in table? False count 1
-0x78 in table? False count 1
-0x79 in table? False count 1
-0x7a in table? False count 1
-0x7b in table? False count 2
-0x7c in table? False count 47
-0x7d in table? False count 1
-0x7e in table? False count 1
-0x7f in table? False count 1
-0x80 in table? False count 1
-0x81 in table? False count 1
-0x82 in table? False count 1
-_0xbcc9=function(){return _0x26acb3
-[0m
-[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
-import re
-s=open('sso.js',encoding='utf-8',errors='ignore').read()
-# find decoder functions that reference _0xbcc9
-for m in re.finditer(r"(_0x[0-9a-f]{4,8})=function\((_0x[0-9a-f]{4,8}),(_0x[0-9a-f]{4,8})\)\{[^}]*?_0xbcc9\(\)[^;]*", s):
-    print("decoder:", m.group(1))
-# general: find _0xXXXX=function(a,b){var c=_0xYYYY(); return _0xXXXX=function(a2,b2){a2=a2-0xZZ;...}}
-for m in re.finditer(r"(_0x[0-9a-f]{4,8})=function\((_0x[0-9a-f]{4,8}),(_0x[0-9a-f]{4,8})\)\{var (_0x[0-9a-f]{4,8})=(_0x[0-9a-f]{4,8})\(\);return \1=function\([^)]*\)\{[^=]{0,40}-0x([0-9a-f]+);", s):
-    print(m.group(1), 'uses array', m.group(5), 'offset 0x'+m.group(6))
-EOF
-(no output)
-[0m
-[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
-import re
-s=open('sso.js',encoding='utf-8',errors='ignore').read()
-# search for 'var _0xXXXXXXXX=_0xbcc9()' patterns
-for m in re.finditer(r"var (_0x[0-9a-f]{4,8})=_0xbcc9\(\)", s):
-    print('array2 alias var:', m.group(1), '@', m.start())
-# find where _0xbcc9 appears
-print('_0xbcc9 occurrences:', len(re.findall(r"_0xbcc9", s)))
-# show contexts of _0xbcc9
-idxs=[m.start() for m in re.finditer(r"_0xbcc9", s)]
-for i in idxs[:5]:
-    print(repr(s[max(0,i-120):i+60]))
-    print('---')
-EOF
-array2 alias var: _0xbcc970 @ 243312
-_0xbcc9 occurrences: 7
-"42bb10)break;else _0x3c6bff['push'](_0x3c6bff['shift']());}catch(_0x30661d){_0x3c6bff['push'](_0x3c6bff['shift']());}}}(_0xbcc9,0x6c093),function(_0x4ef212,_0x1d0eb7){var _0x2d5602"
----
-'{return _0x1fef92;},_0x30eba1();}var _0x2c8706=_0x3339ec;return _0x2c8706;}));function _0x5d29(_0x31c9f2,_0x2e71da){var _0xbcc970=_0xbcc9();return _0x5d29=function(_0x5d2953,_0x5a0'
----
-'x1fef92;},_0x30eba1();}var _0x2c8706=_0x3339ec;return _0x2c8706;}));function _0x5d29(_0x31c9f2,_0x2e71da){var _0xbcc970=_0xbcc9();return _0x5d29=function(_0x5d2953,_0x5a028d){_0x5d'
----
-'_0x2e71da){var _0xbcc970=_0xbcc9();return _0x5d29=function(_0x5d2953,_0x5a028d){_0x5d2953=_0x5d2953-0x1b7;var _0x5bc9f1=_0xbcc970[_0x5d2953];return _0x5bc9f1;},_0x5d29(_0x31c9f2,_0'
----
-"{_0x5d2953=_0x5d2953-0x1b7;var _0x5bc9f1=_0xbcc970[_0x5d2953];return _0x5bc9f1;},_0x5d29(_0x31c9f2,_0x2e71da);}function _0xbcc9(){var _0x26acb3=['text','riskDisclosureStatus','ligh"
----
-[0m
-[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
-import re
-s=open('sso.js',encoding='utf-8',errors='ignore').read()
-pat = re.compile(r"function (_0x[0-9a-f]{4,8})\((_0x[0-9a-f]{4,8}),(_0x[0-9a-f]{4,8})\)\{var (_0x[0-9a-f]{4,8})=(_0x[0-9a-f]{4,8})\(\);return \1=function\((_0x[0-9a-f]{4,8}),(_0x[0-9a-f]{4,8})\)\{[^=]{0,40}-0x([0-9a-f]+);var (_0x[0-9a-f]{4,8})=\4\[\6\]")
-for m in pat.finditer(s):
-    print(m.group(1),'decoder | array producer:',m.group(5),'| offset 0x'+m.group(8))
-EOF
-(no output)
-[0m
-[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
-import re
-s=open('sso.js',encoding='utf-8',errors='ignore').read()
-# looser: any 'function _0xXXXX(a,b){var _0xYYYY=_0xZZZZ();return _0xXXXX=function' 
-pat = re.compile(r"function (_0x[0-9a-f]{4,8})\([^)]*\)\{var ([^=]+)=([^;]+)\(\);return \1=function[^}]*?\}-0x([0-9a-f]+)")
-for m in pat.finditer(s):
-    print(m.group(1), 'uses', m.group(3), 'offset 0x'+m.group(4))
-print("---alternate form: var _0xXXXX=function(a,b){var c=_0xYYYY();return _0xXXXX=function(a2,b2){a2=a2-0xOFF;...")
-pat2 = re.compile(r"(_0x[0-9a-f]{4,8})=function\([^)]*\)\{var (_0x[0-9a-f]{4,8})=(_0x[0-9a-f]{4,8})\(\);return \1=function\([^)]*\)\{[^=]{0,40}?=([^;]*?)-0x([0-9a-f]+);")
-for m in pat2.finditer(s):
-    print(m.group(1), 'uses', m.group(3), 'offset 0x'+m.group(5))
-EOF
----alternate form: var _0xXXXX=function(a,b){var c=_0xYYYY();return _0xXXXX=function(a2,b2){a2=a2-0xOFF;...
-[0m
-[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
-import re
-s=open('sso.js',encoding='utf-8',errors='ignore').read()
-# dump all 'return _0xXXXX=function' decoder-ish snippets
-for m in re.finditer(r"return (_0x[0-9a-f]{4,8})=function\((_0x[0-9a-f]{4,8}),(_0x[0-9a-f]{4,8})\)\{", s):
-    name=m.group(1)
-    start=m.start()
-    seg=s[start:start+320]
-    off=re.search(r"-0x([0-9a-f]+);", seg)
-    arr=re.search(r"var (_0x[0-9a-f]{4,8})=(_0x[0-9a-f]{4,8})\(\)", s[max(0,start-400):start])
-    print(name, 'offset', ('0x'+off.group(1)) if off else '?', '| array', arr.group(2) if arr else '?')
-EOF
-_0x382781 offset 0x11a | array _0x1eba82
-_0x287550 offset 0x14a | array _0xa778d3
-_0x55fcb0 offset 0x153 | array _0x22cab6
-_0x539478 offset 0x15c | array _0x5c60cb
-_0x178fe0 offset 0x167 | array _0x108334
-_0x3a87ca offset 0x15a | array _0x1b4590
-_0x9c72a offset 0x134 | array _0x416b40
-_0x1afeb9 offset 0xb4 | array _0x1d57e3
-_0x2deb1d offset 0x116 | array _0x3bbc91
-_0x5e058e offset 0x1dd | array _0x3a824e
-_0x419818 offset 0x100 | array _0x2a5600
-_0x3b3815 offset 0x95 | array _0x3e485e
-_0x52c838 offset 0x156 | array _0x5546fc
-_0x1bbf4e offset 0xfa | array _0x542221
-_0x2a51c6 offset 0x6f | array _0x4a524f
-_0x4fb0e9 offset 0x143 | array _0x1a8482
-_0x501658 offset 0x146 | array _0x30eba1
-_0x5d29 offset 0x1b7 | array _0xbcc9
-[0m
-[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
-import re, json
-s=open('sso.js',encoding='utf-8',errors='ignore').read()
-
-# 1. find array producer literals: function _0xARR(){var _0xY=[...];...;return _0xY;}
-arrays={}
-pat_arr = re.compile(r"function (_0x[0-9a-f]{4,8})\(\)\{var (_0x[0-9a-f]{4,8})=(\[[^;]{0,20000}?\]);")
-for m in pat_arr.finditer(s):
-    name=m.group(1); lit=m.group(3)
-    try:
-        arr=json.loads(lit)
-        arrays[name]=arr
-    except Exception as e:
-        # maybe contains decoder calls -> raw
-        arrays[name]=lit
-print("array producers found:", len(arrays))
-print("names:", sorted(arrays.keys()))
-
-# 2. decoders: _0xDEC ... offset ... uses array producer
-# from earlier: map decoder->(array,offset)
-decmap={}
-pat_dec = re.compile(r"var (_0x[0-9a-f]{4,8})=function\((_0x[0-9a-f]{4,8}),(_0x[0-9a-f]{4,8})\)\{var (_0x[0-9a-f]{4,8})=(_0x[0-9a-f]{4,8})\(\);return \1=function\((_0x[0-9a-f]{4,8}),(_0x[0-9a-f]{4,8})\)\{[^=]{0,40}?=([^;]{1,20})-0x([0-9a-f]+);")
-for m in pat_dec.finditer(s):
-    decm map=None
-# looser scan
-for m in re.finditer(r"(_0x[0-9a-f]{4,8})=function\([^)]*\)\{var [^=]+=([^;]+?)\(\);return \1=function\([^)]*\)\{[^=]{0,40}?=([^;]{1,25})-0x([0-9a-f]+);", s):
-    dec=m.group(1); arrname=m.group(2); off=int(m.group(4),16)
-    if arrname not in arrays: continue
-    decmap[dec]=(arrname,off)
-print("decoders mapped:", len(decmap))
-
-json.dump({"arrays":{k:v for k,v in arrays.items() if isinstance(v,list)}, "decmap":{k:[v[0],v[1]] for k,v in decmap.items()}}, open('tables2.json','w'))
-for d,(a,o) in list(decmap.items())[:20]:
-    print(d,a,hex(o))
-EOF
-File "<stdin>", line 23
-    decm map=None
-         ^^^
-SyntaxError: invalid syntax
-[0m
-[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
-import re, json
-s=open('sso.js',encoding='utf-8',errors='ignore').read()
-
-arrays={}
-pat_arr = re.compile(r"function (_0x[0-9a-f]{4,8})\(\)\{var (_0x[0-9a-f]{4,8})=(\[[^;]{0,20000}?\]);")
-for m in pat_arr.finditer(s):
-    name=m.group(1); lit=m.group(3)
-    try:
-        arr=json.loads(lit)
-        arrays[name]=arr
-    except Exception:
-        arrays[name]=lit
-print("array producers found:", len(arrays))
-print("names:", sorted(arrays.keys()))
-
-decmap={}
-for m in re.finditer(r"(_0x[0-9a-f]{4,8})=function\([^)]*\)\{var [^=]+=([^;]+?)\(\);return \1=function\([^)]*\)\{[^=]{0,40}?=([^;]{1,25})-0x([0-9a-f]+);", s):
-    dec=m.group(1); arrname=m.group(2); off=int(m.group(4),16)
-    if arrname in arrays:
-        decmap[dec]=(arrname,off)
-print("decoders mapped:", len(decmap))
-
-json.dump({"arrays":{k:v for k,v in arrays.items() if isinstance(v,list)}, "decmap":{k:[v[0],v[1]] for k,v in decmap.items()}}, open('tables2.json','w'))
-for d,(a,o) in list(decmap.items()):
-    print(d,a,hex(o))
-EOF
-array producers found: 0
-names: []
-decoders mapped: 0
-[0m
-[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
-import re
-s=open('sso.js',encoding='utf-8',errors='ignore').read()
-# array producer pattern
-m=re.search(r"function (_0x[0-9a-f]{4,8})\(\)\{var (_0x[0-9a-f]{4,8})=\[", s)
-print("first producer match:", m.group(0)[:120] if m else None)
-# decoder with function decl
-m2=re.search(r"function (_0x[0-9a-f]{4,8})\(([^)]*)\)\{var ([^=]+)=([^;]+?)\(\);return \1=", s)
-print("decoder fn decl:", m2.group(0)[:150] if m2 else None)
-if m2:
-    print(" full:", s[m2.start():m2.start()+300])
-EOF
-first producer match: function _0xbcc9(){var _0x26acb3=[
-decoder fn decl: function _0x382781(_0x4d8013,_0x5839f8){var _0x1d8bb4=_0x1eba82();return _0x382781=
- full: function _0x382781(_0x4d8013,_0x5839f8){var _0x1d8bb4=_0x1eba82();return _0x382781=function(_0x197d3b,_0x5a5a93){_0x197d3b=_0x197d3b-0x11a;var _0x46dfd1=_0x1d8bb4[_0x197d3b];return _0x46dfd1;},_0x382781(_0x4d8013,_0x5839f8);}function _0x1de6cb(_0x668973){return new Promise(function(_0x2e81ae,_0x18e2
-[0m
-[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
-import re, json
-s=open('sso.js',encoding='utf-8',errors='ignore').read()
-
-# array producers: function _0xPROD(){var _0xY=[...];
-prods={}
-for m in re.finditer(r"function (_0x[0-9a-f]{4,8})\(\)\{var (_0x[0-9a-f]{4,8})=(\[[^;]{0,20000}?\]);", s):
-    name=m.group(1); lit=m.group(3)
-    try: prods[name]=json.loads(lit)
-    except Exception: prods[name]=None
-print("array producers:", len(prods))
-
-# decoders: function _0xDEC(a,b){var c=_0xPROD();return _0xDEC=function(a2,b2){a2=a2-0xOFF;var d=c[a2];return d;},_0xDEC(a,b);}
-decmap={}
-for m in re.finditer(r"function (_0x[0-9a-f]{4,8})\((_0x[0-9a-f]{4,8}),(_0x[0-9a-f]{4,8})\)\{var (_0x[0-9a-f]{4,8})=(_0x[0-9a-f]{4,8})\(\);return \1=function\((_0x[0-9a-f]{4,8}),(_0x[0-9a-f]{4,8})\)\{(_0x[0-9a-f]{4,8})=(_0x[0-9a-f]{4,8})-0x([0-9a-f]+);var (_0x[0-9a-f]{4,8})=\4\[\6\];return \10;\},\1\(\2,\3\);}", s):
-    dec=m.group(1); prod=m.group(5); off=int(m.group(9),16)
-    if prod in prods and prods[prod] is not None:
-        decmap[dec]=(prod,off)
-    else:
-        decmap[dec]=(prod,off)
-print("decoders:", len(decmap))
-print("producers without literal:", [p for p,v in prods.items() if v is None])
-
-json.dump({"prods":{k:v for k,v in prods.items() if v is not None}, "decmap":{k:[v[0],v[1]] for k,v in decmap.items()}}, open('tables2.json','w'))
-for d,(p,o) in decmap.items():
-    print(d,p,hex(o))
-EOF
-array producers: 0
-decoders: 0
-producers without literal: []
-[0m
-[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
-s=open('sso.js',encoding='utf-8',errors='ignore').read()
-print("first 120:", s[:120])
-print("last 120:", s[-120:])
-# find the array literal for _0xbcc9 by bracket matching
-import re
-m=re.search(r"function _0xbcc9\(\)\{var _0x26acb3=\[", s)
-start=m.end()
-depth=1; i=start
-instr=False; esc=False
-while i<len(s) and depth>0:
-    c=s[i]
-    if instr:
-        if esc: esc=False
-        elif c=='\\': esc=True
-        elif c=='"': instr=False
-    else:
-        if c=='"': instr=True
-        elif c=='[': depth+=1
-        elif c==']': depth-=1
-    i+=1
-arr=s[start:i-1]
-print("array length chars:", len(arr))
-try:
-    a=json.loads('['+arr+']')
-    print("parsed entries:", len(a))
-except Exception as e:
-    print("parse error:", e)
-    # preview
-    print(arr[:300])
-EOF
-first 120: (function(_0x375ad7,_0x42bb10){var _0xbce834=_0x5d29,_0x3c6bff=_0x375ad7();while(!![]){try{var _0x5d866a=parseInt(_0xbce
-last 120: 1.fyers.co.in/tradingview/auth/token','popperUrl','prototype'];_0xbcc9=function(){return _0x26acb3;};return _0xbcc9();}
-
-array length chars: 69667
-parse error: name 'json' is not defined
-'text','riskDisclosureStatus','light','offlineSubmit','https://assets.fyers.co.in/styles/fyers-web.css','Please\x20enter\x20a\x20valid\x20PAN\x20Number.\x20','display','extractFyersIDFromToken','showServerDidntRespond','#forgot_client_id','_userID','application/json','18416iONLyO','initiateMobileLog
-[0m
-[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
-import re, json
-s=open('sso.js',encoding='utf-8',errors='ignore').read()
-
-# load decoded master table (index->string) for array _0xbcc9 (offset 0x1b7)
-master=json.load(open('string_table.json'))
-master_by_idx={int(k):v for k,v in master.items()}
-
-def extract_array(src):
-    m=re.search(r"function (_0x[0-9a-f]{4,8})\(\)\{var (_0x[0-9a-f]{4,8})=\[", src)
-    if not m: return None,None
-    prod=m.group(1); start=m.end()
-    depth=1; i=start; instr=False; esc=False
-    while i<len(src) and depth>0:
-        c=src[i]
-        if instr:
-            if esc: esc=False
-            elif c=='\\': esc=True
-            elif c=='"': instr=False
-        else:
-            if c=='"': instr=True
-            elif c=='[': depth+=1
-            elif c==']': depth-=1
-        i+=1
-    arr_txt=src[start:i-1]
-    # placeholder decoder calls
-    place={}
-    def ph(m):
-        name=m.group(1); idx=m.group(2)
-        tok=f"__DEC_{len(place)}__"
-        place[tok]=(name,int(idx,16))
-        return '"'+tok+'"'
-    arr_txt2=re.sub(r"(_0x[0-9a-f]{4,8})\((0x[0-9a-f]+)\)", ph, arr_txt)
-    try:
-        arr=json.loads('['+arr_txt2+']')
-    except Exception as e:
-        print("json err for",prod,e)
-        return prod,None
-    return prod,(arr,place)
-
-prods={}
-# iterate: strip previously found producer, find next
-tmp=s
-while True:
-    prod,res=extract_array(tmp)
-    if not prod: break
-    prods[prod]=res
-    # remove this producer's function body region
-    idx=tmp.find("function "+prod+"()")
-    # skip to end of array to avoid re-matching same
-    tmp=tmp[:idx]+tmp[idx+300000:]
-    if len(prods)>25: break
-print("producers:",len(prods))
-for k,v in prods.items():
-    print(k,"entries:", len(v[0]) if v else None)
-EOF
-json err for _0xbcc9 Expecting value: line 1 column 2 (char 1)
-producers: 1
-_0xbcc9 entries: None
-[0m
-[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
-import re, json
-s=open('sso.js',encoding='utf-8',errors='ignore').read()
-master=json.load(open('string_table.json'))
-master_by_idx={int(k):v for k,v in master.items()}
-
-def parse_js_array(arr_txt):
-    # replace single-quoted strings with double-quoted (properly escaped)
-    out=[]; i=0; n=len(arr_txt)
-    def read_str(quote):
-        j=i; s=[]; 
-        while j<n:
-            c=arr_txt[j]
-            if c=='\\':
-                s.append(c); s.append(arr_txt[j+1] if j+1<n else ''); j+=2; continue
-            if c==quote:
-                s.append(c); return ''.join(s), j+1
-            s.append(c); j+=1
-        return ''.join(s), n
-    while i<n:
-        c=arr_txt[i]
-        if c in "'\"":
-            raw,j=read_str(c)
-            out.append(raw); i=j
-        elif c==',' or c=='[' or c==']' or c==' ':
-            # decoder call token or spacing
-            out.append(c); i+=1
-        elif c.isdigit() or c=='-':
-            # number token (rare)
-            j=i
-            while j<n and (arr_txt[j].isalnum() or arr_txt[j] in '.-'):
-                j+=1
-            out.append(arr_txt[i:j]); i=j
-        else:
-            # decoder call like _0x..(0x..)
-            j=i
-            while j<n and arr_txt[j] not in ",[] \t\n":
-                j+=1
-            out.append(arr_txt[i:j]); i=j
-    return ''.join(out)
-
-def extract_all(src):
-    prods={}
-    tmp=src
-    while True:
-        m=re.search(r"function (_0x[0-9a-f]{4,8})\(\)\{var (_0x[0-9a-f]{4,8})=\[", tmp)
-        if not m: break
-        prod=m.group(1); start=m.end()
-        depth=1; i=start; instr=False; esc=False; q=None
-        while i<len(tmp) and depth>0:
-            c=tmp[i]
-            if instr:
-                if esc: esc=False
-                elif c=='\\': esc=True
-                elif c==q: instr=False
-            else:
-                if c in "'\"": instr=True; q=c
-                elif c=='[': depth+=1
-                elif c==']': depth-=1
-            i+=1
-        arr_txt=tmp[start:i-1]
-        arr_txt2=parse_js_array(arr_txt)
-        place={}
-        def ph(m):
-            name=m.group(1); idx=m.group(2)
-            tok=f"__DEC_{len(place)}__"
-            place[tok]=(name,int(idx,16))
-            return '"'+tok+'"'
-        arr_txt3=re.sub(r"(_0x[0-9a-f]{4,8})\((0x[0-9a-f]+)\)", ph, arr_txt2)
-        try:
-            arr=json.loads('['+arr_txt3+']')
-        except Exception as e:
-            print("json err for",prod,e)
-            arr=None
-        prods[prod]=(arr,place)
-        idx=tmp.find("function "+prod+"()")
-        tmp=tmp[:idx]+tmp[idx+len(prod)+len("function ()"):]  # won't fully remove; use char skip
-        # robust: cut the matched region
-        tmp=tmp[:m.start()]+tmp[i:]
-    return prods
-
-prods=extract_all(s)
-print("producers:",len(prods))
-for k,v in prods.items():
-    print(k,"entries:", len(v[0]) if v and v[0] is not None else None)
-json.dump({k:[v[0],v[1]] for k,v in prods.items() if v and v[0] is not None}, open('prods.json','w'))
-EOF
-json err for _0xbcc9 Expecting value: line 1 column 2 (char 1)
-producers: 1
-_0xbcc9 entries: None
-[0m
-[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
-import re, json
-s=open('sso.js',encoding='utf-8',errors='ignore').read()
-m=re.search(r"function _0xbcc9\(\)\{var _0x26acb3=\[", s)
-start=m.end()
-depth=1;i=start;instr=False;esc=False;q=None
-while i<len(s) and depth>0:
-    c=s[i]
-    if instr:
-        if esc: esc=False
-        elif c=='\\': esc=True
-        elif c==q: instr=False
-    else:
-        if c in "'\"": instr=True; q=c
-        elif c=='[': depth+=1
-        elif c==']': depth-=1
-    i+=1
-arr_txt=s[start:i-1]
-print("raw first 120:", repr(arr_txt[:120]))
-print("contains single quotes:", "'" in arr_txt)
-print("contains double quotes:", '"' in arr_txt)
-# try simplest: JSON5-like: convert ' to " naively after escaping internal
-import re
-# Proper single->double conversion:
-def conv(t):
-    out=[]; j=0; n=len(t)
-    while j<n:
-        c=t[j]
-        if c=="'":
-            k=j+1; buf=["\""]
-            while k<n:
-                ch=t[k]
-                if ch=='\\':
-                    nxt=t[k+1] if k+1<n else ''
-                    if nxt=="'": buf.append("\\'")
-                    elif nxt=='\\': buf.append("\\\\")
-                    elif nxt=='x':
-                        # \x20 style - keep as unicode escape
-                        hexd=t[k+2:k+4]
-                        buf.append("\\u00"+hexd if len(hexd)==2 else "\\x"+hexd)
-                        k+=2
-                    elif nxt=='n': buf.append("\\n")
-                    elif nxt=='r': buf.append("\\r")
-                    elif nxt=='t': buf.append("\\t")
-                    elif nxt=='"': buf.append("\\\"")
-                    else: buf.append("\\"+nxt)
-                    k+=2; continue
-                elif ch=="'":
-                    buf.append('"'); out.append(''.join(buf)); j=k+1; break
-                else:
-                    if ch=='"': buf.append('\\"')
-                    else: buf.append(ch)
-                k+=1
-            else:
-                j=k
-        else:
-            out.append(c); j+=1
-    return ''.join(out)
-conv_arr=conv(arr_txt)
-print("conv first 160:", repr(conv_arr[:160]))
-try:
-    a=json.loads('['+conv_arr+']')
-    print("parsed:",len(a))
-except Exception as e:
-    print("err:",e)
-    # find position
-    import json as J
-    # locate error via js snippet
-EOF
-raw first 120: "'text','riskDisclosureStatus','light','offlineSubmit','https://assets.fyers.co.in/styles/fyers-web.css','Please\\x20enter"
-contains single quotes: True
-contains double quotes: False
-conv first 160: '"text","riskDisclosureStatus","light","offlineSubmit","https://assets.fyers.co.in/styles/fyers-web.css","Please\\u0020enter\\u0020a\\u0020valid\\u0020PAN\\u0020Numbe'
-parsed: 1258
-[0m
-[0m$ [0mcd /tmp/opencode && python3 << 'EOF'
-import re, json
-s=open('sso.js',encoding='utf-8',errors='ignore').read()
-
-def conv(t):
-    out=[]; j=0; n=len(t)
-    while j<n:
-        c=t[j]
-        if c=="'":
-            k=j+1; buf=["\""]
-            while k<n:
-                ch=t[k]
-                if ch=='\\':
-                    nxt=t[k+1] if k+1<n else ''
-                    if nxt=="'": buf.append("\\'")
-                    elif nxt=='\\': buf.append("\\\\")
-                    elif nxt=='x':
-                        hexd=t[k+2:k+4]
-                        buf.append("\\u00"+hexd if len(hexd)==2 else "\\x"+hexd); k+=2
-                    elif nxt=='n': buf.append("\\n")
-                    elif nxt=='r': buf.append("\\r")
-                    elif nxt=='t': buf.append("\\t")
-                    elif nxt=='"': buf.append("\\\"")
-                    else: buf.append("\\"+nxt)
-                    k+=2; continue
-                elif ch=="'":
-                    buf.append('"'); out.append(''.join(buf)); j=k+1; break
-                else:
-                    if ch=='"': buf.append('\\"')
-                    else: buf.append(ch)
-                k+=1
-            else: j=k
-        else:
-            out.append(c); j+=1
-    return ''.join(out)
-
-# extract array producers
-prods={}
-tmp=s
-guard=0
-while guard<30:
-    guard+=1
-    m=re.search(r"function (_0x[0-9a-f]{4,8})\(\)\{var (_0x[0-9a-f]{4,8})=\[", tmp)
-    if not m: break
-    prod=m.group(1); start=m.end()
-    depth=1; i=start; instr=False; esc=False; q=None
-    while i<len(tmp) and depth>0:
-        c=tmp[i]
-        if instr:
-            if esc: esc=False
-            elif c=='\\': esc=True
-            elif c==q: instr=False
-        else:
-            if c in "'\"": instr=True; q=c
-            elif c=='[': depth+=1
-            elif c==']': depth-=1
-        i+=1
-    arr_txt=tmp[start:i-1]
-    arr_txt2=conv(arr_txt)
-    place={}
-    def ph(mm):
         name=mm.group(1); idx=mm.group(2)
         tok=f"__DEC_{len(place)}__"
         place[tok]=(name,int(idx,16))
@@ -7822,3 +6822,451 @@ STATUS_STATE: HIGH_POTENTIAL
 NEXT_STEP_1: Operator dispatches scope-confirmation query (signup/v2 KYC, mcp.fyers.in, /invest/admin/*, /cdsl/dev/*, journal.fyers.in) then submits `reports/submission-package_fyers-bb.md` via forms.fyers.in BugBountyForm1.
 NEXT_STEP_2: Advance to RECON on `open-account.fyers.in` (account-opening SPA) and/or `nucleus/v1/fia/*` FIA-assistant family on api-t1 for new endpoints/fingerprints (spaced, read-only).
 NEXT_STEP_3: IDOR family = own-account/FYERS-side validation only; keep excluding SmartHunt SSTI, third-party hosts, public config artifacts.
+
+===== RUN 2026-08-08 05:34:05 UTC =====
+Model: deepseek | Phase: POC | Target: fyers.in
+
+[0m
+> build · deepseek-v4-flash-free
+[0m
+[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && cat state_deepseek.json 2>/dev/null; echo "==="; ls reports/ 2>/dev/null; echo "==="; grep -n "open-account" findings_deepseek.md | head
+{
+  "target": "fyers.in",
+  "phase": "POC",
+  "status": "HIGH_POTENTIAL",
+  "next_steps": [
+    "Operator dispatches scope-confirmation query (signup/v2 KYC, mcp.fyers.in, /invest/admin/*, /cdsl/dev/*, journal.fyers.in) then submits `reports/submission-package_fyers-bb.md` via forms.fyers.in BugBountyForm1.",
+    "Advance to RECON on `open-account.fyers.in` (account-opening SPA) and/or `nucleus/v1/fia/*` FIA-assistant family on api-t1 for new endpoints/fingerprints (spaced, read-only).",
+    "IDOR family = own-account/FYERS-side validation only; keep excluding SmartHunt SSTI, third-party hosts, public config artifacts."
+  ]
+}===
+analyst-latest.txt
+===
+[0m
+[0m$ [0mecho "=== open-account.fyers.in ==="; curl -skI --max-time 15 'https://open-account.fyers.in/' | head -15; sleep 4; echo "=== body ==="; curl -sk --max-time 15 'https://open-account.fyers.in/' | head -c 3000
+=== open-account.fyers.in ===
+HTTP/2 200 
+date: Sat, 08 Aug 2026 05:27:10 GMT
+content-type: text/html
+x-content-type-options: nosniff
+server: cloudflare
+x-amz-id-2: JB93/NagSaJkiPoXCpZWUMsLtGKj//hDIHGcoY5aStn1/io+OETfJn223MgSs4uMyYxoGoCL0MhXq1sLUpp2NsiLzl0l0AB2
+x-amz-request-id: SPJ0EGDHYPPKHES8
+last-modified: Tue, 02 Jun 2026 10:17:06 GMT
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+set-cookie: __cf_bm=QkQ271nStmVceB5B8B5_uyocGGkX49XMc2zD4gt1DQw-1786166830.4237573-1.0.1.1-7sKwt5cCfsmGHqcyDkyDEJlWL7w7qfFDIhHz6YbiTuR6aEZbyWbdjf8hKXaKXwF6xYsPwCQ9ltgz.yGmy97AkCFikdZSCw0jcZnyz2tYE888A8jompmuWu8toiHndYTb; HttpOnly; SameSite=None; Secure; Path=/; Domain=fyers.in; Expires=Sat, 08 Aug 2026 05:57:10 GMT
+set-cookie: _cfuvid=gwt0f9IC2WmBiW4hSoZNYIkl3I0Jq7bCbKfnhX6RlH8-1786166830.4237573-1.0.1.1-QC2BjMvF_KXNjjjznkpRLwhICMiVL2BxJcw1vqGR5jE; HttpOnly; SameSite=None; Secure; Path=/; Domain=fyers.in
+cf-cache-status: DYNAMIC
+cf-ray: a27c1c422dc189b6-IAD
+
+=== body ===
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> -->
+    <script src="./data/3.5.1_jquery.min.js"></script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FYERS | Open A Free Account</title>
+    <link
+      rel="shortcut icon"
+      href="https://assets.fyers.in/images/favicon.png"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins&display=swap"
+      rel="stylesheet"
+    />
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link
+      href="https://assets.fyers.in/fyers-libs/css2.css?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/css/countrySelect.css" />
+
+    <link
+      rel="stylesheet"
+      href="https://assets.fyers.in/styles/fyers-web.css"
+      id="FYS2"
+    />
+    <link rel="stylesheet" href="assets/css/style.css" id="FYS1" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://assets.fyers.in/fyers-libs/owl.carousel.min.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://assets.fyers.in/fyers-libs/owl.theme.default.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://trade.fyers.in/Prod/1.0/fyers-widget.css"
+    />
+    <script
+      src="https://assets.fyers.in/toasters/toaster.js"
+      type="text/javascript"
+    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+
+    <meta
+      name="description"
+      content="Platform for online account opening and KYC validation"
+    />
+    <link rel="manifest" href="./build/manifest.json" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
+    <link rel="canonical" href=" https://open-account.fyers.in/ ">
+    
+    <!-- Google tag (gtag.js) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-69WRNTVF0S"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || []
+      function gtag() {
+        dataLayer.push(arguments)
+      }
+      gtag("js", new Date())
+      gtag("config", "G-69WRNTVF0S")
+    </script>
+    <!-- Global site tag (gtag.js) -Ends -->
+    <!-- Google Analytics Combined Report -->
+    <script>
+      ;(function (i, s, o, g, r, a, m) {
+        i["GoogleAnalyticsObject"] = r
+        ;(i[r] =
+          i[r] ||
+          function () {
+            ;(i[r].q = i[r].q || []).push(arguments)
+          }),
+          (i[r].l = 1 * new Date())
+        ;(a = s.createElement(o)), (m = s.getElementsByTagName(o)[0])
+        a.async = 1
+        a.src = g
+        m.parentNode.insertBefore(a, m)
+      })(
+        window,
+        document,
+        "script",
+        "https://www.google-analytics.com/analytics.js",
+        "ga"
+      )
+[0m
+[0m$ [0mcd /tmp/opencode && curl -sk --max-time 30 -o oa.html 'https://open-account.fyers.in/' && grep -oE '(src|href)="[^"]*\.(js|json)"' oa.html | sort -u
+href="./build/manifest.json"
+src="./data/3.5.1_jquery.min.js"
+src="./data/boostrap.min.js"
+src="./data/jquery.dataTables.min.js"
+src="/data/GA_EVENTS.js"
+src="/dist/endpoints.js"
+src="/dist/service.js"
+src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"
+src="https://app.digio.in/sdk/v9/digio.js"
+src="https://assets.fyers.in/fy_notifications/js/3.0/fyers-widget.js"
+src="https://assets.fyers.in/toasters/toaster.js"
+src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"
+src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.6.347/build/pdf.min.js"
+src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"
+src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"
+src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.12/jquery.mousewheel.min.js"
+src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"
+src="https://checkout.razorpay.com/v1/checkout.js"
+src="https://crm.zoho.com/crm/javascript/zcga.js"
+src="https://fyers.in/scripts/fyers.js"
+src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+[0m
+[0m$ [0mcd /tmp/opencode && curl -sk --max-time 30 -o oa-endpoints.js 'https://open-account.fyers.in/dist/endpoints.js' && curl -sk --max-time 30 -o oa-service.js 'https://open-account.fyers.in/dist/service.js' && ls -la oa-endpoints.js oa-service.js && echo "=== endpoints.js ===" && head -c 2500 oa-endpoints.js
+-rw-r--r-- 1 runner runner  718 Aug  8 05:27 oa-endpoints.js
+-rw-r--r-- 1 runner runner 7270 Aug  8 05:27 oa-service.js
+=== endpoints.js ===
+!function(e,t){"object"==typeof exports&&"object"==typeof module?module.exports=t():"function"==typeof define&&define.amd?define([],t):"object"==typeof exports?exports.Login=t():e.Login=t()}(this,(()=>(()=>{const e=function(){const e="https://api-a1-prod.fyers.in/",t="signup/v1/";return{SIGNUP_API:e+t+"user/auth/send-otp",VERIFY_OTP_API:e+t+"user/auth/validate-otp",SAVE_USER_TYPE_API:e+t+"user/auth/user-type",SEND_VERIFICATION_EMAIL_API:e+t+"verification/email/send-otp",TOKEN_VERIFICATION_API:e+t+"user/token/get-details",DEMAT_REDIRECTION_API:"https://api-a1.fyers.in/"+"signup/v2/"+"user/token",DOMAIN:"https://open-account.fyers.in",NEW_DOMAIN:"https://signup.fyers.in/"}}();return window.endpoints=e,{}})()));
+[0m
+[0m$ [0mcd /tmp/opencode && cat oa-service.js
+!function(e,t){"object"==typeof exports&&"object"==typeof module?module.exports=t():"function"==typeof define&&define.amd?define([],t):"object"==typeof exports?exports.Login=t():e.Login=t()}(this,()=>(()=>{const e=function(){function e(){document.getElementById("oa-type-selection").style.display="none",document.getElementById("oa-signup").style.display="none",document.getElementById("oa-otp").style.display="none",document.getElementById("oa-post-acc-open").style.display="none",document.getElementById("fy-header").style.display="none",document.getElementById("fy-footer").style.display="none",function(){let e=new URLSearchParams(window.location.search),t=e.get("utm_source"),o=e.get("utm_medium"),n=e.get("utm-source"),a=e.get("utm-medium"),s=e.get("id");(t||o||n||a||s)&&localStorage.setItem("utm_params",JSON.stringify({utm_source_mobile:t,utm_medium_mobile:o,utm_source_ap_lead:n||(s?"Customer-Referral":""),utm_medium:a||s||""}))}();let e=new URLSearchParams(window.location.search),n=e.get("source"),a=e.get("login");if(("fyers"===n||"email"==n||"signup"==n)&&"1"!=a&&e.get("access_token")&&e.get("signup_level")&&e.get("user_type")){"signup"==n&&localStorage.setItem("emAuth",!0);let o=e.get("access_token"),a=e.get("signup_level"),s=e.get("user_type");localStorage.setItem("accountOpen",!0),localStorage.setItem("data",JSON.stringify({access_token:o,signup_level:"1",user_type:s,status_id:"1"})),localStorage.setItem("userType",s),localStorage.setItem("signupLevel","email"==n||"signup"==n?a:"1"),localStorage.setItem("accessToken",o),2==e.get("user_type")&&localStorage.setItem("nriPopup",!0),"email"!=n&&"signup"!=n?t(endpoints.SEND_VERIFICATION_EMAIL_API):e.get("link_count")?(localStorage.setItem("call_email_verification",!0),localStorage.setItem("link_count",e.get("link_count"))):window.location.href="/",e.delete("user_type"),e.delete("signup_level"),e.delete("access_token"),e.delete("source"),e.delete("login"),history.pushState({search:e.toString()},"")}let s=JSON.parse(e.get("data")),c=JSON.parse(e.get("clientData"));if(s?.access_token&&c?.name&&(localStorage.removeItem("status_id"),localStorage.setItem("isMinorAccount",!0),localStorage.setItem("accountOpen",!0),localStorage.setItem("accessToken",s.access_token),localStorage.setItem("userType",s.user_type),localStorage.setItem("signupLevel",s.signup_level),localStorage.setItem("parentData",JSON.stringify(c)||{}),localStorage.setItem("data",JSON.stringify({access_token:s.access_token,signup_completed:s.signup_completed,signup_level:s.signup_level,user_type:s.user_type,status_id:s.status_id||"",status:s.status,new_user:s.new_user,gender:c.gender})),e.delete("clientData"),e.delete("data"),history.pushState({search:e.toString()},"")),1==localStorage.userType&&"true"!=localStorage?.isMinorAccount&&"true"!=localStorage?.only_trading_account&&(localStorage.clear(),window.open(endpoints.NEW_DOMAIN,"_self")),!localStorage.accessToken||"true"!=localStorage.accountOpen||2!=localStorage.userType&&(1!=localStorage.userType||"true"!=localStorage?.isMinorAccount&&"true"!=localStorage?.only_trading_account))document.getElementById("fy-header").style.display="block",document.getElementById("oa-post-acc-open").style.display="none",!localStorage.accessToken||"true"!=localStorage.accountOpen||1==localStorage.userType&&2==localStorage.userType||91!=localStorage.countryCode?(document.getElementById("oa-type-selection").style.display="none",document.getElementById("oa-signup").style.display="block",document.getElementById("fy-footer").style.display="block",document.getElementById("oa-otp").style.display="none"):(document.getElementById("oa-type-selection").style.display="block",document.getElementById("oa-signup").style.display="none",document.getElementById("oa-otp").style.display="none",document.getElementById("fy-footer").style.display="none",o(GA_EVENTS.TYPE_SELECTION_PAGE_LOAD));else if(localStorage.status_id&&4==localStorage.status_id)document.getElementById("fy-header").style.display="block",document....[TRUNC]
+[0m
+[0m$ [0mecho "=== signup/v1 door probes (no auth, empty bodies — NO OTP parameter sent) ==="; for m in "POST -d '{}'" "GET"; do for ep in "user/auth/send-otp" "user/auth/validate-otp" "user/auth/user-type" "verification/email/send-otp"; do echo "--- $ep [$m] ---"; curl -sk --max-time 15 -w ' code=%{http_code}\n' -X "${m%% *}" -H 'Content-Type: application/json' $([ "${m%% *}" == "POST" ] && echo "-d '{}'") "https://api-a1-prod.fyers.in/signup/v1/$ep"; sleep 4; done; done
+=== signup/v1 door probes (no auth, empty bodies — NO OTP parameter sent) ===
+--- user/auth/send-otp [POST -d '{}'] ---
+{"code": 1051, "s": "error", "message": "invalid request"} code=401
+--- user/auth/validate-otp [POST -d '{}'] ---
+{"code": 1007, "s": "error", "message": "Fields missing!!"} code=400
+--- user/auth/user-type [POST -d '{}'] ---
+{"code": 1051, "s": "error", "message": "Unauthorized request!!"} code=401
+--- verification/email/send-otp [POST -d '{}'] ---
+{"status": "error", "message": "Required fields missing: Expecting value: line 1 column 1 (char 0)", "status_code": 402} code=400
+--- user/auth/send-otp [GET] ---
+ code=405
+--- user/auth/validate-otp [GET] ---
+ code=405
+--- user/auth/user-type [GET] ---
+ code=405
+--- verification/email/send-otp [GET] ---
+{"status": "error", "message": "Something went wrong", "status_code": 500} code=500
+[0m
+[0m$ [0mfor ep in "user/token/get-details" "user/auth/send-otp"; do echo "--- $ep POST {mobile:''} ---"; curl -sk --max-time 15 -w ' code=%{http_code}\n' -X POST -H 'Content-Type: application/json' -d '{"mobile":""}' "https://api-a1-prod.fyers.in/signup/v1/$ep"; sleep 4; done; echo "--- validate-otp field walk ---"; for b in '{"otp":""}' '{"otp":"","mobile":""}' '{"mobile":"","otp":"","country_code":""}' '{"otp":"123","identifier":"x"}'; do echo "body=$b"; curl -sk --max-time 15 -w ' code=%{http_code}\n' -X POST -H 'Content-Type: application/json' -d "$b" 'https://api-a1-prod.fyers.in/signup/v1/user/auth/validate-otp'; sleep 4; done
+--- user/token/get-details POST {mobile:''} ---
+ code=405
+--- user/auth/send-otp POST {mobile:''} ---
+{"code": 1051, "s": "error", "message": "invalid request"} code=401
+--- validate-otp field walk ---
+body={"otp":""}
+{"code": 1007, "s": "error", "message": "Fields missing!!"} code=400
+body={"otp":"","mobile":""}
+{"code": 1007, "s": "error", "message": "Fields missing!!"} code=400
+body={"mobile":"","otp":"","country_code":""}
+{"code": 1007, "s": "error", "message": "Fields missing!!"} code=400
+body={"otp":"123","identifier":"x"}
+{"code": 1007, "s": "error", "message": "Fields missing!!"} code=400
+[0m
+[0m$ [0mcd /tmp/opencode && curl -sk --max-time 20 'https://open-account.fyers.in/deployment-build/static/js/main.chunk.js' -o oa-main.js -w 'size=%{size_download}\n' && ls -la oa-main.js && grep -oE 'validate-otp|send-otp|get-details|user-type|token"|"email"|"mobile"|"otp"|"country' oa-main.js | sort | uniq -c | sort -rn | head -30
+size=748496
+-rw-r--r-- 1 runner runner 748496 Aug  8 05:29 oa-main.js
+     29 "email"
+     17 "mobile"
+      3 token"
+      3 "country
+      2 get-details
+      1 send-otp
+[0m
+[0m$ [0mcd /tmp/opencode && grep -oE '[a-zA-Z_]+\.(SIGNUP_API|VERIFY_OTP_API|SAVE_USER_TYPE_API|SEND_VERIFICATION_EMAIL_API|TOKEN_VERIFICATION_API|DEMAT_REDIRECTION_API)' oa-main.js | sort | uniq -c; echo "=== VERIFY_OTP_API camera ==="; grep -oE '.{600}VERIFY_OTP_API.{700}' oa-main.js | head -c 1600
+=== VERIFY_OTP_API camera ===
+[0m
+[0m$ [0mcd /tmp/opencode && for kw in 'validate-otp' 'get-details' 'send-otp' 'user-type' '174' ; do echo "### $kw"; grep -oE '.{200}'"$kw"'.{400}' oa-main.js | head -c 900; echo; done
+### validate-otp
+
+### get-details
+h-status",E_SIGN_DOC:"general/e-sign-document",E_SIGN_SUCCESS:"general/e-sign-success",PAYMENT_V2:"auth/payment-v2",NRI_QUEUE:"nri/add-nri-queue",NRI_POLL:"nri/account-open/poll",TOKEN_DETAILS:"token/get-details",FETCH_PAN:"general/fetch-pan",VERIFY_PAN:"general/verify-pan",FETCH_IT_NAME:"general/it_name",PAN_VERIFICATION_GENERAL:"general/pan-verification",MODIFY_KRA__PARAM_STATUS:"auth/modify-kra-param-status",FETCH_ALL_DETAILS_KRA_PAN:"general/fetch-all-details-pan-kra",PAN_VERIFY:"general/pan-verify",GET_STEP_1:"auth/get-step1",SUBMIT_STEP1:"auth/submit-step1",CRM_STATUS_UPDATE:"auth/crm/update-aadhar
+turn e.next=31,this.setState({display:!0});case 31:case"end":return e.stop()}}),e,this)})));return function(){return e.apply(this,arguments)}}()},{key:"getUserData",value:function(){P(S.apiUrl+"token/get-details").then((function(e){if("ok"===e.status){var t=JSON.parse(localStorage.getIte
+### send-otp
+56/3tI5CNH89_sBENSu6KsC"}),e.abrupt("return",!1);case 2:case"end":return e.stop()}}),e)})))).apply(this,arguments)}var bt={EMAIL_ADDR:"email.com"};var Et=function(){return P(S.url+"verification/email/send-otp")};function wt(){wt=function(){return e};var e={},t=Object.prototype,a=t.hasOwnProperty,n=Object.defineProperty||function(e,t,a){e[t]=a.value},r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",o=r.asyncIterator||"@@asyncIterator",s=r.toStringTag||"@@toStringTag";function c(e,t,a){return Object.defineProperty(e,t,{value:a,enumerable:!0,configurable:!0,writable:!0}),e[t]}try{c({},"")
+
+### user-type
+
+### 174
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+s=open('oa-main.js',encoding='utf-8',errors='ignore').read()
+# Find the api path constant map and base url(s)
+for m in re.finditer(r'apiUrl[:=]', s):
+    print('apiUrl ctx:',' '.join(s[max(0,m.start()-80):m.start()+160].split())[:240]); break
+for m in re.finditer(r'SIGNUP_API|apiV1|"url":|url:"', s):
+    pass
+# all path-key tokens and base urls
+bases=set(re.findall(r'https://api[-a-z0-9]*\.fyers\.in[^"\' ]*', s))
+for b in sorted(bases): print('BASE:', b)
+print('--- path constants ---')
+keys=re.findall(r'"([a-z][a-z0-9_-]*(?:/[a-z0-9_-]+)+)"', s)
+seen=set()
+for k in keys:
+    if k not in seen and len(k)>4:
+        seen.add(k); print(k)
+EOF
+apiUrl ctx: ,b=a.n(y),E="https://api-a1-prod.fyers.in/signup",w=Object.freeze({url:E+"/v1/",apiUrl:"https://api-a1-prod.fyers.in/signup/v1/user/",adminUrl:"https://api-a1-prod.fyers.in/signup/v1/admin/",lmsUrl:"https://api-a1-prod.fyers.in/signup/v1/lm
+BASE: https://api-a1-prod.fyers.in/signup
+BASE: https://api-a1-prod.fyers.in/signup/v1/admin/
+BASE: https://api-a1-prod.fyers.in/signup/v1/lms/
+BASE: https://api-a1-prod.fyers.in/signup/v1/user/
+BASE: https://api-a1-prod.fyers.in/signup/v1/user/general/it_name
+BASE: https://api-testing-prod.fyers.in/signup/upload/api/v1/pdf/is-password-protected
+BASE: https://api-testing-prod.fyers.in/signup/upload/api/v1/user/fetch-pan
+BASE: https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/upload-image
+BASE: https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/zip-all-images
+BASE: https://api-testing-prod.fyers.in/signup/upload/signature-to-bmp
+BASE: https://api.fyers.in/open-account/staging/
+BASE: https://api.fyers.in/open-account/staging/admin/
+BASE: https://api.fyers.in/open-account/staging/user/
+--- path constants ---
+application/json
+user/signature/bmp
+general/poll
+general/data-list
+auth/submit-application-v2
+auth/modify-kra-fetch-status
+general/e-sign-document
+general/e-sign-success
+auth/payment-v2
+nri/add-nri-queue
+nri/account-open/poll
+token/get-details
+general/fetch-pan
+general/verify-pan
+general/it_name
+general/pan-verification
+auth/modify-kra-param-status
+general/fetch-all-details-pan-kra
+general/pan-verify
+auth/get-step1
+auth/submit-step1
+auth/crm/update-aadhar-status
+update/email
+general/fetch-aadhaar
+auth/get-step2
+auth/submit-step2
+general/pin-code
+auth/get-step3
+auth/submit-step3
+general/ifsc-code-info
+general/account-verification
+auth/cheque-ocr
+auth/submit-step4
+auth/get-step4
+auth/get-nomination-details
+auth/nomination-details
+auth/submit-step5
+auth/get-step5
+auth/create-kyc-request
+auth/face-liveness
+auth/verify-email-or-mobile
+auth/verify_reviewdata_otp
+auth/sent-otp
+auth/verify-otp
+auth/status-verify-otp
+auth/status-sent-otp
+auth/review-data
+general/create-digilocker-request
+general/get-digilocker-document
+general/clear-generated-pdf
+auth/get-kyc-media
+auth/clear-new-pan-status
+general/countries-states-cities
+auth/validate-doc
+auth/digilocker-request
+auth/digilocker-response
+verification/email/send-otp
+image/jpeg
+auth/submit-pan-details
+auth/review-trading-data
+general/save-e-sign-document
+text/javascript
+[0m
+[0m$ [0mgetent hosts api-testing-prod.fyers.in || echo "no A"; echo "==="; echo "--- signup/v1 admin base gate ---"; curl -sk --max-time 15 -w ' code=%{http_code}\n' 'https://api-a1-prod.fyers.in/signup/v1/admin/'; sleep 4; echo "--- api-testing-prod upload gate (POST {}) ---"; curl -sk --max-time 20 -w ' code=%{http_code} type=%{content_type}\n' -X POST -H 'Content-Type: application/json' -d '{}' 'https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/upload-image'; sleep 4; echo "--- open-account/staging admin gate (GET) ---"; curl -sk --max-time 15 -w ' code=%{http_code}\n' 'https://api.fyers.in/open-account/staging/admin/'
+2606:4700::6812:487 api-testing-prod.fyers.in
+2606:4700::6812:587 api-testing-prod.fyers.in
+===
+--- signup/v1 admin base gate ---
+ code=404
+--- api-testing-prod upload gate (POST {}) ---
+{"status": "error", "message": "All fields are mandatory. ", "status_code": 402} code=400 type=application/json
+--- open-account/staging admin gate (GET) ---
+{"s": "error", "code": 500, "message": "Invalid Request, please provide valid method"} code=500
+[0m
+[0m$ [0mcd /tmp/opencode && for kw in 'upload-image' 'is-password-protected' 'zip-all-images' 'staging' 'testing-prod' 'fetch-pan' 'signature-to-bmp'; do echo "### $kw"; grep -oE '.{260}'$kw'.{420}' oa-main.js | head -c 1000; echo; done
+### upload-image
+sDataURL(t.target.files[0]),o.onloadend=function(){var e=Object(c.a)(Q().mark((function e(t){var r,i,o;return Q().wrap((function(e){for(;;)switch(e.prev=e.next){case 0:if(r=t.target.result,i="https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/upload-image",o=JSON.stringify({file:r,fileName:a,key:s}),"e-ipv-latest-photo-uploader"!==this.props.id){e.next=7;break}this.setState({cropImage:!0,originalFile:r,fileName:a}),e.next=14;break;case 7:e.t0=this.props.id,e.next="e-ipv-sign-uploader"===e.t0?10:12;break;case 10:return this.eSignUpload(r,i,o),e.abrupt("break",14);case 12:return"pdf"===n?window.pdfjsLib.getDocument({url:r}).promise.then(function(e){this.fileUpload(i,o)
+his,arguments)}}()},{key:"croppedImage",value:function(e){this.setState({cropImage:!1});var t=this.props.tempKey,a=JSON.stringify({file:e,fileName:this.state.fileName,key:t});this.fileUpload("https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/upload-image",a)}},{key:"modalClosed",value:fun
+### is-password-protected
+a)(Q().mark((function e(t){return Q().wrap((function(e){for(;;)switch(e.prev=e.next){case 0:if("ok"!==t.status){e.next=13;break}if(!this.props.accept||!this.props.accept.match(/pdf/g)){e.next=7;break}"https://api-testing-prod.fyers.in/signup/upload/api/v1/pdf/is-password-protected",L("https://api-testing-prod.fyers.in/signup/upload/api/v1/pdf/is-password-protected",JSON.stringify({file_url:t.cdn_url})).then(function(){var e=Object(c.a)(Q().mark((function e(n){return Q().wrap((function(e){for(;;)switch(e.prev=e.next){case 0:if("Success"!==n.status){e.next=7;break}return e.next=3,this.setState({file:t.cdn_url});case 3:return e.next=5,this.props.uploadSucess(t.cdn_url,JSON.parse(a),this.state.fi
+
+### zip-all-images
+*)$/,PIN_CODE_ADDRESS:/[0-9]{3}[ ]{0,}[0-9]{3}/,REPLACE_CHARS:/[#%& {}\\\/<>*?$\!'"@:+|=`\~^( )_;,\[\]]/,BANK_ACC:/^[0-9]{8,30}$/,DEMAT_ID:/^[0-9]{16}$/,PASSPORT_NO:/^[A-Za-z0-9]{6,12}$/},ye="https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/zip-all-images",be="https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/upload-image",Ee="https://assets.fyers.in/images/logo.svg",we="https://dev.fyers.in/fy_images/icons/Arrow-Right-Circle.png",Ne="https://dev.fyers.in/fy_images/icons/free-invest-logo.png",Oe="https://dev.fyers.in/fy_images/icons/free-invest-logo.png",ke="https://dev.fyers.in/fy_images/icons/world-class-chrt.png",xe="https://dev.fyers.in/fy_image
+ate={},n}return Object(u.a)(a,[{key:"zipFileCallback",value:function(){var e=Object(c.a)(ka().mark((function e(){var t;return ka().wrap((function(e){for(;;)switch(e.prev=e.next){case 0:return"https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/zip-all-images",t=JSON.stringify({}),e.next=4
+### staging
+5303506"}),N="https://api-a1.fydev.tech/open-account",O=(Object.freeze({url:N+"/dev/",apiUrl:"https://api-a1.fydev.tech/open-account/dev/user/",adminUrl:"https://api-a1.fydev.tech/open-account/dev/admin/",GA_ID:"365998031"}),"https://api.fyers.in/open-account/staging/"),k=(Object.freeze({url:O,apiUrl:"https://api.fyers.in/open-account/staging/user/",adminUrl:"https://api.fyers.in/open-account/staging/admin/",GA_ID:"365998031"}),"https://api-a1.fydev.tech/open-account"),x=(Object.freeze({url:k+"/dev/",apiUrl:"https://api-a1.fydev.tech/open-account/dev/user/",adminUrl:"https://api-a1.fydev.tech/open-account/dev/admin/",GA_ID:"365998031"}),w),S=Object.freeze(x);function I(){I=funct
+
+### testing-prod
+){case 0:L(t,a).then(function(){var e=Object(c.a)(Q().mark((function e(t){return Q().wrap((function(e){for(;;)switch(e.prev=e.next){case 0:if("ok"!==t.status){e.next=13;break}if(!this.props.accept||!this.props.accept.match(/pdf/g)){e.next=7;break}"https://api-testing-prod.fyers.in/signup/upload/api/v1/pdf/is-password-protected",L("https://api-testing-prod.fyers.in/signup/upload/api/v1/pdf/is-password-protected",JSON.stringify({file_url:t.cdn_url})).then(function(){var e=Object(c.a)(Q().mark((function e(n){return Q().wrap((function(e){for(;;)switch(e.prev=e.next){case 0:if("Success"!==n.status){e.next=7;break}return e.next=3,this.setState({file:t.cdn_url});case 3:return e.next=5,this.
+return e.stop()}}),e,this)})));return function(t,a){return e.apply(this,arguments)}}()},{key:"eSignUpload",value:function(){var e=Object(c.a)(Q().mark((function e(t,a,n){var r;return Q().wrap((function(e){for(;;)switch(e.prev=e.next){case 0:return"https://api-testing-prod.fyers.in/signup/upload/signature-t
+### fetch-pan
+STATUS:"auth/modify-kra-fetch-status",E_SIGN_DOC:"general/e-sign-document",E_SIGN_SUCCESS:"general/e-sign-success",PAYMENT_V2:"auth/payment-v2",NRI_QUEUE:"nri/add-nri-queue",NRI_POLL:"nri/account-open/poll",TOKEN_DETAILS:"token/get-details",FETCH_PAN:"general/fetch-pan",VERIFY_PAN:"general/verify-pan",FETCH_IT_NAME:"general/it_name",PAN_VERIFICATION_GENERAL:"general/pan-verification",MODIFY_KRA__PARAM_STATUS:"auth/modify-kra-param-status",FETCH_ALL_DETAILS_KRA_PAN:"general/fetch-all-details-pan-kra",PAN_VERIFY:"general/pan-verify",GET_STEP_1:"auth/get-step1",SUBMIT_STEP1:"auth/submit-step1",CRM_STATUS_UPDATE:"auth/crm/update-aadhar-status",UPDATE_EMAIL:"update/email",FETCH_AADHAAR
+urn function(t){return e.apply(this,arguments)}}())}},{key:"getDetailsFromPAN",value:function(e){this.setState({gettingDataFromPAN:!0,panUploading:!1});var t=this;return new Promise((function(a,n){L("https://api-testing-prod.fyers.in/signup/upload/api/v1/user/fetch-pan",JSON.stringify({base64_image:e.file,fil
+### signature-to-bmp
+n function(t,a){return e.apply(this,arguments)}}()},{key:"eSignUpload",value:function(){var e=Object(c.a)(Q().mark((function e(t,a,n){var r;return Q().wrap((function(e){for(;;)switch(e.prev=e.next){case 0:return"https://api-testing-prod.fyers.in/signup/upload/signature-to-bmp",r=JSON.stringify({base64_image:t.split(",")[1],fileName:K.a.v4(),key:"user/signature/bmp"}),e.next=4,L("https://api-testing-prod.fyers.in/signup/upload/signature-to-bmp",r).then(function(){var e=Object(c.a)(Q().mark((function e(t){return Q().wrap((function(e){for(;;)switch(e.prev=e.next){case 0:if("ok"!==t.status){e.next=7;break}return e.next=3,this.setState({fileBmp:t.data});case 3:return e.next=5,L(a,n).then(func
+[0m
+[0m$ [0mfor ep in "upload/api/v1/user/general/upload-image|{\"file\":null,\"fileName\":null,\"key\":null}" "upload/api/v1/pdf/is-password-protected|{\"file_url\":null}" "upload/api/v1/user/fetch-pan|{\"base64_image\":null,\"fileName\":null,\"key\":null}"; do p="${ep%%|*}"; b="${ep#*|}"; echo "--- $p [$b] ---"; curl -sk --max-time 20 -w ' code=%{http_code}\n' -X POST -H 'Content-Type: application/json' -d "$b" "https://api-testing-prod.fyers.in/signup/$p"; sleep 5; done
+--- upload/api/v1/user/general/upload-image [{"file":null,"fileName":null,"key":null}] ---
+<html>
+  <head>
+    <title>Internal Server Error</title>
+  </head>
+  <body>
+    <h1><p>Internal Server Error</p></h1>
+    
+  <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a27c216d18b238ab',t:'MTc4NjE2NzA0Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
+ code=500
+--- upload/api/v1/pdf/is-password-protected [{"file_url":null}] ---
+<html>
+  <head>
+    <title>Internal Server Error</title>
+  </head>
+  <body>
+    <h1><p>Internal Server Error</p></h1>
+    
+  <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a27c218ddf952902',t:'MTc4NjE2NzA0Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
+ code=500
+--- upload/api/v1/user/fetch-pan [{"base64_image":null,"fileName":null,"key":null}] ---
+{"status": "error", "message": "Something went wrong.", "status_code": 501} code=500
+[0m
+[0m$ [0mecho "--- upload-image with dummy Access-Token header ---"; curl -sk --max-time 20 -w ' code=%{http_code}\n' -X POST -H 'Content-Type: application/json' -H 'Access-Token: dummy' -d '{"file":"","fileName":"","key":""}' 'https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/upload-image'; sleep 5; echo "--- open-account/staging user path GET ---"; curl -sk --max-time 15 -w ' code=%{http_code}\n' 'https://api.fyers.in/open-account/staging/user/token/get-details'; sleep 5; echo "--- signup/v1/user/auth/send-otp POST with Access-Token dummy ---"; curl -sk --max-time 15 -w ' code=%{http_code}\n' -X POST -H 'Content-Type: application/json' -H 'Access-Token: dummy' -d '{"mobile":"","country_code":""}' 'https://api-a1-prod.fyers.in/signup/v1/user/auth/send-otp'
+--- upload-image with dummy Access-Token header ---
+{"status": "error", "status_code": 403, "message": "Invalid File Format"} code=400
+--- open-account/staging user path GET ---
+{"s": "error", "code": 500, "message": "Invalid Request, please provide valid method"} code=500
+--- signup/v1/user/auth/send-otp POST with Access-Token dummy ---
+{"code": 1051, "s": "error", "message": "invalid request"} code=401
+[0m
+[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && cat >> findings_deepseek.md << 'EOF'
+
+# SURFACE round 2026-08-08 05:3x UTC — open-account.fyers.in SPA mine → signup/v1 legacy family + NEW host api-testing-prod.fyers.in (uplo/KYC upload service) + staging account API on prod
+- **Recovered static surface (in-scope, read-only): `open-account.fyers.in` legacy account-opening SPA** (S3 static host). `dist/endpoints.js` resolves base `https://api-a1-prod.fyers.in/signup/v1/`. Flow = `user/auth/{send-otp,validate-otp,user-type}`, `verification/email/send-otp`, `user/token/get-details` + `signup/v2/user/token` (api-a1) demat redirection. Auth header = **`Access-Token`** (not Bearer) + `fy_captcha_token` session header. Client uses query-parsed `access_token`/`signup_level`/`user_type` (URL-token pattern) and `JSON.parse` of `data`/`clientData` URL params (client-side only).
+- **`signup/v1` gate characterization (spaced, empty bodies, no OTP params sent):** `POST user/auth/send-otp` `{}` → **401 `{"code":1051,"message":"invalid request"}`** (auth-first; 1051 = the stale-token code the SPA treats as logout); `user/auth/validate-otp` `{}` → **400 `{"code":1007,"message":"Fields missing!!"}`** (validation-before-auth field oracle, no OTP dispatched); `user/auth/user-type` `{}` → 401 `1051 "Unauthorized request!!"`; `verification/email/send-otp` `{}` → 400 `{"status":"error","message":"Required fields missing: Expecting value: line 1 column 1 (char 0)","status_code":402}` (**JSON-parse attempt leak** in the gate message); GET → 405 on auth endpoints. Distinct code space from signup/v2 (1050/1500) — separate legacy service on the api-a1-prod FastAPI gateway.
+- **NEW HOST (in-scope): `api-testing-prod.fyers.in` — KYC upload microservice.** From `deployment-build/static/js/main.chunk.js` (748 KB): peripip. Endpoints classified: `signup/upload/api/v1/user/general/upload-image` (body `{"file":<b64>,"fileName":<name>,"key":<s3key>}`), `signup/upload/api/v1/pdf/is-password-protected` (body `{"file_url":...}` → **server-side fetch of user-controlled URL = SSRF candidate**), `signup/upload/api/v1/user/fetch-pan` (body `{base64_image,fileName,key}` — server-side PAN/KYC parse), `signup/upload/signature-to-bmp` (body `{base64_image,fileName,key}`). Plus full KYC multi-step `/auth/get-step1..5`/`submit-step1..5`, `general/{digilocker,e-sign,pan-verification,fetch-aadhaar,pin-code,countries-states-cities}`, `/auth/{payment-v2,cheque-ocr,face-liveness}` etc. in the legacy `signup/v1` app (Auth-token-gated, own-session only).
+- **api-testing-prod upload gate (unauthenticated, no token sent):** `upload-image` `{}` → 400 `{"status":"error","message":"All fields are mandatory. ","status_code":402}` (**validation-before-auth — NO auth check seen at any stage**); with all-fields-empty `Access-Token: dummy` → 400 `{"status":"error","status_code":403,"message":"Invalid File Format"}` (presence→format parsing reached, STILL no auth gate); null-valued fields → 500 (HTML `Internal Server Error` + CF challenge; nulls parsed then crashed); `fetch-pan` nulls → 500 `{"status":"error","message":"Something went wrong.","status_code":501}`. ⇒ **Unauthenticated file-upload/object-write primitive to a KYC/test-prod storage tier** (conditional on successfully storing a valid payload — NOT executed; no file was uploaded, no URL fetched). `is-password-protected` with a user-supplied `file_url` = server-side URL fetch (SSRF candidate; not executed).
+- **staging account-opening API on PROD reachable: `api.fyers.in/open-account/staging/{user,admin}/...`** → 500 `"Invalid Request, please provide valid method"` (same content-type-sensitive method-gate family as `data.fyers.in/dev-fyers/*` and `cdsl/dev/*`); root and defined user paths reachable; gate holds, no auth reached. **`api-a1.fydev.tech/open-account/dev/*`** referenced in the SPA (internal dev-domain twin of fyers.in) — **OUT OF SCOPE (non `*.fyers.in`), recorded but not tested** (rule 6).
+- **New Daftar code spaces:** api-testing-prod uses `status_code` 402 (validation), 403 (format), 501 (processing/parse) inside `{"status":"error",...}` — a distinct wrapper from both signup/v2 (code 1050/1500) and signup/v1 (code 1051/1007).
+EOF
+echo "appended"; tail -3 findings_deepseek.md
+appended
+- **api-testing-prod upload gate (unauthenticated, no token sent):** `upload-image` `{}` → 400 `{"status":"error","message":"All fields are mandatory. ","status_code":402}` (**validation-before-auth — NO auth check seen at any stage**); with all-fields-empty `Access-Token: dummy` → 400 `{"status":"error","status_code":403,"message":"Invalid File Format"}` (presence→format parsing reached, STILL no auth gate); null-valued fields → 500 (HTML `Internal Server Error` + CF challenge; nulls parsed then crashed); `fetch-pan` nulls → 500 `{"status":"error","message":"Something went wrong.","status_code":501}`. ⇒ **Unauthenticated file-upload/object-write primitive to a KYC/test-prod storage tier** (conditional on successfully storing a valid payload — NOT executed; no file was uploaded, no URL fetched). `is-password-protected` with a user-supplied `file_url` = server-side URL fetch (SSRF candidate; not executed).
+- **staging account-opening API on PROD reachable: `api.fyers.in/open-account/staging/{user,admin}/...`** → 500 `"Invalid Request, please provide valid method"` (same content-type-sensitive method-gate family as `data.fyers.in/dev-fyers/*` and `cdsl/dev/*`); root and defined user paths reachable; gate holds, no auth reached. **`api-a1.fydev.tech/open-account/dev/*`** referenced in the SPA (internal dev-domain twin of fyers.in) — **OUT OF SCOPE (non `*.fyers.in`), recorded but not tested** (rule 6).
+- **New Daftar code spaces:** api-testing-prod uses `status_code` 402 (validation), 403 (format), 501 (processing/parse) inside `{"status":"error",...}` — a distinct wrapper from both signup/v2 (code 1050/1500) and signup/v1 (code 1051/1007).
+[0m
+The open-account SPA is a major static mine: it resolves a legacy `signup/v1` family, a **new live host `api-testing-prod.fyers.in`**, a staging account API on prod, and an out-of-scope dev twin. I have enough to characterize gates. Let me persist findings and recreate
+[0m← [0mWrite reports/submission-package_fyers-bb.md
+Wrote file successfully.
+[0m
+[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && cat > state_deepseek.json << 'EOF'
+{"target": "fyers.in", "phase": "RECON", "status": "HIGH_POTENTIAL", "next_steps": ["Continue RECON/SURFACE on the new live surface api-testing-prod.fyers.in: enumerate valid object-key/route shapes from the recovered signup-upload SPA bundle (upload-image / is-password-protected / fetch-pan / signature-to-bmp) and probe the open-account/staging API on api.fyers.in method-gate family — spaced, read-only, no file/URL side-effects.", "HYPOTHESIS: firm up H19 (unauthenticated file-write + SSRF via `is-password-protected?file_url=`) and the signup/v1 1007/1051 code-space; include in the submission package (A5) already drafted — then dispatch scope-confirmation query (incl. api-testing-prod, /invest/admin/*, /cdsl/dev/*, signup/v2 KYC, mcp.fyers.in, open-account/staging) before any own-account execution.", "Keep excluded: SmartHunt SSTI false positive, third-party hosts, api-a1.fydev.tech (non-*.fyers.in), public config artifacts; guardrails unchanged (no OTP dispatch, no cross-account, no high volume)."]}
+EOF
+cat state_deepseek.json
+{"target": "fyers.in", "phase": "RECON", "status": "HIGH_POTENTIAL", "next_steps": ["Continue RECON/SURFACE on the new live surface api-testing-prod.fyers.in: enumerate valid object-key/route shapes from the recovered signup-upload SPA bundle (upload-image / is-password-protected / fetch-pan / signature-to-bmp) and probe the open-account/staging API on api.fyers.in method-gate family — spaced, read-only, no file/URL side-effects.", "HYPOTHESIS: firm up H19 (unauthenticated file-write + SSRF via `is-password-protected?file_url=`) and the signup/v1 1007/1051 code-space; include in the submission package (A5) already drafted — then dispatch scope-confirmation query (incl. api-testing-prod, /invest/admin/*, /cdsl/dev/*, signup/v2 KYC, mcp.fyers.in, open-account/staging) before any own-account execution.", "Keep excluded: SmartHunt SSTI false positive, third-party hosts, api-a1.fydev.tech (non-*.fyers.in), public config artifacts; guardrails unchanged (no OTP dispatch, no cross-account, no high volume)."]}
+[0m
+# Target: fyers.in
+# Current Phase: RECON (restart on new unexplored surface — legacy signup SPA tree)
+
+## Key Findings
+- **New live in-scope host surfaced: `api-testing-prod.fyers.in`** — a KYC document/storage microservice recovered from the `open-account.fyers.in` SPA bundle (748 KB `main.chunk.js`). Endpoints: `signup/upload/api/v1/user/general/upload-image`, `signup/upload/api/v1/pdf/is-password-protected`, `signup/upload/api/v1/user/fetch-pan`, `signup/upload/signature-to-bmp`.
+- **H19 (new): unauthenticated file-write primitive + SSRF candidate.** Pre-auth gate walk (no file/URL side-effects executed): `{}` → 400 `All fields are mandatory.` `status_code:402`; all-empty-fields + dummy `Access-Token` → 400 `Invalid File Format` `status_code:403`; nulls → 500/501. **No auth gate observed at any stage.**
+- **`signup/v1` legacy family on `api-a1-prod`** (auth header `Access-Token`, own code space): `send-otp` auth-first `1051`; `validate-otp` validation-first `1007 "Fields missing!!"` (schema oracle); `verification/email/send-otp` leaks JSON-parse of body in the 400 message (`"Expecting value: line 1 column 1 (char 0)"`).
+- **Staging account-opening API live on PROD**: `api.fyers.in/open-account/staging/{user,admin}/...` → 500 `"Invalid Request, please provide valid method"` — same content-type method-gate family as `data.fyers.in/dev-fyers/*`.
+- Out-of-scope pointer (recorded, not tested): `api-a1.fydev.tech/open-account/dev/*` in the SPA config (non `*.fyers.in`).
+- Submission package re-created on disk (`reports/submission-package_fyers-bb.md`) with H19 added as design A5 + updated scope-confirmation questions (C5/C6/C7).
+
+## API Endpoints
+- `api-testing-prod.fyers.in/signup/upload/api/v1/user/general/upload-image` (POST, `{file,fileName,key}`) — gate: validation-before-auth
+- `api-testing-prod.fyers.in/signup/upload/api/v1/pdf/is-password-protected` (POST, `{file_url}`) — SSRF candidate, not executed
+- `api-testing-prod.fyers.in/signup/upload/api/v1/user/fetch-pan` (POST, `{base64_image,fileName,key}`)
+- `api-a1-prod.fyers.in/signup/v1/user/auth/{send-otp,validate-otp,user-type}`, `verification/email/send-otp` — 1051/1007 code space
+- `api.fyers.in/open-account/staging/user/*` — 500 method gate
+
+## Hypotheses
+### H19 — api-testing-prod KYC upload: unauth file-write + SSRF (new)
+Reasoning: file-format validation runs with no authentication; `is-password-protected` takes a server-fetched `file_url` (SSRF); `key` param drives object storage paths (predictability → cross-object). Impact: storage-tier abuse / internal fetch from a testing-prod KYC service → Medium–High (conditional, program-side validation). CVSS 5.3–7.5.
+
+## CVSS Candidates
+- [H19 unauth file-upload / SSRF via api-testing-prod] — 5.3–7.5 (conditional) · [H17 req_id IDOR] — 8.1–9.1 (conditional) · [H13/H15/H18 IDOR family] — 5.3–7.5 (conditional)
+- [signup/v1 1007 schema oracle, 1051 auth split, staging method-gate] — informational/hardening
+
+---
+## STATE UPDATE FOR NEXT RUN
+STATUS_TARGET: fyers.in
+STATUS_PHASE: RECON
+STATUS_STATE: HIGH_POTENTIAL
+
+NEXT_STEP_1: Continue on `api-testing-prod.fyers.in` surface — map remaining upload/upload-route shapes and probe `api.fyers.in/open/time/staging/*` method-gate family (spaced, read-only, no file/URL side-effects).
+NEXT_STEP_2: Firm H19 in the submission package (A5) and dispatch the scope-confirmation query (api-testing-prod, /invest/admin/*, /cdsl/dev/*, signup/v2 KYC, mcp.fyers.in, open-account/staging) before any execution.
+NEXT_STEP_3: Exclusions unchanged: SmartHunt SSTI, third-party hosts, `api-a1.fydev.tech`, public config artifacts; guardrails (no OTP dispatch, no cross-account, no high volume) hold.

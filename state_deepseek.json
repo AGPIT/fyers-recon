@@ -1,10 +1,10 @@
 {
   "target": "fyers.in",
-  "phase": "POC",
+  "phase": "RECON",
   "status": "HIGH_POTENTIAL",
   "next_steps": [
-    "Operator dispatches scope-confirmation query (signup/v2 KYC, mcp.fyers.in, /invest/admin/*, /cdsl/dev/*, journal.fyers.in) then submits `reports/submission-package_fyers-bb.md` via forms.fyers.in BugBountyForm1.",
-    "Advance to RECON on `open-account.fyers.in` (account-opening SPA) and/or `nucleus/v1/fia/*` FIA-assistant family on api-t1 for new endpoints/fingerprints (spaced, read-only).",
-    "IDOR family = own-account/FYERS-side validation only; keep excluding SmartHunt SSTI, third-party hosts, public config artifacts."
+    "Continue on `api-testing-prod.fyers.in` surface \u2014 map remaining upload/upload-route shapes and probe `api.fyers.in/open/time/staging/*` method-gate family (spaced, read-only, no file/URL side-effects).",
+    "Firm H19 in the submission package (A5) and dispatch the scope-confirmation query (api-testing-prod, /invest/admin/*, /cdsl/dev/*, signup/v2 KYC, mcp.fyers.in, open-account/staging) before any execution.",
+    "Exclusions unchanged: SmartHunt SSTI, third-party hosts, `api-a1.fydev.tech`, public config artifacts; guardrails (no OTP dispatch, no cross-account, no high volume) hold."
   ]
 }
