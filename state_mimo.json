@@ -1,12 +1,12 @@
 {
   "target": "fyers.in",
-  "phase": "SURFACE",
+  "phase": "POC",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Complete SURFACE analysis for developer portal",
-    "Generate HYPOTHESIS for OAuth and API key findings",
-    "Design POC for high-value findings",
-    "Complete HYPOTHESIS phase for developer portal",
-    "Design POC for high-value findings (H199-H201)"
+    "Generate comprehensive final report",
+    "Create executive summary for bug bounty submission",
+    "Document remediation recommendations",
+    "Generate comprehensive final report",
+    "Create executive summary for bug bounty submission"
   ]
 }
