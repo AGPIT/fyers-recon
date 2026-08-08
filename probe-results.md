@@ -23,3 +23,12 @@ https://api-i1.fyers.in/investment/tapi/v1/eipo/place-order -> HTTP 404
 https://api-i1.fyers.in/invest/v1/ipo/order-book -> HTTP 404
 https://api-i1.fyers.in/invest/v1/ipo/place-order -> HTTP 404
 https://ipo.fyers.in -> 200 len=? type=text/html
+
+## 2026-08-08 17:26:49 UTC
+https://api-i1.fyers.in/invest/v1/ipo/issue-list?IssueId=&IsActive=1 -> HTTP 422
+https://api-i1.fyers.in/invest/v1/ipo/issue-list?IssueId=1&IsActive=1 -> 200 len=61 type=application/json
+https://api-i1.fyers.in/invest/v1/ipo/issue-details?IssueId=00000000-0000-0000-0000-000000000001 -> HTTP 400
+https://api-i1.fyers.in/invest/v1/ipo/issue-list?IsActive=1 -> HTTP 422
+https://api-i1.fyers.in/invest/v1/ipo/order-book -> HTTP 404
+https://api-i1.fyers.in/investment/tapi/v1/eipo/cancel-order?order_id=1&offer_id=1 -> HTTP 404
+https://ipo.fyers.in -> 200 len=? type=text/html
