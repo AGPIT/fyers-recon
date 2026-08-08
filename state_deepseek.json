@@ -1,10 +1,10 @@
 {
   "target": "fyers.in",
-  "phase": "SURFACE",
+  "phase": "HYPOTHESIS",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "HYPOTHESIS on api-i1 eIPO family \u2014 analyze `offer_id`/`order_id`/`IssueId`/`IPOIssueId` + InitialObj keying for cross-account substitution on /invest + tapi/eipo order-book/cancel-order; finalize H22 severity (informational\u2013Medium conditional).",
-    "Operator extends scope-confirm with C9 (api-i1.fyers.in / ipo.fyers.in, absent from both public configs) + submits package (A1\u2013A7 + B + C + D + E1\u2013E7 + F) via forms.fyers.in BugBountyForm1; no pre-auth order payloads, no OTP, no cross-account.",
-    "Exclusions unchanged (SmartHunt SSTI false positive 4\u00d7, third-party hosts, fydev.tech / fyers.co.in dev-staging twins, public config artifacts); guardrails hold."
+    "HYPOTHESIS on api-i1 eIPO keying COMPLETE (H22 finalized: order-book OrderId/order_id/FormFromId/FormToId/IssueSeries substitution + tapi cancel-order cross-account-cancel; 14-field schema; auth-first invariance). Advance to POC: add exact 14-field order-book body + foreign-delta substitution steps to E7/A7 success indicators, then reconcile H22 severity (5.3-7.5 conditional) across the package.",
+    "Operator: extend scope-confirm with C9 (api-i1.fyers.in / ipo.fyers.in, absent from both public configs) and submit reports/submission-package_fyers-bb.md (A1-A7 + B1-B9 + C + D + E1-E7 + F) via forms.fyers.in BugBountyForm1; no pre-auth order payloads, no OTP, no cross-account.",
+    "Exclusions unchanged (SmartHunt SSTI false positive 4x, third-party hosts, fydev.tech / fyers.co.in dev-staging twins, public config artifacts, CF bot-block noise on api-t1); guardrails hold (spaced read-only probes only)."
   ]
 }

@@ -1,35 +1,33 @@
 # Target: fyers.in
-# Current Phase: SURFACE
+# Current Phase: HYPOTHESIS
 
 ## Key Findings
-- **api-i1.fyers.in eIPO microservice family fully characterized** (from ipo.fyers.in Next.js SPA bundles, read-only). Registry `IPO_API` + `InitialObj` (36-field place-order body default) + OAuth constants recovered. Three bases: /invest/v1/ipo (normal), /investment/jhelum/v1/api (ipo), /investment/tapi/v1/eipo (common).
-- **Auth-ordering split CONFIRMED:** /invest/v1/ipo/{place-order,order-book} = validation-before-auth — `{}` → full 31-field Pydantic oracle; full-but-empty 36-field payload with NO token → `401 "Authorization header is missing"` ⇒ auth gate runs AFTER schema validation but still rejects tokenless input (schema enumerable pre-auth, NO pre-auth order primitive). /investment/tapi/v1/eipo/* = auth-first (`-100 "Authorisation token required."` on `{}`).
-- **New OAuth client_id `EFR7964223-101`** (redirect_uri https://ipo.fyers.in, prod appIdHash 2a88a14a…, hardcoded `state=abcdefg`) — informational hardening, H1-class NOT bounty-eligible.
-- **jhelum offer_list/offer_details = fully public live IPO feed** (offer_type -1/1/2/3/4 → symbol, isin, price bands, offer_id UUID; invalid id → `-99 No record found`). Public by design, informational.
-- **Negatives:** `issue-list` uuid-style IssueId → CF 502 (upstream unhandled-input candidate, FYERS-side confirm; not driven); repeated api-t1 probes started getting CF 403 bot-blocks → backed off (guardrails).
+- **H22 finalized (api-i1 eIPO object-keyed IDOR, conditional):** full object-key inventory is caller-controlled and none demonstrably session-bound — `OrderId`+`order_id`, `IssueId`/`IPOIssueId`, `FormFromId`/`FormToId` (application-form ranges), `IssueSeries`, `offer_id`, `RequestedBy`, plus PII place-order fields (`UPIID`, `BankAccountNo`, `DPIdBeneficiary`). Backend KNOWS the owner (`/invest/investors-details` returns session `client_id`/`client_name`) → owner check is feasible; absence unproven pre-auth. FYERS-side two-account validation only.
+- **14-field /invest order-book schema enumerated (validation-before-auth):** `pageNumber, OrderId, order_id, IssueId, FormFromId, FormToId, FromDate, ToDate, OrderStatus, OrderCategory, IssueSeries, RequestedBy, EncryptReportResponse, ResponseType` (single Pydantic model; partial input shrinks the missing list). `EncryptReportResponse`/`ResponseType` → report-generation mode behind auth (FYERS-side confirm).
+- **tapi/eipo auth-first INVARIANCE confirmed (read-only):** full 36-field InitialObj on `/eipo/place-order` and full 14-field body on `/eipo/order-book` both → `-100` pre-schema ⇒ no pre-auth oracle/order primitive on tapi.
+- **Negatives:** no pre-auth data reachable on any api-i1 route; jhelum offer feed remains public-by-design informational.
 
 ## API Endpoints (this run)
-- api-i1.fyers.in /invest/v1/ipo/{issue-list,issue-details,investors-details,place-order,order-book} (GET public / token; validation-before-auth)
-- api-i1.fyers.in /investment/jhelum/v1/api/{offer_list,offer_details} (GET public feed)
-- api-i1.fyers.in /investment/tapi/v1/eipo/{place-order,modify-order,cancel-order,order-book} (auth-first -100)
-- api-t1.fyers.in /api/v3/{validate-authcode (-441 gate), generate-authcode (CF bot-block on repeat)}
+- api-i1.fyers.in /invest/v1/ipo/order-book (POST, token; 14-field schema oracle pre-auth; keying: OrderId/order_id/IssueId/FormFromId/FormToId/IssueSeries)
+- api-i1.fyers.in /investment/tapi/v1/eipo/{place-order,order-book} (auth-first -100 invariant)
+- api-i1.fyers.in /investment/tapi/v1/eipo/cancel-order (DELETE ?order_id=&offer_id=; auth-first -100)
 
 ## Hypotheses
-### H22 — eIPO order/offer object-keyed IDOR (conditional; A7 in package)
-Reasoning: tapi/eipo order-book & cancel-order keyed by order_id/offer_id behind auth-first gate; per-owner scoping not provable pre-auth. /invest schema oracle pre-auth is schema-only (no order primitive).
-Impact: cross-account eIPO order read/cancel → program Medium (conditional); CVSS 5.3–6.5.
-Test: own-session baseline → foreign order_id substitution; FYERS-side/own-account only, NOT executed.
+### H22 — eIPO order/application object-keyed IDOR (finalized; A7/E7/B9 in package)
+Reasoning: all object keys caller-supplied, backend knows session owner, scoping unproven pre-auth (both /invest and tapi auth-gate tokenless input).
+Impact: cross-account order/application read (Medium, CVSS 5.3–6.5) · cross-account order CANCEL (state-modifying, CVSS 6.5–7.5). Conditional.
+Test: own-session baseline → foreign OrderId/order_id/FormFromId/FormToId/IssueSeries (read) and foreign order_id on cancel-order (write); FYERS-side two-account validation, NOT executed.
 
 ## CVSS Candidates
-- [H17 req_id] 8.1–9.1 · [H19 unauth upload/SSRF] 5.3–7.5 · [H15/H18] 5.3–7.5 · [H13/H21/H22] 5.3–6.5 — all conditional, FYERS-side validation
-- [B1–B9 informational bundle incl. eIPO schema oracle, OAuth state/client] — informational/low
+- [H17 req_id] 8.1–9.1 · [H19 unauth upload/SSRF] 5.3–7.5 · [H15/H18] 5.3–7.5 · [H13/H21] 5.3–6.5 · [H22] 5.3–7.5 conditional (read 5.3–6.5, cancel 6.5–7.5)
+- [B1–B9 informational bundle incl. eIPO 14-field schema oracle, OAuth state/client, public offer feed] — informational/low
 
 ---
 ## STATE UPDATE FOR NEXT RUN
 STATUS_TARGET: fyers.in
-STATUS_PHASE: SURFACE
+STATUS_PHASE: HYPOTHESIS
 STATUS_STATE: IN_PROGRESS
 
-NEXT_STEP_1: HYPOTHESIS on api-i1 eIPO family — analyze offer_id/order_id/IssueId/IPOIssueId + InitialObj field keying for cross-account substitution potential on /invest + tapi/eipo order-book/cancel-order; finalize H22 severity (informational–Medium conditional).
-NEXT_STEP_2: Operator extends scope-confirm with C9 + submits package (A1–A7 + B + C + D + E1–E7 + F) via official form; no pre-auth order payloads, no OTP, no cross-account.
-NEXT_STEP_3: Exclusions unchanged (SmartHunt SSTI false positive 4×, third-party hosts, fydev.tech/fyers.co.in dev-staging twins, public config artifacts); guardrails hold.
+NEXT_STEP_1: HYPOTHESIS on api-i1 eIPO keying COMPLETE — advance to POC: write exact 14-field order-book body + foreign-delta substitution steps (own-session baseline → foreign OrderId/order_id/FormFromId/FormToId) into E7/A7; reconcile H22 severity 5.3–7.5 conditional across package.
+NEXT_STEP_2: Operator extends scope-confirm with C9 (api-i1.fyers.in / ipo.fyers.in, absent from both public configs) + submits package (A1–A7 + B1–B9 + C + D + E1–E7 + F) via forms.fyers.in BugBountyForm1; no pre-auth order payloads, no OTP, no cross-account.
+NEXT_STEP_3: Exclusions unchanged (SmartHunt SSTI false positive 4×, third-party hosts, fydev.tech/fyers.co.in dev-staging twins, public config artifacts, api-t1 CF bot-block noise); guardrails hold (spaced read-only probes only).

