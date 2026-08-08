@@ -2638,3 +2638,92 @@ Review research_mimo.md for details
 ### H199: api-connect.fyers.in OAuth Token Leakage (CVSS 7.5)
 ### H200: myapi.fyers.in API Key Exposure (CVSS 6.5)
 ### H201: fyers-lib.js Hardcoded Credentials (CVSS 6.5)
+
+# Zoho Services HYPOTHESIS Completed on 2026-08-08 12:05:00 UTC
+
+## Files Created
+| File | Description |
+|------|-------------|
+| `RECON_ZOHO_SERVICES.md` | RECON for Zoho services under fyers.in |
+| `HYPOTHESIS_ZOHO_SERVICES.md` | HYPOTHESIS for H204-H213 |
+
+## New Hypotheses Generated
+
+### H204: Cross-Subdomain Cloudflare Cookie Sharing (CVSS 6.5) - HYPOTHESIZED
+- **Reasoning**: Cloudflare `__cf_bm` cookies scoped to `.fyers.in` domain
+- **Risk**: Session hijacking via shared cookies across subdomains
+- **Impact**: Unauthorized access to trading accounts
+
+### H205: No CSP on Zoho Services XSS Risk (CVSS 6.5) - HYPOTHESIZED
+- **Reasoning**: projects, cliq, supportdesk, people lack CSP headers
+- **Risk**: XSS exploitation without CSP protection
+- **Impact**: Session theft, data exfiltration
+
+### H206: Zoho IAM serviceurl Parameter Manipulation (CVSS 6.5) - HYPOTHESIZED
+- **Reasoning**: recruit.fyers.in uses serviceurl parameter in Zoho IAM redirect
+- **Risk**: Open redirect, phishing attacks
+- **Impact**: Authorization code theft
+
+### H207: CSRF Protection Inconsistency (CVSS 6.5) - HYPOTHESIZED
+- **Reasoning**: CSRF tokens present in cliq/people, absent in projects/supportdesk
+- **Risk**: CSRF attacks on unprotected services
+- **Impact**: Unauthorized actions, account takeover
+
+### H208: Zoho Session Fixation via Cookie Scope (CVSS 6.5) - HYPOTHESIZED
+- **Reasoning**: Combination of shared Cloudflare cookies and Zoho session cookies
+- **Risk**: Session hijacking via cookie manipulation
+- **Impact**: Unauthorized access
+
+### H209: Zoho Services Information Disclosure (CVSS 5.3) - HYPOTHESIZED
+- **Reasoning**: Technology stack exposed via headers and error messages
+- **Risk**: Reconnaissance for further attacks
+- **Impact**: Information disclosure
+
+### H210: Zoho Services Clickjacking via SAMEORIGIN (CVSS 4.3) - HYPOTHESIZED
+- **Reasoning**: X-Frame-Options: SAMEORIGIN allows same-origin framing
+- **Risk**: Clickjacking attacks
+- **Impact**: User deception
+
+### H211: Zoho Services Debug Endpoint Exposure (CVSS 5.3) - HYPOTHESIZED
+- **Reasoning**: 400 errors may indicate debug endpoints
+- **Risk**: Debug endpoints may leak sensitive data
+- **Impact**: Information disclosure, potential RCE
+
+### H212: Zoho Services API Endpoint Enumeration (CVSS 5.3) - HYPOTHESIZED
+- **Reasoning**: Zoho services expose REST APIs
+- **Risk**: API discovery for further attacks
+- **Impact**: API abuse, data theft
+
+### H213: Zoho Services CORS Misconfiguration (CVSS 5.3) - HYPOTHESIZED
+- **Reasoning**: Some endpoints may expose CORS headers
+- **Risk**: Cross-origin data exfiltration
+- **Impact**: Data theft
+
+## CURRENT STATE SUMMARY (2026-08-08 12:05:00 UTC)
+
+### Research Progress
+- **Total Hypotheses**: 213 across 39 attack surfaces
+- **New Hypotheses This Run**: 10 (H204-H213)
+- **Phase**: HYPOTHESIS completed
+
+### Files Created
+| File | Description |
+|------|-------------|
+| `RECON_ZOHO_SERVICES.md` | RECON for Zoho services under fyers.in |
+| `HYPOTHESIS_ZOHO_SERVICES.md` | HYPOTHESIS for H204-H213 |
+
+## Next Steps
+1. Complete POC phase for Zoho services hypotheses
+2. Validate high-value findings (H204, H205, H206)
+3. Generate comprehensive report
+
+# 3 items on 2026-08-08 12:05:47 UTC
+- **Developer Portal Surface**: 3 new subdomains (api-connect.fyers.in, myapi.fyers.in, api-connect-docs.fyers.in)
+- **Tech Stack**: Next.js (api-connect), React SPA (myapi), Docusaurus (api-connect-docs)
+- **Auth Mechanism**: OAuth 2.0 with redirect-based flow
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+ ### H199: api-connect.fyers.in OAuth Token Leakage (CVSS 7.5)
+ ### H200: myapi.fyers.in API Key Exposure (CVSS 6.5)
+ ### H201: fyers-lib.js Hardcoded Credentials (CVSS 6.5)
