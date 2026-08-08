@@ -1,4 +1,10 @@
-{"target":"fyers.in","phase":"SURFACE","status":"IN_PROGRESS","next_steps":[
- "Advance to HYPOTHESIS on the api-i1 eIPO family: analyze the recovered object-keying (offer_id/order_id/IssueId/IPOIssueId + InitialObj fields) for cross-account substitution potential on /invest and tapi/eipo order-book/cancel-order, and finalize H22 severity (informational–Medium conditional); validation-before-auth on /invest confirmed schema-only (auth gate rejects tokenless).",
- "Operator: dispatch scope-confirmation query extended with C9 (api-i1.fyers.in / ipo.fyers.in, absent from both public configs) then submit reports/submission-package_fyers-bb.md (A1-A7 + B + C + D + E1-E7 + F) via forms.fyers.in BugBountyForm1; no pre-auth order payloads, no OTP dispatch, no cross-account execution.",
- "Exclusions unchanged (SmartHunt SSTI false positive 4x, third-party hosts, fydev.tech/fyers.co.in dev-staging twins, public config artifacts); guardrails hold. api-i1 auth fingerprints recorded: -100 (tapi, auth-first), -441 (authcode), Pydantic-field oracles (/invest, validation-before-auth), invest 401-in-HTTP-200 wrap."]}
+{
+  "target": "fyers.in",
+  "phase": "SURFACE",
+  "status": "IN_PROGRESS",
+  "next_steps": [
+    "HYPOTHESIS on api-i1 eIPO family \u2014 analyze `offer_id`/`order_id`/`IssueId`/`IPOIssueId` + InitialObj keying for cross-account substitution on /invest + tapi/eipo order-book/cancel-order; finalize H22 severity (informational\u2013Medium conditional).",
+    "Operator extends scope-confirm with C9 (api-i1.fyers.in / ipo.fyers.in, absent from both public configs) + submits package (A1\u2013A7 + B + C + D + E1\u2013E7 + F) via forms.fyers.in BugBountyForm1; no pre-auth order payloads, no OTP, no cross-account.",
+    "Exclusions unchanged (SmartHunt SSTI false positive 4\u00d7, third-party hosts, fydev.tech / fyers.co.in dev-staging twins, public config artifacts); guardrails hold."
+  ]
+}
