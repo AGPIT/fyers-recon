@@ -1,43 +1,43 @@
-[NEW] Host `api-testing-prod.fyers.in` — KYC upload microservice (5 endpoints: `signup/upload/api/v1/user/general/upload-image`, `.../user/fetch-pan`, `.../pdf/is-password-protected`, `signup/upload/signature-to-bmp`, `.../user/general/zip-all-images`); NO auth gate observed (402/403/501 code space) → H19 candidate: unauth file-write + SSRF via `file_url`.
-[NEW] `api-a1-prod.fyers.in/signup/v1/*` legacy account-opening family (`user/auth/{send-otp,validate-otp,user-type}`, `verification/email/send-otp`, `user/token/get-details`) with `Access-Token` header scheme and own code space 1051(auth-first)/1007(validation-first); JSON-parse error string leaked in `verification/email/send-otp` 400 message.
-[NEW] `api.fyers.in/open-account/staging/{user,admin}/*` staging account API reachable on PROD (500 content-type method-gate; same family as data.fyers.in/dev-fyers, cdsl/dev).
-[CHANGED] `api-a1.fydev.tech/open-account/dev/*` dev twin referenced in SPA — out of scope (non-`*.fyers.in`), recorded, not tested.
-[PRIO] api-testing-prod.fyers.in KYC upload service (H19) — **7.90** = attack 7, business 8, tech 8, gate 9, cloud 7, fresh 9
-[PRIO] api-a1-prod.fyers.in/signup/v1 legacy family — **5.60** = attack 5, business 7, tech 5, gate 5, cloud 5, fresh 6
-[PRIO] api.fyers.in/open-account/staging/* — **5.00** = attack 5, business 7, tech 4, gate 2, cloud 5, fresh 6
-[HYP] H19 — Unauthenticated KYC document-upload storage-write + SSRF via `is-password-protected?file_url=`
+[NEW] `api-testing-prod.fyers.in` — KYC upload microservice, all 5 routes (upload-image, fetch-pan, signature-to-bmp, is-password-protected, zip-all-images) behind a single `L()` ajax wrapper that sets `Access-Token` from localStorage; service never rejects an absent/dummy token at any depth (`{}`→402, empty-fields(+dummy token)→403 "Invalid File Format", `{}`+`Access-Token:x`→identical 402, `zip-all-images {}`→HTTP 200 no-auth Success).
+[NEW] `signature-to-bmp` uses hardcoded object key `user/signature/bmp` → cross-caller object-clobber candidate unless per-session keyed server-side.
+[NEW] `is-password-protected` receives `file_url` = a `cdn_url` returned by the prior upload → server-fetches a caller-broadly-controlled URL (SSRF candidate; not executed).
+[NEW] api-testing-prod absent from both public configs (indus/v1/config, config.gz) — surfaced only via open-account.fyers.in SPA bundle; needs scope confirmation (C).
+[NEW] `api-a1-prod.fyers.in/signup/v1/*` legacy family (Access-Token scheme; code space 1051 auth-first / 1007 validation-first; `verification/email/send-otp` leaks JSON-parse trace in 400 message).
+[NEW] `api.fyers.in/open-account/staging/{user,admin}/*` reachable on prod — 500 content-type method-gate on GET and POST (same family as data.fyers.in/dev-fyers, cdsl/dev); dev twin `api-a1.fydev.tech/open-account/dev/*` = OUT OF SCOPE.
+[PRIO] api-testing-prod.fyers.in KYC upload tier (H19) — **7.85** = attack 7, business 8, tech 8, gate 10, cloud 7, fresh 7
+[PRIO] api-a1-prod.fyers.in/signup/v1 legacy family — **5.40** = attack 5, business 7, tech 5, gate 5, cloud 5, fresh 4
+[PRIO] api.fyers.in/open-account/staging/* — **4.55** = attack 5, business 6, tech 4, gate 2, cloud 5, fresh 4
+[HYP] H19 — Unauthenticated server-side URL fetch (SSRF) via `is-password-protected` + unauth object-write into KYC storage tier
 class: SSRF
 asset: api-testing-prod.fyers.in/signup/upload/api/v1/{pdf/is-password-protected, user/general/upload-image, user/fetch-pan}
 confidence: 55
-reasoning: Gate walk showed no auth at any stage — `{}`→400 402 "All fields are mandatory"; empty-fields + dummy `Access-Token`→400 403 "Invalid File Format" (token never rejected); nulls→500/501. SPA code confirms `is-password-protected` POSTs a user-supplied `file_url` (server-side fetch) and `upload-image` POSTs base64 file + `key` (object-storage path). Estate norm is auth-first; this is the first unauth file/URL primitive.
-evidence_needed: (a) fetch-oracle — in-scope valid URL vs malformed `file_url` yields distinct responses proving server fetch; (b) fetch constraints (scheme/host allowlist, internal reach); (c) whether an object stored under a controlled `key` is later retrievable (FYERS-side).
-verify_steps: PASSIVE — spaced ≥5s: `POST https://api-testing-prod.fyers.in/signup/upload/api/v1/pdf/is-password-protected` bodies `{"file_url":""}` / `{"file_url":"not-a-url"}` / `{"file_url":"http://127.0.0.1:1/x.pdf"}` / `{"file_url":"https://api-t1.fyers.in/"}` → diff status/body for fetch-error oracle (connection-refused vs validation). No external network, no file upload, no storage write.
-impact: blind SSRF from a Cloudflare-protected KYC microservice (internal services/object storage) and/or unauth file-write into a KYC document tier → program Medium–High (conditional); CVSS 5.3–7.5.
-testability: PASSIVE (gate/SSRF oracle) → HUMAN (storage-write confirm)
-[HYP] signup/v1 legacy validation-before-auth schema oracle + JSON-parse error leak
+reasoning: All 5 upload routes funnel through one ajax wrapper passing `Access-Token: false` from localStorage, yet the service never rejects a missing/dummy token at any depth (400/500 observed, 200 on empty `zip-all-images`); static bundle shows `is-password-protected` POSTs a caller-supplied `file_url` server-side and `upload-image` posts base64 + caller-chosen `key`. Only the present bundl (SPA) drives these, so ssrf fetch path design is real; gate proves validation-before-auth.
+evidence_needed: (a) fetch branch oracle — `file_url` variants yield distinct status/body (server fetch attempted); (b) whether fetch is scheme/host-allowlisted (reaches internal hosts); ETHICS GUARD: real-fetch probes = FYERS-side; this run sends no outbound URL.
+verify_steps: PASSIVE — spaced ≥5s: `POST https://api-testing-prod.fyers.in/signup/upload/api/v1/pdf/is-password-protected` with `{"file_url":""}` and `{"file_url":"not-a-url"}`; diff responses vs the `{}` 200-empty baseline to prove branch-on-file_url exists (no valid/external URL passed, no outbound fetch triggered).
+impact: blind SSRF from a Cloudflare-fronted KYC microservice and/or unauth write into the KYC document tier incl. `user/signature/bmp` cross-caller clobber → program Medium–High (conditional); CVSS 5.3–7.5.
+testability: PASSIVE (branch oracle) → HUMAN (true SSRF/object-write confirm)
+[HYP] signup/v1 legacy validation-before-auth schema + JSON-parse oracle
 class: OTHER
 asset: api-a1-prod.fyers.in/signup/v1/{user/auth/validate-otp, verification/email/send-otp}
-confidence: 30
-reasoning: `validate-otp` `{}` → 400 1007 "Fields missing!!" pre-auth (validation-first field oracle); `verification/email/send-otp` `{}` → 400 message embeds a JSON-parse trace from body handling ("Expecting value: line 1 column 1 (char 0)"). `send-otp` is auth-first (1051), so no pre-auth OTP path exists.
-evidence_needed: whether crafted malformed JSON in signup/v1 bodies widens the parse-error disclosure; no OTP/dispatch reachable pre-auth.
-verify_steps: PASSIVE — `POST https://api-a1-prod.fyers.in/signup/v1/verification/email/send-otp` with bodies `[` and `{"email":` → observe message/parse-oracle differences. No OTP, no auth, no side-effects.
-impact: field-schema/parser internals disclosure — Informational, no bounty (enumeration-without-impact).
+confidence: 40
+reasoning: `validate-otp {}` → 400 `1007 "Fields missing!!"` pre-auth (validation-first field oracle, no OTP dispatched); `verification/email/send-otp {}` → 400 message embeds JSON-parse trace ("Expecting value: line 1 column 1 (char 0)"). `send-otp`/`user-type` are auth-first 1051, so no pre-auth OTP path exists.
+evidence_needed: whether malformed JSON bodies broaden parse-error disclosure; no auth or OTP side-effects reachable pre-auth.
+verify_steps: PASSIVE — `POST /signup/v1/verification/email/send-otp` bodies `[` and `{"email":` (no OTP fields sent) → diff message/parse-oracle output. No OTP, no auth, no side-effects.
+impact: field-schema/parser internals disclosure → Informational/no-bounty (enumeration-without-impact).
 testability: PASSIVE
-[HYP] staging account-opening API exposed on production (content-type method-gate)
+[HYP] staging account-opening API on prod — content-type method-gate misconfig
 class: MISCONFIG
 asset: api.fyers.in/open-account/staging/{user,admin}/*
-confidence: 25
-reasoning: Staging namespace resolves on prod; root and defined user paths return 500 "Invalid Request, please provide valid method" — content-type-sensitive method gate (same family as data.fyers.in/dev-fyers, cdsl/dev). No auth handler reached, no data pre-gate.
-evidence_needed: whether a specific method+Content-Type passes the gate to a real handler; program scope of staging/dev surfaces (terms exclude dev environments).
-verify_steps: PASSIVE — vary Content-Type (`application/json`/`x-www-form-urlencoded`/`multipart/form-data`) × method (GET/POST) on `https://api.fyers.in/open-account/staging/user/token/get-details`; diff the 500 message (routing oracle). No side-effects.
-impact: dev/staging handler exposure on prod — Informational; likely out of scope (dev-env exclusion); keep as scope question C.
+confidence: 40
+reasoning: Staging namespace resolves on prod; root+defined user/admin paths return 500 `"Invalid Request, please provide valid method"` on both GET and POST — a content-type-sensitive method gate (same family as data-200/fyder +/cdsl/dev). No auth handler reached below the gate; no user modification data.
+evidence_needed: whether some Content-Type×method combination passes the gate to a real backend handler route; program terms for dev/staging surface.
+impact: dev/staging handler exposure on prod → Informational; likely OOS (dev-env exclusion); keep as scope question.
 testability: PASSIVE
-[PARKED] signup/v1 schema/parse oracle — confidence 30 < 40; enumeration-without-impact = no-bounty category.
-[PARKED] staging API — confidence 25 < 40; dev/staging surface likely excluded by program terms; gate holds, no data.
-[PARKED] SmartHunt SSTI `issue_id` — reaffirmed false positive (baseline 401 vs injected 429 CF errorCode:1015, no "49"); do not report.
-[PARKED] api-a1.fydev.tech + all third-party hosts (Grammarly/Coda/etc) — out of scope.
-[FINAL] survivors re-ranked: H19 api-testing-prod SSRF/unauth-upload (55, NEW, PASSIVE) > H17 signup/v2 req_id IDOR (45, carried, HUMAN_ONLY) > H13 saved-chart IDOR (42) > H18 journal IDOR (40) > H15 marina/ddpi (40). Only H19 is new and passively testable; IDOR family remains FYERS-side-only.
-[NEXT] PROBE: `POST https://api-testing-prod.fyers.in/signup/upload/api/v1/pdf/is-password-protected` with `{"file_url":"http://127.0.0.1:1/x.pdf"}` and `{"file_url":"https://api-t1.fyers.in/"}` vs `{"file_url":""}` baseline — spaced ≥5s, read-only, no external network, no file upload; diff responses to confirm the server-fetch oracle (H19).
-[LEARN] ACCEPTED SSRF/unauth-endpoint class @ api-testing-prod.fyers.in — first estate surface with no auth gate observed (validation-before-auth at every probe stage; arbitrary Access-Token accepted into format parsing); conditional, impact unproven.
-[LEARN] REJECTED MISCONFIG-data-exposure @ api.fyers.in/open-account/staging + signup/v1 — 500 method-gate holds, no handler/data reached; consistent with the dev-env exclusion.
-[RISK] fyers: 64 — first unauth upload/URL-fetch primitive (api-testing-prod, SSRF + KYC/PAN document-storage write candidate) targets the estate's most sensitive data class; legacy signup/v1 on the same prod gateway adds a third auth contract (`Access-Token`) and fragmented validation-ordering now spans ≥21 domains. Offset: no side-effect executed, impact unproven, program excludes dev/staging and no-bounty oracles, IDOR family (H13/H15/H17/H18) still researcher-execution-prohibited, all other new surfaces auth-first.
+[PARKED] signup/v1 schema/parse oracle: confidence 40 but enumeration-without-impact already on the program no-bounty list; keep in informational bundle B, not a scored hypothesis.
+[PARKED] open-account/staging method-gate: 500 gate holds on POST+GET with all-probing content types; no handler/data reached; dev/staging surfaces likely excluded by program terms → scope question C only.
+[PARKED] H19 fetch side-effects: true object-write + real internal fetch are researcher-execution-prohibited; only the passive branch oracle is executable this pipeline run (packaged; and kept in A5 for FYERS-side).
+[FINAL] survivors re-ranked: H19 SSRF/unauth-upload (55, PASSIVE-branch oracle, new) > H18 H17 signup/v2 `req_id` IDOR (45, carried, HUMAN_ONLY) > H18 journal note/upload IDOR (40, carried, HUMAN_ONLY) > H13 saved-chart IDOR (42, carried, HUMAN_ONLY) > H15 marina/ddpi IDOR (40, carried, HUMAN_ONLY). Only H19 is passive; entire IDOR family requires operator authorization + own-account/FYERS-side validation.
+[NEXT] PROBE: passive, in-scope, spaced ≥5s, two requests against the api-testing-as-password gate to branch-test H19 WITHOUT outbound fetch: `POST https://api-testing-prod.fyers.in/signup/upload/api/v1/pdf/is-password-protected` with `{"file_url":""}` then `{"file_url":"not-a-url"}` — diff vs the recorded `{}` → 200-empty baseline; no external URL passed, no OTP, no file upload, no storage write, no cross-account.
+[LEARN] ACCEPTED SSRF/unauth-routes class @ api-testing-prod.fyer.in: bundle-shape + gate-walk (700-byte main bundle, token never rejected at any stage, `zip-all-images {}` 200) jointly prove the tier has no global auth filter — first estate surface of this class.
+[LEARN] REJECTED data-exposure @ api.fyes.in/open-account/staging + signup/v1: 500 method-gate and 1051/1007 auth-first holds; no handler/user-data reachable, consistent with dev-env exclusion and prior OAuth/FR-class closures.
+[RISK] fyers: 65 — estate has a live unauth KYC-upload tier (SSRF + PAN-storage write + cross-caller signature-key clobber candidates) that touches the most sensitive data class and sits inside a production bug-bounty scope; validation-before-auth exists on OTP + withdraw-fund paths, and ≥3 fragmented auth contracts (Bearer/`Access-Token`/cookie) coder. Offset: no outbound fetch/storage write executed, impact unconfirmed, staging signup GLY li OOS, IDOR family still execution-prohibited, majority of corpus informational/no-bounty.
