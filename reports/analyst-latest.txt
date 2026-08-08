@@ -1,42 +1,35 @@
 # Target: fyers.in
-# Current Phase: HYPOTHESIS
+# Current Phase: POC
 
 ## Key Findings
-- **nucleus/v1 FIA data-keying analysis completed (static, in-scope `fyers.in/web/main.dart.js`, 31.6 MB).** Recovered exact request shapes: `GET /nucleus/v1/history` + **`GET /nucleus/v1/history/{cid}` (object-keyed — read-only probe `GET /nucleus/v1/history/99999` → 401 `-1`, route exists, NOT 404)**; `POST /nucleus/v1/chat` body `{cid,prompt[,timeframe,layout,chart_id,chart_symbol]}` / no-cid `{prompt,persona:"FYERS",deep_research:true,...}`; `POST /nucleus/v1/chat/auto-suggest`; `GET /nucleus/v1/chat/request-limit` (no path arg — `/request-limit/99999` → 404, splitting it from the object-keyed family); `POST /nucleus/v1/oldfiachat/history` body `{old_fia:true,uuid}`; `POST /nucleus/v1/drawings` body `{client_id,comment,flag:true,text:[...]}`; **`DELETE /nucleus/v1/drawings/{a}/{b}`**; `POST /nucleus/v1/cancel-chat/{cid}/{mid}`; `GET /nucleus/v1/fia/chart-insights?symbol=&timeframe=` + option-chain-insights. All auth-first `-1` (fingerprint #21).
-- **H21 (new, conditional): nucleus/v1 conversation/drawing object-keyed IDOR family** — caller-supplied `{cid}` (history/cancel-chat), `{a}/{b}` (drawings delete), `client_id` (drawings save) object keys behind a uniform gate that proves nothing about per-session owner checks. Own-account/FYERS-side validation only. Program Medium if cross-account conversation/drawing read; CVSS 5.3–6.5 (conditional). Added to package as A6.
-- **FIA chat request-limit angle (informational):** `deep_research:true` prompt + prompt-count gating (`/chat/request-limit`) = authenticated copilot abuse surface only; no pre-auth oracle. Hardening note.
-- **myapi.fyers.in app-registry bundle (main.9314ac5d.js, 1.57 MB) — negative:** only `api-t1/gk/api/v2/user` + `ck/verify_token` backend refs + `myapi/docs` anchors + api-connect-docs; no app-registry endpoints beyond the gated `user/v3/app/*`.
-- **api-connect-docs.fyers.in fully characterized (negative):** Docusaurus v1 scaffold (sitemap/og:url still `your-docusaurus-test-site.com`), legacy API-Connect widget docs, sub-paths 302 to S3 "Resource Found", JS bundles empty of API refs — recon artifact only, no secrets/surface.
+- **POC phase deliverable written: `reports/submission-package_fyers-bb.md` Section E = exact request-format appendix (E1–E6).** Every conditional design now has parameterized request shapes: E1 (H17 signup/v2 req_id substitution — esign-document/pdf/generate/pdf/poll/status/poll/nri get-document), E2 (H13 savedcharts chart-id GET/DELETE), E3 (H15 marina/ddpi instruction-id), E4 (H18 journal-server note/detail+upload-document note_ids substitution, Authorization Bearer + fingerprint #20), E5 (H19 api-testing-prod upload/SSRF probes incl. the 3-case file_url diff-oracle: connection-refused/in-scope-internal/malformed), E6 (H21 nucleus/v1 history/{cid} + drawings-delete + chat cid substitution, headers Authorization + version:1.0.0). Docs-only — no execution.
+- **Live gate re-confirmation (read-only, spaced, zero side-effects):** `journal-server/v1/notes-list` → HTTP 403 `{"code":401,"message":"unauthorized"}` (#20); `nucleus/v1/history{/abc123}` → HTTP 401 `{"code":-1,...}` (#21, earlier 503 transient); `signup/v2/user/esign-document` POST `{}` → HTTP 401 `{"code":1050,"message":"Your session has expired..."}` (fingerprint #19 — esign path requires an authenticated session before any object logic).
+- **POC constraints honored:** only own-session baselines are researcher-executable; every cross-object substitution step is parameterized for FYERS Security Team validation (two internal test applicants). No file/URL side effects, no OTP, no cross-account access.
 
-## API Endpoints (this run)
-- `api-t1.fyers.in/nucleus/v1/history/{cid}` (GET, object-keyed, auth `-1`)
-- `api-t1.fyers.in/nucleus/v1/chat` (POST `{cid,prompt,...}`), `chat/auto-suggest` (POST), `chat/request-limit` (GET)
-- `api-t1.fyers.in/nucleus/v1/drawings` (POST save `{client_id,comment,flag,text}`) + `drawings/{a}/{b}` (DELETE)
-- `api-t1.fyers.in/nucleus/v1/oldfiachat/history` (POST `{old_fia,uuid}`), `cancel-chat/{cid}/{mid}` (POST)
-- `api-t1.fyers.in/nucleus/v1/fia/chart-insights` + `fia/option-chain-insights` (GET, symbol/timeframe/expiry query)
-- `myapi.fyers.in`, `api-connect-docs.fyers.in` — static/negative (no new surface)
+## API Endpoints (gate re-confirmed this run)
+- `api-a1-prod.fyers.in/journal-server/v1/notes-list` (GET, auth #20, 403)
+- `api-t1.fyers.in/nucleus/v1/history` + `history/{cid}` (GET, auth #21, 401)
+- `api-a1.fyers.in/signup/v2/user/esign-document` (POST, session-gated #19, 401/1050)
 
 ## Hypotheses
-### H21 — nucleus/v1 conversation/drawing object-keyed IDOR (conditional)
-Reasoning: object keys are caller-supplied path/body segments (`{cid}`, `{a}/{b}`, `client_id`) behind a uniform auth-first `-1` gate that cannot prove or disprove per-owner scoping; `GET /history/{cid}` route existence confirmed by -1-vs-404 split.
-Impact: cross-account read/delete of FIA copilot chat history and drawings → program Medium (conditional).
-Test: own-account baseline `GET /history/{own_cid}` → `GET /history/{foreign_cid}` under same session; drawings delete key substitution. NOT executed (program own-account rules).
-
-### H19 (unchanged, top) — api-testing-prod unauth upload tier + SSRF candidate (conditional)
-Gate walk + bundle confirmed no auth at any depth; `file_url` server-fetch candidate. FYERS-side validation design in A5.
+### Full conditional set now has exact POC request shapes (H13/H15/H17/H18/H19/H21)
+Reasoning: uniform auth-first gates prove nothing about per-object owner scoping; shapes lifted read-only from in-scope bundles (main.dart.js web/journal, open-account main.chunk.js, mtfddpi bundle).
+Impact: H17 Critical/High (req_id→eSign/PDF), H19 Medium–High (unauth upload/SSRF), H13/H15/H18 Medium–High, H21 Medium — all conditional on FYERS-side validation.
+Test: own-account baseline → second-owned-account key substitution; NOT executed (program own-account rules).
+Severy framed per program rubric, researcher-execution prohibited.
 
 ## CVSS Candidates
-- [H17 signup/v2 req_id IDOR] — 8.1–9.1 (conditional) · [H19 api-testing-prod unauth upload/SSRF] — 5.3–7.5 (conditional)
-- [H13 saved-chart] — 5.3–6.5 · [H15 DDPI] — 5.3–7.5 · [H18 journal] — 5.3–7.5 · [H21 nucleus conversation/drawing] — 5.3–6.5 (all conditional, own-account/FYERS-side)
+- [H17 signup/v2 req_id] — 8.1–9.1 (conditional) · [H19 api-testing-prod upload/SSRF] — 5.3–7.5 (conditional)
+- [H13/H15/H18] — 5.3–7.5 · [H21 nucleus] — 5.3–6.5 (conditional, FYERS-side)
 - [B1–B8 informational bundle] — informational/low
 
 ---
 ## STATE UPDATE FOR NEXT RUN
 STATUS_TARGET: fyers.in
-STATUS_PHASE: HYPOTHESIS
-STATUS_STATE: HIGH_POTENTIAL
+STATUS_PHASE: POC
+STATUS_STATE: EXHAUSTED
 
-NEXT_STEP_1: Advance to POC — firm A6 (H21) with exact request shapes + success indicators (done in package re-creation this run; A1–A6 + B + C + D on disk).
-NEXT_STEP_2: Operator dispatches scope-confirmation query (package C1–C8) then submits `reports/submission-package_fyers-bb.md` via forms.fyers.in BugBountyForm1 before any own-account validation.
-NEXT_STEP_3: If operator blocked on scope confirmation, restart RECON on unexplored in-scope surface — `api.fyers.in/api/v2/*` OAuth2 generate-authcode param validation, `myaccount.fyers.in` SPAs, `automate-chn.fyers.in` backtest family, `ipo.fyers.in` bundles — spaced, read-only.
-NEXT_STEP_4: Exclusions unchanged (SmartHunt SSTI false positive 4×, third-party hosts, api-a1.fydev.tech, public config artifacts); guardrails hold (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume). Fingerprints #21 (nucleus -1) and #22 (request-limit path split) recorded.
+Next advances: submission only (operator) — dispatch scope-confirmation C1–C8 to program contact, then submit `reports/submission-package_fyers-bb.md` (A1–A6 + B + C + D + E1–E6) via forms.fyers.in BugBountyForm1.
+NEXT_STEP_1: Operator dispatches scope-confirmation query (C1–C8) then submits the package via official form; no researcher-side cross-account/upload/SSRF/OTP execution.
+NEXT_STEP_2: If blocked on scope, restart RECON on unexplored in-scope surface — api.fyers.in/api/v2/* OAuth2 generate-authcode param parsing, myaccount.fyers.in SPAs, automate-chn.fyers.in backtest family, ipo.fyers.in bundles — spaced, read-only.
+NEXT_STEP_3: Exclusions unchanged (SmartHunt SSTI false positive 4×, third-party hosts, api-a1.fydev.tech, public config artifacts); guardrails hold (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume). Fingerprints #19/#20/#21 re-confirmed.

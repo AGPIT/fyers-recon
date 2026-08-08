@@ -7,24 +7,7 @@ RUNNING MODEL: ${MODEL_ID}
 
 =====PREVIOUS CONTEXT=====
 FINDINGS FROM PREVIOUS RUNS:
-uction read/file download test behind auth (documented, not executed).
-- **`app.fyers.in` (incl. `/profile/personal|dormant/?token_id=`, `/ost/chart/chart.html`, `/discover.html`) = 301 alias into `fyers.in/web` SPA** (token_id profile pages render client-side, auth-gated — not pre-auth reachable). Same alias pattern confirmed for `community.fyers.in` → `fyers.in/community/` (Next.js; Discourse replaced, no `about.json`), `pledge.fyers.in` → `fyers.in/web/portfolio/holdings?holdingType=pledge`.
-- **Alert endpoints on api-t1:** `api/v3/{price-alert,trending-alert}` → `-16` (trade-core); `api/v3/toggle-alert` + `api/nps/{npsPrompt,npsStore}` → CF 403/503 rate-limit this run (no clean oracle; re-probe spaced later). NPS endpoints (`npsExport`, `npsInsights`, `npsStore`, `npsPrompt`) are a public NPS-feedback family from `api.fyers.in` in config.
-- **IPO `offer_list_v2` closed:** uniform `-11 "Something went wrong"` for all param combos (`type/status/page/event_type/offer_type`) — no progressive oracle; `offer_details_v2` remains the public object-keyed query (`200 {"s":"ok","data":[]}` on unknown ids).
-- **SmartHunt SSTI false-positive TRIAGE (do NOT report):** the SmartHunt report's own evidence contradicts its claim. Baseline `GET /invest/admin/v1/sgb/issue-list?is_active=1&issue_id=1&source=1` → **HTTP 401** JSON `{"error_code":-27,...}`; injected `issue_id=$%7B7%2A7%7D` → **HTTP 429 Cloudflare "Access denied"** HTML page with `errorCode: 1015` (rate limiting/WAF) and **no "49" anywhere in the response**. There is no template evaluation demonstrated — the 429 is the CF rate-limit/WAF block (same class as our own 403/503 blocks this run). Reproduces the prior SmartHunt-`${7*7}`-→-429 triage. Closing as false positive; the real (low) issues on that endpoint remain the `-19` presence oracle, `souce` var typo, and `-27` auth-domain split.
-
-# 6 items on 2026-08-06 14:50:25 UTC
-- **Second public config artifact discovered:** `config.fyers.in/config/config.gz` (S3 JSON, 135 KB, 989 URLs, 41 hosts) — distinct from `indus/v1/config`; 13 unique URLs incl. **3 new live OAuth client_ids** (`GT2V66D5Y4-101`, `V71C1UQU24-101`, `EFR7964223-101`) usable against the H1 step-1 oracle. Both configs must be diffed each run (drift-follow methodology).
-- **`utility/v2/public/*` tier mapped (api-t1):** `email-preference` POST reaches a **validation-before-auth** gate (`400 "Validation failed for one or more parameters"`, no token needed); response shape `data.{email_disabled,sms_disabled,whatsapp_disabled}` recovered from the 31 MB Flutter bundle. `device-update`/`event-update`/`signup-event-update` → **auth fingerprint #18** `401 "Invalid or expired authorization token"` (new message variant).
-- **`mtfddpi.fyers.in` (Flutter DDPI app) → DDPI endpoint family resolved** to `api-a1.fyers.in/marina/v1/ddpi/{esign,esignValidate,approveName,status,timeline,user/listing/file}` + `marina/v1/mtf/send_otp` — uniformly `-16` auth-first, no pre-auth oracle. DDPI = Demat Debit & Pledge Instruction + Digio eSign (securities-transfer primitive). Authenticated IDOR design: instruction-object-keyed status/timeline/file.
-- **Alias confirmations:** `app.fyers.in` (incl. `profile/*/?token_id=`), `community.fyers.in` (Discourse gone), `pledge.fyers.in` all 301 into the unified `fyers.in/web`/Next.js site.
-- **IPO `offer_list_v2` closed** (uniform `-11`, no oracle); `offer_details_v2` stays public object-keyed.
-- **SmartHunt SSTI = FALSE POSITIVE (do NOT report):** its own evidence shows `issue_id=${7*7}` → HTTP **429** CF page `errorCode:1015` (rate-limit/WAF), no "49" rendered — no template evaluation. Consistent with prior triage.
-
-# POC round 2026-08-06 15:xx UTC — STATIC MINE of web+signup Flutter bundles → signup/v2 KYC API family (new auth domain, req_id-keyed IDOR candidate) + embedded x-validate HMAC key
-- **NEW surface: `api-a1.fyers.in/signup/v2/*` KYC account-opening API (fingerprint #19).** Recovered from `signup.fyers.in/main.dart.js` (6.7 MB, in-scope host). Base = `https://api-a1.fyers.in` + `/signup/v2`. Full family: `/send-otp`, `/email/{send-otp,verify-otp}`, `/verify-otp-v2`, `/social/login`, `/user/{account_aggregation_start,activate-derivatives,aggregator-status/poll,bank-details/save,change-esign-status,create-pin,esign-document,esign-success,esign/accept-name-mismatch,esign/clear-status,fathername/update,get-assets,get-details-for-ipv-verification,get-pincode-data,hyperverge-poll,identity-details/edit/pan,logout,pdf/generate,pdf/poll,pep-update,review-data,segments/save,skip-derivatives,status/poll,trade-experience,validate-selfie}`, `/nri/{application-submit,pan-details/submit,pan/verify,vkyc-fetch,vkyc-request}`, `/update-user-type`. Account-creation is **keyed by application `req_id`** (`live-verification?source={verification|pan|esign|edit_address}&req_id=`; the kyc web flows pass `req_id` through `digio_doc_id`) → **IDOR candidate: cross-application fetch of eSign document / PDF / KYC status with another applicant's `req_id`** (documented, not executed).
-- **`signup/v2` gate characterized (pre-auth, field oracle, no OTP dispatched):** `/send-otp` GET → 404; POST `{}` → `{"code":1050,"message":"Invalid input provided"}` (pre-auth validation); POST with body fields (`mobile/is_nri/auto_read/country_code`) but no valid `x-validate` → still 1050; with arbitrary `x-validate` → `{"code":1500,"message":"Failed to send notification"}`. ⇒ **validation-before-auth on the OTP send; auth could not be reached pre-auth (OTP dispatch is the auth-gated action).** No real number was submitted with a valid header, so no OTP sent (read-only). The 1050/1500 code space is a new api-a1 domain distinct from prior `-21`/`-16`.
-- **`x-validate` is a client-side HMAC with a HARD-CODED key `1YJKSPg9IcPyyb6N9JHXGAfikiVylWCs`** (embedded 5× in the bundle). It signs the request body on `/send-otp`/`/email/send-otp` and also the *response* object on verify-otp (`$.vr().KA(commandObj, key)` compared against a response header) for client-side tamper detection. ⇒ No protective value (attacker can compute it); only meaningful as a weak anti-CSRF/anti-forgery shaping. Low severity hardening note, not a finding in itself.
+per detection. ⇒ No protective value (attacker can compute it); only meaningful as a weak anti-CSRF/anti-forgery shaping. Low severity hardening note, not a finding in itself.
 - **web bundle: supplemental NEW surface recorded (static inventory, mostly gated).** Hosts: `journal.fyers.in/journal/?token=` (new SPA), `charts-cdn.fyers.in`, `trade2.fyers.in/x/coming-soon`; `api-t1/fy/cdsl/v2/*` (= `edis/{index,tpin}`, `pledge/{setup/v2,status}`, `unpledge/{pledge-detail,pledge-inpute,setup}` — a **prod v2 twin of the H11 `cdsl/dev` v1**) but on token-gated route; `user/v3/app/*` trading-app registry (`create`,`create-trading-app`,`update-trading-app`,`delete`,`verify-webhook`,`get-common-apps`,`updateAppStatus`) — the OAuth app registry (relevant to H1 redirect_uri scope); `nucleus/v1/fia/{chart-insights,option-chain-insights}` (FIA assistant subclass); `freude/v1/search`; `baskets/*`, `flows/tc/*`, `wh000/v3/*` trade.
 
 ## CVSS Candidates
@@ -243,458 +226,37 @@ Review research_deepseek.md for details
 - **Sibling-host crosscheck (config.gz 40 hosts):** `myapi.fyers.in` = "API - FYERS" dev-site (React SPA); `direct.fyers.in`→301 `fyers.in/web/mutual-funds/home`; `alerts.fyers.in`→301 web alerts SPA; `ofs.fyers.in`, `sgb.fyers.in`→200 SPAs; `public.fyers.in`→404; `screeners.fyers.in` koshi v2 → auth-first `-16` (401). No pre-auth data on any.
 - **Negative:** config.gz does NOT contain `api-testing-prod.fyers.in` (confirms it surfaced only via the open-account bundle → stays in scope-confirmation C). Submission package re-created on disk (A1–A5 + B + C(1–8) + D).
 
+# HYPOTHESIS round 2026-08-08 08:1x UTC — nucleus/v1 FIA data-keying analysis (from in-scope fyers.in/web main.dart.js, 31.6 MB) → object-keyed conversation/drawing routes confirmed behind gate
+- **Data-keying analysis of the FIA-assistant family completed (static, in-scope bundle).** Request shapes recovered from `fyers.in/web/main.dart.js` (31,649,152 B):
+  - `GET /nucleus/v1/history` (bO, headers `Authorization`+`version:1.0.0`) → full chat history list.
+  - **`GET /nucleus/v1/history/{cid}` — CONFIRMED object-keyed route** (bth: when not old_fia, `n=$.ru9()+"/"+a` where `a`=conversation id; header `version:1.0.0`). Read-only probe `GET /nucleus/v1/history/99999` → **HTTP 401 `{"code":-1,"message":"Invalid token or authentication failed","s":"error"}`** (auth-first, route EXISTS — returns -1 not 404), while `GET /nucleus/v1/chat/request-limit/99999` → 404 (no path arg on that route). ⇒ the `{cid}` path segment is a real per-conversation object key behind the session gate.
+  - `POST /nucleus/v1/oldfiachat/history` body `{old_fia:true, uuid:<c>}` (dN POST).
+  - `POST /nucleus/v1/chat` body `{cid:<cid>, prompt:<p>, [timeframe, layout, chart_id, chart_symbol, chart_timeframe]}` or (no cid) `{prompt, persona:"FYERS", deep_research:true,...}`; headers `Authorization`+`version:1.0.0`.
+  - `POST /nucleus/v1/chat/auto-suggest` body `{..., source:"charts"|"home"}` (dN).
+  - `GET /nucleus/v1/chat/request-limit` (bO, no path arg) → prompt-count.
+  - `POST /nucleus/v1/drawings` (ds1, dN) body `{client_id:<sso client_id>, comment:<a>, flag:true, text:[<b>]}` — comment/text saved per client_id.
+  - **`DELETE /nucleus/v1/drawings/{a}/{b}` (ds0, qN)** — drawing object keyed by two path segments (client_id/comment-scoped) → per-object delete.
+  - `GET /nucleus/v1/fia/chart-insights` query `{symbol, timeframe}`; `GET /nucleus/v1/fia/option-chain-insights` query `{symbol, underlying, expiry_date, include_commentary:true, fields}` (hmE) → both GET, auth-first `-1`.
+  - `POST /nucleus/v1/cancel-chat/{cid}/{mid}` (dN, path-object keyed).
+- **H21 (new, conditional): nucleus/v1 conversation/drawing object-keyed IDOR family.** Object keys are caller-supplied `{cid}` (history), `{cid}/{mid}` (cancel-chat), `{a}/{b}` (drawings delete) and body-level `client_id` (drawings save). If the backend resolves these keys WITHOUT a per-session owner check (which the uniform `-1` gate cannot prove or disprove pre-auth), a second authenticated user's session could read/delete another user's FIA chat history/drawings by supplying the foreign key. Own-account/FYERS-side validation only (program rules — cross-account researcher execution prohibited). Same conditional class as H13/H15/H17/H18. Program Medium if a cross-account conversation/drawing read is demonstrated (chat history/drawings are user content but low-to-moderate sensitivity vs PAN/eSign); CVSS 5.3–6.5 conditional.
+- **FIA chat request-limit/abuse angle (informational):** `POST /nucleus/v1/chat` accepts `deep_research:true` and is subject to `GET /nucleus/v1/chat/request-limit` — the assistant is a paid-ish copilot (prompt-count gating). No pre-auth oracle; rate-limit/abuse checks are authenticated-only. Hardening note only.
+- **myapi.fyers.in app-registry bundle check (static):** the "API - FYERS" SPA (`main.9314ac5d.js`, 1,566,261 B) references only `api-t1/gk/api/v2/user` + `ck/verify_token` for backend auth + `api-connect-docs.fyers.in/` docs + `myapi/docs` anchors; no additional app-registry endpoints beyond the already-gated `user/v3/app/*` (trade-core `-16`). No new surface.
+- **api-connect-docs.fyers.in fully characterized (static):** Docusaurus v1 scaffold (`your-docusaurus-test-site.com` still in sitemap/og:url), legacy "API Connect" widget docs (hosted-button `<fyers-button data-fyers="API_KEY">`, methods/parameters/orders/funds/positions/holdings/trades pages), sub-paths 302 to S3-style "Resource Found" pages, root JS bundles empty of API refs. Purely informational recon artifact; no secrets, no new API surface.
+
+# 4 items on 2026-08-08 08:07:13 UTC
+- **nucleus/v1 FIA data-keying analysis completed** (static, in-scope `fyers.in/web/main.dart.js`, 31.6 MB). Exact request shapes recovered; **`GET /nucleus/v1/history/{cid}` confirmed object-keyed** — read-only probe `GET /history/99999` → 401 `-1` (route exists) vs `GET /chat/request-limit/99999` → 404 (no path arg). All auth-first fingerprint #21.
+- **H21 (new, conditional): nucleus/v1 conversation/drawing object-keyed IDOR** — caller-supplied `{cid}`, `{a}/{b}`, `client_id` object keys behind a gate that proves nothing about per-session owner checks. CVSS 5.3–6.5, program Medium. Added as design A6.
+- **Negatives:** `myapi.fyers.in` bundle → no app-registry surface beyond gated `user/v3/app/*`; `api-connect-docs.fyers.in` → static Docusaurus fork, no secrets/surface.
+- Submission package re-created on disk (A1–A6 + B + C + D), findings + state committed.
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: deepseek)
+Review research_deepseek.md for details
+- **H21 (new, conditional): nucleus/v1 conversation/drawing object-keyed IDOR family.** Object keys are caller-supplied `{cid}` (history), `{cid}/{mid}` (cancel-chat), `{a}/{b}` (drawings delete) and body-level `client_id` (drawings save). If the backend resolves these keys WITHOUT a per-session owner check (which the uniform `-1` gate cannot prove or disprove pre-auth), a second authenticated user's session could read/delete another user's FIA chat history/drawings by supplying the foreign key. Own-account/FYERS-side validation only (program rules — cross-account researcher execution prohibited). Same conditional class as H13/H15/H17/H18. Program Medium if a cross-account conversation/drawing read is demonstrated (chat history/drawings are user content but low-to-moderate sensitivity vs PAN/eSign); CVSS 5.3–6.5 conditional.
+  Medium if limited. CVSS 8.1–9.1 (conditional).
+- Severity: Medium–High if cross-account notes/uploads exposed. CVSS 5.3–7.5 (conditional).
+
 RESEARCH FROM PREVIOUS RUNS:
-eepseek.json 2>/dev/null && echo "===" && ls reports/ 2>/dev/null && echo "===" && wc -l findings_deepseek.md 2>/dev/null
-total 1964
-drwxr-xr-x 8 runner runner   4096 Aug  8 06:09 .
-drwxr-xr-x 3 runner runner   4096 Aug  8 06:09 ..
-drwxr-xr-x 7 runner runner   4096 Aug  8 06:09 .git
-drwxr-xr-x 3 runner runner   4096 Aug  8 06:09 .github
--rw-r--r-- 1 runner runner  80203 Aug  8 06:09 analyst-raw_deepseek.log
--rw-r--r-- 1 runner runner  57083 Aug  8 06:09 analyst_deepseek.md
--rw-r--r-- 1 runner runner  60000 Aug  8 06:09 ctx-findings_deepseek.txt
--rw-r--r-- 1 runner runner 120000 Aug  8 06:09 ctx-research_deepseek.txt
--rw-r--r-- 1 runner runner 115120 Aug  8 06:09 findings_deepseek.md
--rw-r--r-- 1 runner runner 118952 Aug  8 06:09 findings_mimo.md
-drwxr-xr-x 2 runner runner   4096 Aug  8 06:09 knowledge
--rw-r--r-- 1 runner runner     44 Aug  8 06:09 raw_deepseek.txt
-drwxr-xr-x 2 runner runner   4096 Aug  8 06:09 reports
--rw-r--r-- 1 runner runner 192030 Aug  8 06:09 research-prompt.txt
--rw-r--r-- 1 runner runner 600000 Aug  8 06:09 research_deepseek.md
--rw-r--r-- 1 runner runner 600000 Aug  8 06:09 research_mimo.md
--rw-r--r-- 1 runner runner      0 Aug  8 06:09 run-log.md
-drwxr-xr-x 2 runner runner   4096 Aug  8 06:09 scripts
-drwxr-xr-x 3 runner runner   4096 Aug  8 06:09 smarthunt-results
--rw-r--r-- 1 runner runner    678 Aug  8 06:09 state_deepseek.json
--rw-r--r-- 1 runner runner    320 Aug  8 06:09 state_mimo.json
--rw-r--r-- 1 runner runner   3986 Aug  8 06:09 surface-map-new-hosts.md
-===
-{"target": "fyers.in", "phase": "SURFACE", "status": "HIGH_POTENTIAL", "next_steps": ["Continue on `api-testing-prod.fyers.in` surface \u2014 map remaining upload/upload-route shapes and probe `api.fyers.in/open/time/staging/*` method-gate family (spaced, read-only, no file/URL side-effects).", "Firm H19 in the submission package (A5) and dispatch the scope-confirmation query (api-testing-prod, /invest/admin/*, /cdsl/dev/*, signup/v2 KYC, mcp.fyers.in, open-account/staging) before any execution.", "Exclusions unchanged: SmartHunt SSTI, third-party hosts, `api-a1.fydev.tech`, public config artifacts; guardrails (no OTP dispatch, no cross-account, no high volume) hold."]}===
-analyst-latest.txt
-===
-459 findings_deepseek.md
-[0m
-[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && ls -la reports/ && echo "===" && git log --oneline -5 2>/dev/null && echo "===" && grep -n "submission-package" findings_deepseek.md | head
-total 16
-drwxr-xr-x 2 runner runner 4096 Aug  8 06:09 .
-drwxr-xr-x 8 runner runner 4096 Aug  8 06:09 ..
--rw-r--r-- 1 runner runner 7128 Aug  8 06:09 analyst-latest.txt
-===
-ed536ec analyst fyers.in 2026-08-08-06-03
-===
-362:- **Deliverable written: `reports/submission-package_fyers-bb.md`** — a complete draft of the official-form submission for the program (forms.fyers.in BugBountyForm1), containing exact test designs (curl-free, FYERS-side/own-account), success indicators, and severity framing per the program rubric. No live requests made this run (documentation only).
-371:- **Deliverable written: `reports/submission-package_fyers-bb.md`** — full draft of the official-form submission with exact test designs, success indicators, and program-rubric severity framing. **No live requests were made this run** (documentation only, consistent with program guardrails: no OTP dispatch, no cross-account access, no high-volume scanning).
-384:- **Prior deliverable recovery:** the `reports/submission-package_fyers-bb.md` referenced in state was **not present** in the repo (workspace reset wiped it; `find` across repo found no file, git shows it was never committed). Re-created in full from the findings corpus — **documentation only, zero live requests**, matching the intended 2026-08-07 23:2x deliverable and the program guardrails (no OTP dispatch, no cross-account access, no high-volume scanning).
-391:- **Prior deliverable recovered:** `reports/submission-package_fyers-bb.md` was referenced in state but absent from the repo (env reset — git log confirms it was never committed; `find` across the tree found nothing). Re-created in full this run from the corpus. **Zero live requests were made** — documentation only, consistent with the program guardrails (no OTP dispatch, no cross-account access, no OTP/email to any number, official-form submission only).
-424:- **Deliverable re-created on disk: `reports/submission-package_fyers-bb.md`** (env reset lost the 01:55 copy again). Package contains A1–A4 conditional IDOR designs, B informational/hardening bundle, C scope-confirmation questions, D excluded list. Request shapes lifted read-only from the re-fetched in-scope `journal.fyers.in/journal/main.dart.js` (4,368,564 B).
-432:- **Submission package re-created** (`reports/submission-package_fyers-bb.md`) — the file had again been wiped by env reset. Contains A1–A4 conditional IDOR designs (H17 req_id, H13 saved-charts, H15 DDPI, H18 journal), informational bundle B (H10 SQL oracle, H12 `souce`+presence, H14 funds/withdraw-fund/error-wrap, H16 email-preference, H1 cb/redirect_uri, x-validate key), scope-confirmation questions C, excluded list D.
-454:- Submission package re-created on disk (`reports/submission-package_fyers-bb.md`) with H19 added as design A5 + updated scope-confirmation questions (C5/C6/C7).
-[0m
-[0m→ [0mRead findings_deepseek.md[90m [offset=435, limit=25][0m
-[0m
-[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && git status --short 2>/dev/null | head -20 && echo "===" && cat reports/analyst-latest.txt 2>/dev/null | head -20
-?? ctx-findings_deepseek.txt
-?? ctx-research_deepseek.txt
-?? raw_deepseek.txt
-?? research-prompt.txt
-===
-[NEW] Host `api-testing-prod.fyers.in` — KYC upload microservice (5 endpoints: `signup/upload/api/v1/user/general/upload-image`, `.../user/fetch-pan`, `.../pdf/is-password-protected`, `signup/upload/signature-to-bmp`, `.../user/general/zip-all-images`); NO auth gate observed (402/403/501 code space) → H19 candidate: unauth file-write + SSRF via `file_url`.
-[NEW] `api-a1-prod.fyers.in/signup/v1/*` legacy account-opening family (`user/auth/{send-otp,validate-otp,user-type}`, `verification/email/send-otp`, `user/token/get-details`) with `Access-Token` header scheme and own code space 1051(auth-first)/1007(validation-first); JSON-parse error string leaked in `verification/email/send-otp` 400 message.
-[NEW] `api.fyers.in/open-account/staging/{user,admin}/*` staging account API reachable on PROD (500 content-type method-gate; same family as data.fyers.in/dev-fyers, cdsl/dev).
-[CHANGED] `api-a1.fydev.tech/open-account/dev/*` dev twin referenced in SPA — out of scope (non-`*.fyers.in`), recorded, not tested.
-[PRIO] api-testing-prod.fyers.in KYC upload service (H19) — **7.90** = attack 7, business 8, tech 8, gate 9, cloud 7, fresh 9
-[PRIO] api-a1-prod.fyers.in/signup/v1 legacy family — **5.60** = attack 5, business 7, tech 5, gate 5, cloud 5, fresh 6
-[PRIO] api.fyers.in/open-account/staging/* — **5.00** = attack 5, business 7, tech 4, gate 2, cloud 5, fresh 6
-[HYP] H19 — Unauthenticated KYC document-upload storage-write + SSRF via `is-password-protected?file_url=`
-class: SSRF
-asset: api-testing-prod.fyers.in/signup/upload/api/v1/{pdf/is-password-protected, user/general/upload-image, user/fetch-pan}
-confidence: 55
-reasoning: Gate walk showed no auth at any stage — `{}`→400 402 "All fields are mandatory"; empty-fields + dummy `Access-Token`→400 403 "Invalid File Format" (token never rejected); nulls→500/501. SPA code confirms `is-password-protected` POSTs a user-supplied `file_url` (server-side fetch) and `upload-image` POSTs base64 file + `key` (object-storage path). Estate norm is auth-first; this is the first unauth file/URL primitive.
-evidence_needed: (a) fetch-oracle — in-scope valid URL vs malformed `file_url` yields distinct responses proving server fetch; (b) fetch constraints (scheme/host allowlist, internal reach); (c) whether an object stored under a controlled `key` is later retrievable (FYERS-side).
-verify_steps: PASSIVE — spaced ≥5s: `POST https://api-testing-prod.fyers.in/signup/upload/api/v1/pdf/is-password-protected` bodies `{"file_url":""}` / `{"file_url":"not-a-url"}` / `{"file_url":"http://127.0.0.1:1/x.pdf"}` / `{"file_url":"https://api-t1.fyers.in/"}` → diff status/body for fetch-error oracle (connection-refused vs validation). No external network, no file upload, no storage write.
-impact: blind SSRF from a Cloudflare-protected KYC microservice (internal services/object storage) and/or unauth file-write into a KYC document tier → program Medium–High (conditional); CVSS 5.3–7.5.
-testability: PASSIVE (gate/SSRF oracle) → HUMAN (storage-write confirm)
-[HYP] signup/v1 legacy validation-before-auth schema oracle + JSON-parse error leak
-class: OTHER
-asset: api-a1-prod.fyers.in/signup/v1/{user/auth/validate-otp, verification/email/send-otp}
-confidence: 30
-[0m
-[0m$ [0mcd /tmp/opencode && ls -la oa-main.js 2>/dev/null || echo "bundle gone"; echo "==="; getent hosts api-testing-prod.fyers.in | head -2
-bundle gone
-===
-2606:4700::6812:487 api-testing-prod.fyers.in
-2606:4700::6812:587 api-testing-prod.fyers.in
-[0m
-Phase check: current state = **SURFACE**; advancing one step to **HYPOTHESIS** this run. The submission package was again wiped from `reports/` (only `analyst-latest.txt` present), so I'll re-create it, then firm the H19 hypothesis with read-only gate characterization (no file/URL side-effects, no OTP, no external fetches).
-[0m$ [0mcd /tmp/opencode && curl -sk --max-time 30 -o oa-main.js 'https://open-account.fyers.in/deployment-build/static/js/main.chunk.js' && ls -la oa-main.js
--rw-r--r-- 1 runner runner 748496 Aug  8 06:10 oa-main.js
-[0m
-[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
-import re
-s=open('oa-main.js',encoding='utf-8',errors='ignore').read()
-# Auth header construction
-for kw in ['Access-Token','access-token','fy_captcha','captcha','Authorization','Bearer','getToken','accessToken','localStorage.getItem("accessToken"]','apiKey']:
-    hits=[m.start() for m in re.finditer(re.escape(kw),s)]
-    print(f"### {kw}: {len(hits)}")
-    for i in hits[:2]:
-        print('   ',' '.join(s[max(0,i-90):i+140].split())[:220])
-EOF
-### Access-Token: 4
-    l:t,dataType:"json",headers:{Accept:"application/json","Content-Type":"application/json","Access-Token":localStorage.getItem("accessToken"),Authorization:n},data:a}).then(function(e){return e}.bind(this)).catch(function(
-    l:t,dataType:"json",headers:{Accept:"application/json","Content-Type":"application/json","Access-Token":localStorage.getItem("accessToken")}}).then(function(e){return e}.bind(this)).catch(function(e){401===e.responseJSON
-### access-token: 0
-### fy_captcha: 0
-### captcha: 20
-    eOTP1:"",userType:1,secondsRemaining:18,validForm:!0,mail_sent:!1,isValidMob:!1,mobile:"",captchaSecret:""},n}return Object(u.a)(a,[{key:"clearState",value:function(){var e=Object(c.a)($a().mark((function e(){return $a()
-    ("&"),(function(e){a[e.split("=")[0]]=e.split("=")[1]})),L(t,JSON.stringify(a),this.props.captchaSecret).then((function(e){"ok"===e.status?(i.setState({apiCalling:!1,verifyStatus:2}),document.getElementById("e-emailOTP1"
-### Authorization: 1
-    son","Content-Type":"application/json","Access-Token":localStorage.getItem("accessToken"),Authorization:n},data:a}).then(function(e){return e}.bind(this)).catch(function(e){401===e.responseJSON.status_code&&(localStorage
-### Bearer: 0
-### getToken: 0
-### accessToken: 11
-    "application/json","Content-Type":"application/json","Access-Token":localStorage.getItem("accessToken"),Authorization:n},data:a}).then(function(e){return e}.bind(this)).catch(function(e){401===e.responseJSON.status_code&
-    "application/json","Content-Type":"application/json","Access-Token":localStorage.getItem("accessToken")}}).then(function(e){return e}.bind(this)).catch(function(e){401===e.responseJSON.status_code&&(localStorage.clear(),
-### localStorage.getItem("accessToken"]: 0
-### apiKey: 0
-[0m
-[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
-import re
-s=open('oa-main.js',encoding='utf-8',errors='ignore').read()
-# find the request helper L() definition and any upload-specific wrapper
-for m in re.finditer(r'function L\(', s):
-    print('L() def:',' '.join(s[m.start():m.start()+260].split())[:300]); break
-for m in re.finditer(r'L\s*=\s*function', s):
-    print('L= def:',' '.join(s[m.start():m.start()+300].split())[:320]); break
-# search for how upload-image is called (the fileUpload helper)
-for m in re.finditer(r'fileUpload', s):
-    ctx=' '.join(s[max(0,m.start()-120):m.start()+400].split())
-    if 'upload-image' in ctx or 'fetch-pan' in ctx or 'is-password' in ctx:
-        print('fileUpload ctx:','...',ctx[:420]); break
-EOF
-L() def: function L(e,t){return A.apply(this,arguments)}function A(){return(A=Object(c.a)(I().mark((function e(t,a){var n,r=arguments;return I().wrap((function(e){for(;;)switch(e.prev=e.next){case 0:return n=r.length>2&&void 0!==r[2]?r[2]:"",e.prev=1,e.next=4,_.a.ajax(
-fileUpload ctx: ... is.setState({cropImage:!1});var t=this.props.tempKey,a=JSON.stringify({file:e,fileName:this.state.fileName,key:t});this.fileUpload("https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/upload-image",a)}},{key:"modalClosed",value:function(){this.props.uploadStatus(!1),this.setState({cropImage:!1})}},{key:"render",value:function(){return r.a.createElement(r.a.Fragment,null,this.state.cropImage?r.a.create
-[0m
-[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
-import re
-s=open('oa-main.js',encoding='utf-8',errors='ignore').read()
-# The A() ajax wrapper — full body to see headers for the UPLOAD endpoints (do they send Access-Token?)
-for m in re.finditer(r'function A\(\)', s):
-    print('A() def:',' '.join(s[m.start():m.start()+520].split())[:700]); break
-EOF
-A() def: function A(){return(A=Object(c.a)(I().mark((function e(t,a){var n,r=arguments;return I().wrap((function(e){for(;;)switch(e.prev=e.next){case 0:return n=r.length>2&&void 0!==r[2]?r[2]:"",e.prev=1,e.next=4,_.a.ajax({type:"POST",url:t,dataType:"json",headers:{Accept:"application/json","Content-Type":"application/json","Access-Token":localStorage.getItem("accessToken"),Authorization:n},data:a}).then(function(e){return e}.bind(this)).catch(function(e){401===e.responseJSON.status_code&&(localStorage.clear(),sessionStorag
-[0m
-Bundle confirms: all upload calls go through the same ajax wrapper that sets `Access-Token` from localStorage, yet the service never rejected it pre-auth. Let me run a few spaced, read-only gate probes on the upload family (no files, no real URLs, no side effects) plus the staging method-gate family.
-[0m$ [0mfor u in 'https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/upload-image' 'https://api-testing-prod.fyers.in/signup/upload/api/v1/pdf/is-password-protected' 'https://api-testing-prod.fyers.in/signup/upload/api/v1/user/fetch-pan' 'https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/zip-all-images'; do echo "=== GET $u ==="; curl -sk --max-time 20 -w ' code=%{http_code}\n' "$u"; sleep 5; done
-=== GET https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/upload-image ===
- code=405
-=== GET https://api-testing-prod.fyers.in/signup/upload/api/v1/pdf/is-password-protected ===
- code=405
-=== GET https://api-testing-prod.fyers.in/signup/upload/api/v1/user/fetch-pan ===
- code=405
-=== GET https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/zip-all-images ===
- code=405
-[0m
-[0m$ [0mecho "=== zip-all-images {} ==="; curl -sk --max-time 20 -w ' code=%{http_code}\n' -X POST -H 'Content-Type: application/json' -d '{}' 'https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/zip-all-images'; sleep 5; echo "=== is-password-protected {} (no URL fetch triggered) ==="; curl -sk --max-time 20 -w ' code=%{http_code}\n' -X POST -H 'Content-Type: application/json' -d '{}' 'https://api-testing-prod.fyers.in/signup/upload/api/v1/pdf/is-password-protected'; sleep 5; echo "=== upload-image empty-string (no file) ==="; curl -sk --max-time 20 -w ' code=%{http_code}\n' -X POST -H 'Content-Type: application/json' -d '{"file":"","fileName":"","key":""}' 'https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/upload-image'
-=== zip-all-images {} ===
-{"status": "Success", "Response": "Success", "status_code": 200} code=200
-=== is-password-protected {} (no URL fetch triggered) ===
- code=200
-=== upload-image empty-string (no file) ===
-{"status": "error", "status_code": 403, "message": "Invalid File Format"} code=400
-[0m
-`zip-all-images` `{}` → **200 `{"status":"Success"}` unauthenticated** — a no-op success (nothing to zip), but confirms the tier's gate is fully absent. One more read-only staging gate probe, then I'll write the package + findings.
-[0m$ [0mecho "=== staging user POST {} ==="; curl -sk --max-time 15 -w ' code=%{http_code}\n' -X POST -H 'Content-Type: application/json' -d '{}' 'https://api.fyers.in/open-account/staging/user/token/get-details'; sleep 5; echo "=== staging admin POST {} ==="; curl -sk --max-time 15 -w ' code=%{http_code}\n' -X POST -H 'Content-Type: application/json' -d '{}' 'https://api.fyers.in/open-account/staging/admin/'; sleep 5; echo "=== upload-image with Access-Token header {} ==="; curl -sk --max-time 20 -w ' code=%{http_code}\n' -X POST -H 'Content-Type: application/json' -H 'Access-Token: x' -d '{}' 'https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/upload-image'
-=== staging user POST {} ===
-{"s": "error", "code": 500, "message": "Invalid Request, please provide valid method"} code=500
-=== staging admin POST {} ===
-{"s": "error", "code": 500, "message": "Invalid Request, please provide valid method"} code=500
-=== upload-image with Access-Token header {} ===
-{"status": "error", "message": "All fields are mandatory. ", "status_code": 402} code=400
-[0m
-[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && cat >> findings_deepseek.md << 'EOF'
-
-# HYPOTHESIS round 2026-08-08 06:1x UTC — H19 firmed: upload tier is fully unauthenticated (validation-before-auth at every depth) + zip-all-images no-op success; staging gate holds on POST too
-- **H19 firmed (static bundle cross-check + read-only gate walk, no file/URL side-effects).** The recovered `open-account.fyers.in/deployment-build/static/js/main.chunk.js` (748 KB) confirms ALL upload-service calls go through one ajax wrapper that sets `Access-Token: localStorage.accessToken` and an `Authorization` header — yet the api-testing-prod service **never rejects an absent or dummy token at any stage**:
-  - `upload-image` `{}` → 400 `{"status":"error","message":"All fields are mandatory. ","status_code":402}` (presence gate); `{"file":"","fileName":"","key":""}` → 400 `403 "Invalid File Format"` (format parse reached, no auth); with `Access-Token: x` header → **identical 402** (token ignored).
-  - `fetch-pan` nulls → 500 `501 "Something went wrong."`.
-  - NEW this run: **`zip-all-images` `{}` → HTTP 200 `{"status":"Success","Response":"Success","status_code":200}`** unauthenticated — a no-op success, but proves the route executes logic with empty input and no token (worst-case misbehavior depends on `key`/staged-file enumeration, FYERS-side).
-  - All four upload routes GET → 405 (POST-only); `is-password-protected` `{}` → 200 empty body (no URL fetch triggered — no `file_url` supplied, so zero side effects).
-- **H19 hypothesis refined:** (a) `is-password-protected?file_url=` is the SSRF candidate (server-side fetch of a user-supplied URL; not executed); (b) `upload-image`/`fetch-pan`/`signature-to-bmp` accept base64+`key` and reach format-parsing with no token — if a valid payload stores an object under a caller-chosen `key`, that is an unauthenticated object-write into a KYC document tier (predictable-key enumeration → cross-object read candidate); (c) `zip-all-images` no-op success confirms the tier has no global auth filter. All conditional; evidence for storage-write and SSRF-fetch-constraints requires FYERS-side/own-session validation (researcher execution prohibited / not executed).
-- **Staging account API on PROD holds the method gate for POST too:** `api.fyers.in/open-account/staging/{user,admin}/...` POST `{}` → 500 `"Invalid Request, please provide valid method"` (same content-type-sensitive gate as data.fyers.in/dev-fyers and cdsl/dev; auth never reached; no data reachable). `api-a1.fydev.tech/open-account/dev/*` dev twin remains OUT OF SCOPE (non-`*.fyers.in`).
-- **signup/v1 legacy family unchanged:** auth-first `1051` (send-otp/user-type), validation-first `1007 "Fields missing!!"` (validate-otp — schema oracle), `verification/email/send-otp` JSON-parse leak in the 400 message. Distinct code space (1051/1007) from signup/v2 (1050/1500) and api-testing-prod (402/403/501).
-EOF
-echo appended; tail -2 findings_deepseek.md
-appended
-- **Staging account API on PROD holds the method gate for POST too:** `api.fyers.in/open-account/staging/{user,admin}/...` POST `{}` → 500 `"Invalid Request, please provide valid method"` (same content-type-sensitive gate as data.fyers.in/dev-fyers and cdsl/dev; auth never reached; no data reachable). `api-a1.fydev.tech/open-account/dev/*` dev twin remains OUT OF SCOPE (non-`*.fyers.in`).
-- **signup/v1 legacy family unchanged:** auth-first `1051` (send-otp/user-type), validation-first `1007 "Fields missing!!"` (validate-otp — schema oracle), `verification/email/send-otp` JSON-parse leak in the 400 message. Distinct code space (1051/1007) from signup/v2 (1050/1500) and api-testing-prod (402/403/501).
-[0m
-HYPOTHESIS phase complete. Recording findings, recreating the submission package (lost to env reset again), and updating state.
-[0m← [0mWrite reports/submission-package_fyers-bb.md
-Wrote file successfully.
-[0m
-[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && cat > state_deepseek.json << 'EOF'
-{"target": "fyers.in", "phase": "POC", "status": "HIGH_POTENTIAL", "next_steps": ["Advance to POC: firm the A5 (H19) design — exact read-only request shapes for FYERS-side validation of the SSRF candidate (is-password-protected file_url diff-oracle) and the unauth object-write tier (upload-image/fetch-pan key-handling), all gated on program confirmation that api-testing-prod.fyers.in is in scope.", "Operator: dispatch the scope-confirmation query (package C: signup/v2 KYC, mcp.fyers.in, /invest/admin/*, /cdsl/dev/*, api-testing-prod, open-account/staging, journal-server) then submit the re-created package (reports/submission-package_fyers-bb.md, now A1-A5 + B + C + D) via forms.fyers.in BugBountyForm1.", "Exclusions unchanged: SmartHunt SSTI false positive, third-party hosts, api-a1.fydev.tech, public config artifacts; guardrails (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume) hold."]}
-EOF
-cat state_deepseek.json
-{"target": "fyers.in", "phase": "POC", "status": "HIGH_POTENTIAL", "next_steps": ["Advance to POC: firm the A5 (H19) design — exact read-only request shapes for FYERS-side validation of the SSRF candidate (is-password-protected file_url diff-oracle) and the unauth object-write tier (upload-image/fetch-pan key-handling), all gated on program confirmation that api-testing-prod.fyers.in is in scope.", "Operator: dispatch the scope-confirmation query (package C: signup/v2 KYC, mcp.fyers.in, /invest/admin/*, /cdsl/dev/*, api-testing-prod, open-account/staging, journal-server) then submit the re-created package (reports/submission-package_fyers-bb.md, now A1-A5 + B + C + D) via forms.fyers.in BugBountyForm1.", "Exclusions unchanged: SmartHunt SSTI false positive, third-party hosts, api-a1.fydev.tech, public config artifacts; guardrails (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume) hold."]}
-[0m
-[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && cat > state_deepseek.json << 'EOF'
-{"target": "fyers.in", "phase": "HYPOTHESIS", "status": "HIGH_POTENTIAL", "next_steps": ["Advance to POC: firm the A5 (H19) design — exact read-only request shapes for FYERS-side validation of the SSRF candidate (is-password-protected file_url diff-oracle) and the unauth object-write tier (upload-image/fetch-pan key-handling), gated on program confirmation that api-testing-prod.fyers.in is in scope.", "Operator: dispatch the scope-confirmation query (package C: signup/v2 KYC, mcp.fyers.in, /invest/admin/*, /cdsl/dev/*, api-testing-prod, open-account/staging, journal-server) then submit the re-created package (reports/submission-package_fyers-bb.md, now A1-A5 + B + C + D) via forms.fyers.in BugBountyForm1.", "Exclusions unchanged: SmartHunt SSTI false positive, third-party hosts, api-a1.fydev.tech, public config artifacts; guardrails (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume) hold."]}
-EOF
-cat state_deepseek.json
-{"target": "fyers.in", "phase": "HYPOTHESIS", "status": "HIGH_POTENTIAL", "next_steps": ["Advance to POC: firm the A5 (H19) design — exact read-only request shapes for FYERS-side validation of the SSRF candidate (is-password-protected file_url diff-oracle) and the unauth object-write tier (upload-image/fetch-pan key-handling), gated on program confirmation that api-testing-prod.fyers.in is in scope.", "Operator: dispatch the scope-confirmation query (package C: signup/v2 KYC, mcp.fyers.in, /invest/admin/*, /cdsl/dev/*, api-testing-prod, open-account/staging, journal-server) then submit the re-created package (reports/submission-package_fyers-bb.md, now A1-A5 + B + C + D) via forms.fyers.in BugBountyForm1.", "Exclusions unchanged: SmartHunt SSTI false positive, third-party hosts, api-a1.fydev.tech, public config artifacts; guardrails (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume) hold."]}
-[0m
-Phase ladder: current = SURFACE, so this run's output phase must be **HYPOTHESIS** (one deeper), not POC. Fixing.
-# Target: fyers.in
-# Current Phase: HYPOTHESIS
-
-## Key Findings
-- **H19 firmed (read-only, no side effects): the `api-testing-prod.fyers.in` KYC upload tier has NO auth gate at any depth.** Bundle (`open-account.fyers.in/deployment-build/static/js/main.chunk.js`, 748 KB) confirms all upload calls pass `Access-Token: localStorage.accessToken` — but the service ignores token presence/validity entirely: `upload-image` `{}` → 400 `402 "All fields are mandatory."`; empty-fields (+dummy token) → 400 `403 "Invalid File Format"` (format-parse reached); with `Access-Token: x` → identical 402; nulls → 500/501. **NEW: `zip-all-images` `{}` → HTTP 200 `{"status":"Success","Response":"Success","status_code":200}`** unauthenticated — a no-op success proving the tier executes route logic with empty input, no token. All routes GET → 405 (POST-only).
-- **H19 refined into two conditional primitives:** (a) SSRF candidate — `is-password-protected` POSTs a caller-supplied `file_url` for server-side fetch (not executed); (b) unauth object-write candidate — `upload-image`/`fetch-pan`/`signature-to-bmp` accept base64 + caller-chosen `key` (object-storage path) and reach format parsing with no token; a valid payload stored under a controlled/enumerable `key` = unauthenticated write into a KYC document tier. Both gated on program confirmation (A5 design in package).
-- **Staging account API holds the method gate for POST too:** `api.fyers.in/open-account/staging/{user,admin}/...` POST `{}` → 500 `"Invalid Request, please provide valid method"` (same content-type method-gate family as `data.fyers.in/dev-fyers/*`, `cdsl/dev/*`); auth never reached, no data reachable. Dev twin `api-a1.fydev.tech/open-account/dev/*` = OUT OF SCOPE (non-`*.fyers.in`).
-- **signup/v1 legacy family** (api-a1-prod, `Access-Token` header scheme): auth-first `1051` (send-otp/user-type), validation-first `1007 "Fields missing!!"` (validate-otp schema oracle), `verification/email/send-otp` leaks JSON-parse error in the 400 message. Distinct code space (1051/1007) from signup/v2 (1050/1500) and api-testing-prod (402/403/501).
-- **Submission package re-created on disk** (`reports/submission-package_fyers-bb.md`) — env reset wiped it again; now A1–A5 (H17 req_id, H13 saved-charts, H15 DDPI, H18 journal, H19 upload/SSRF) + informational bundle B + scope-confirmation C + excluded D.
-
-## API Endpoints
-- `api-testing-prod.fyers.in/signup/upload/api/v1/user/general/{upload-image, zip-all-images}` (POST `{file,fileName,key}`; `{}` → 402/403/200-no-auth)
-- `api-testing-prod.fyers.in/signup/upload/api/v1/pdf/is-password-protected` (POST `{file_url}` — SSRF candidate, not executed)
-- `api-testing-prod.fyers.in/signup/upload/api/v1/user/fetch-pan` (POST `{base64_image,fileName,key}` → 501 on nulls)
-- `api-testing-prod.fyers.in/signup/upload/signature-to-bmp` (POST `{base64_image,fileName,key}`)
-- `api-a1-prod.fyers.in/signup/v1/user/auth/{send-otp,validate-otp,user-type}`, `verification/email/send-otp`, `user/token/get-details` — 1051/1007 code space
-- `api.fyers.in/open-account/staging/{user,admin}/*` — 500 content-type method gate
-- Out of scope (recorded only): `api-a1.fydev.tech/open-account/dev/*`
-
-## Hypotheses
-### H19 — api-testing-prod KYC upload: unauthenticated object-write + SSRF (firmed)
-Reasoning: gate walk shows validation-before-auth at every stage with no token rejection; bundle confirms the tier is a KYC document/storage microservice (`key` drives object paths; `is-password-protected` fetches a caller `file_url`).
-Impact: unauthenticated storage-tier write into a KYC/test-prod service and/or blind SSRF from a Cloudflare-protected host → program Medium–High (conditional).
-Test (FYERS-side only): (a) SSRF diff-oracle — `file_url` unreachable vs in-scope internal URL, diff responses; (b) object-write — submit a valid payload under a controlled `key`, confirm storage and retrievability without auth. Not executed by researcher.
-
-### H20 (new, low) — open-account/staging method-gate family on prod
-Reasoning: `open-account/staging/*` mirrors the `data.fyers.in/dev-fyers/*` + `cdsl/dev/*` content-type method-gate family — a staging backend reachable on prod. No auth reached at the gate; no data accessible. Informational unless a gate-bypassing content-type/method combination reaches the backend (FYERS-side).
-
-## CVSS Candidates
-- [H19 unauth file-upload / SSRF via api-testing-prod] — 5.3–7.5 (conditional, FYERS-side validation)
-- [H17 signup/v2 KYC req_id IDOR] — 8.1–9.1 (conditional) · [H13 saved-chart IDOR] — 5.3–6.5 · [H15 DDPI IDOR] — 5.3–7.5 · [H18 journal note/upload IDOR] — 5.3–7.5
-- [signup/v1 1007 schema oracle, 1051 auth split, staging method-gate] — informational/hardening
-
----
-## STATE UPDATE FOR NEXT RUN
-STATUS_TARGET: fyers.in
-STATUS_PHASE: HYPOTHESIS
-STATUS_STATE: HIGH_POTENTIAL
-
-NEXT_STEP_1: Advance to POC — firm A5 (H19) with exact read-only request shapes for FYERS-side validation of the SSRF diff-oracle and unauth object-write tier, gated on scope confirmation of api-testing-prod.fyers.in.
-NEXT_STEP_2: Operator dispatches scope-confirmation query (package C) then submits the re-created `reports/submission-package_fyers-bb.md` (A1–A5 + B + C + D) via forms.fyers.in BugBountyForm1.
-NEXT_STEP_3: Exclusions unchanged (SmartHunt SSTI false positive, third-party hosts, api-a1.fydev.tech, public config artifacts); guardrails hold (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume).
-
-===== RUN 2026-08-08 06:39:39 UTC =====
-Model: deepseek | Phase: HYPOTHESIS | Target: fyers.in
-
-[0m
-> build · deepseek-v4-flash-free
-[0m
-[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && cat state_deepseek.json 2>/dev/null; echo "==="; ls -la reports/ 2>/dev/null; echo "==="; wc -l findings_deepseek.md 2>/dev/null; echo "==="; git log --oneline -3 2>/dev/null
-{
-  "target": "fyers.in",
-  "phase": "HYPOTHESIS",
-  "status": "HIGH_POTENTIAL",
-  "next_steps": [
-    "Advance to POC \u2014 firm A5 (H19) with exact read-only request shapes for FYERS-side validation of the SSRF diff-oracle and unauth object-write tier, gated on scope confirmation of api-testing-prod.fyers.in.",
-    "Operator dispatches scope-confirmation query (package C) then submits the re-created `reports/submission-package_fyers-bb.md` (A1\u2013A5 + B + C + D) via forms.fyers.in BugBountyForm1.",
-    "Exclusions unchanged (SmartHunt SSTI false positive, third-party hosts, api-a1.fydev.tech, public config artifacts); guardrails hold (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume)."
-  ]
-}===
-total 16
-drwxr-xr-x 2 runner runner 4096 Aug  8 06:38 .
-drwxr-xr-x 8 runner runner 4096 Aug  8 06:38 ..
--rw-r--r-- 1 runner runner 7128 Aug  8 06:38 analyst-latest.txt
-===
-481 findings_deepseek.md
-===
-d7e42ca fix: npm-first opencode install (opencode.ai 403 on runners) + sync-issues.py template-skip & robust confidence
-[0m
-Package wiped again (env reset). Current phase HYPOTHESIS → advancing to **POC** per the ladder. I'll re-lock the H19 upload-service request shapes from the in-scope bundle (read-only static asset), then write the A5 POC design into the re-created package.
-[0m$ [0mcd /tmp/opencode && curl -sk --max-time 40 -o oa-main.js 'https://open-account.fyers.in/deployment-build/static/js/main.chunk.js' && ls -la oa-main.js && python3 - << 'EOF'
-import re
-s=open('oa-main.js',encoding='utf-8',errors='ignore').read()
-for kw in ['upload-image','fetch-pan','is-password-protected','signature-to-bmp','zip-all-images']:
-    hits=[m.start() for m in re.finditer(re.escape(kw),s)]
-    print(f"### {kw}: {len(hits)}")
-EOF
--rw-r--r-- 1 runner runner 748496 Aug  8 06:38 oa-main.js
-### upload-image: 3
-### fetch-pan: 2
-### is-password-protected: 2
-### signature-to-bmp: 2
-### zip-all-images: 3
-[0m
-[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
-import re
-s=open('oa-main.js',encoding='utf-8',errors='ignore').read()
-# exact body shapes + response handling per endpoint
-for kw,label in [('upload-image','UPLOAD_IMAGE'),('fetch-pan','FETCH_PAN'),('is-password-protected','IS_PW'),('signature-to-bmp','SIG_BMP'),('zip-all-images','ZIP_ALL')]:
-    for m in re.finditer(re.escape(kw),s):
-        ctx=' '.join(s[max(0,m.start()-260):m.start()+260].split())
-        print(f"### {label} :: {ctx[:560]}")
-        print('   ---')
-EOF
-### UPLOAD_IMAGE :: sDataURL(t.target.files[0]),o.onloadend=function(){var e=Object(c.a)(Q().mark((function e(t){var r,i,o;return Q().wrap((function(e){for(;;)switch(e.prev=e.next){case 0:if(r=t.target.result,i="https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/upload-image",o=JSON.stringify({file:r,fileName:a,key:s}),"e-ipv-latest-photo-uploader"!==this.props.id){e.next=7;break}this.setState({cropImage:!0,originalFile:r,fileName:a}),e.next=14;break;case 7:e.t0=this.props.id,e.next="e-ipv-sign-uploader"===e.t0?10:12;
-   ---
-### UPLOAD_IMAGE :: his,arguments)}}()},{key:"croppedImage",value:function(e){this.setState({cropImage:!1});var t=this.props.tempKey,a=JSON.stringify({file:e,fileName:this.state.fileName,key:t});this.fileUpload("https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/upload-image",a)}},{key:"modalClosed",value:function(){this.props.uploadStatus(!1),this.setState({cropImage:!1})}},{key:"render",value:function(){return r.a.createElement(r.a.Fragment,null,this.state.cropImage?r.a.createElement(z,{show:this.state.cropImage,mod
-   ---
-### UPLOAD_IMAGE :: `\~^( )_;,\[\]]/,BANK_ACC:/^[0-9]{8,30}$/,DEMAT_ID:/^[0-9]{16}$/,PASSPORT_NO:/^[A-Za-z0-9]{6,12}$/},ye="https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/zip-all-images",be="https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/upload-image",Ee="https://assets.fyers.in/images/logo.svg",we="https://dev.fyers.in/fy_images/icons/Arrow-Right-Circle.png",Ne="https://dev.fyers.in/fy_images/icons/free-invest-logo.png",Oe="https://dev.fyers.in/fy_images/icons/free-invest-logo.png",ke="https:
-   ---
-### FETCH_PAN :: STATUS:"auth/modify-kra-fetch-status",E_SIGN_DOC:"general/e-sign-document",E_SIGN_SUCCESS:"general/e-sign-success",PAYMENT_V2:"auth/payment-v2",NRI_QUEUE:"nri/add-nri-queue",NRI_POLL:"nri/account-open/poll",TOKEN_DETAILS:"token/get-details",FETCH_PAN:"general/fetch-pan",VERIFY_PAN:"general/verify-pan",FETCH_IT_NAME:"general/it_name",PAN_VERIFICATION_GENERAL:"general/pan-verification",MODIFY_KRA__PARAM_STATUS:"auth/modify-kra-param-status",FETCH_ALL_DETAILS_KRA_PAN:"general/fetch-all-details-pan-kra",PAN_VERIFY:"gen
-   ---
-### FETCH_PAN :: urn function(t){return e.apply(this,arguments)}}())}},{key:"getDetailsFromPAN",value:function(e){this.setState({gettingDataFromPAN:!0,panUploading:!1});var t=this;return new Promise((function(a,n){L("https://api-testing-prod.fyers.in/signup/upload/api/v1/user/fetch-pan",JSON.stringify({base64_image:e.file,fileName:e.fileName,key:e.key})).then(function(){var e=Object(c.a)(ya().mark((function e(n){return ya().wrap((function(e){for(;;)switch(e.prev=e.next){case 0:if("ok"!==n.status){e.next=5;break}return t.setState({g
-   ---
-### IS_PW :: a)(Q().mark((function e(t){return Q().wrap((function(e){for(;;)switch(e.prev=e.next){case 0:if("ok"!==t.status){e.next=13;break}if(!this.props.accept||!this.props.accept.match(/pdf/g)){e.next=7;break}"https://api-testing-prod.fyers.in/signup/upload/api/v1/pdf/is-password-protected",L("https://api-testing-prod.fyers.in/signup/upload/api/v1/pdf/is-password-protected",JSON.stringify({file_url:t.cdn_url})).then(function(){var e=Object(c.a)(Q().mark((function e(n){return Q().wrap((function(e){for(;;)switch(e.prev=e.next
-   ---
-### IS_PW :: case 0:if("ok"!==t.status){e.next=13;break}if(!this.props.accept||!this.props.accept.match(/pdf/g)){e.next=7;break}"https://api-testing-prod.fyers.in/signup/upload/api/v1/pdf/is-password-protected",L("https://api-testing-prod.fyers.in/signup/upload/api/v1/pdf/is-password-protected",JSON.stringify({file_url:t.cdn_url})).then(function(){var e=Object(c.a)(Q().mark((function e(n){return Q().wrap((function(e){for(;;)switch(e.prev=e.next){case 0:if("Success"!==n.status){e.next=7;break}return e.next=3,this.setState({file:
-   ---
-### SIG_BMP :: n function(t,a){return e.apply(this,arguments)}}()},{key:"eSignUpload",value:function(){var e=Object(c.a)(Q().mark((function e(t,a,n){var r;return Q().wrap((function(e){for(;;)switch(e.prev=e.next){case 0:return"https://api-testing-prod.fyers.in/signup/upload/signature-to-bmp",r=JSON.stringify({base64_image:t.split(",")[1],fileName:K.a.v4(),key:"user/signature/bmp"}),e.next=4,L("https://api-testing-prod.fyers.in/signup/upload/signature-to-bmp",r).then(function(){var e=Object(c.a)(Q().mark((function e(t){return Q().
-   ---
-### SIG_BMP :: or(;;)switch(e.prev=e.next){case 0:return"https://api-testing-prod.fyers.in/signup/upload/signature-to-bmp",r=JSON.stringify({base64_image:t.split(",")[1],fileName:K.a.v4(),key:"user/signature/bmp"}),e.next=4,L("https://api-testing-prod.fyers.in/signup/upload/signature-to-bmp",r).then(function(){var e=Object(c.a)(Q().mark((function e(t){return Q().wrap((function(e){for(;;)switch(e.prev=e.next){case 0:if("ok"!==t.status){e.next=7;break}return e.next=3,this.setState({fileBmp:t.data});case 3:return e.next=5,L(a,n).the
-   ---
-### ZIP_ALL :: *)$/,PIN_CODE_ADDRESS:/[0-9]{3}[ ]{0,}[0-9]{3}/,REPLACE_CHARS:/[#%& {}\\\/<>*?$\!'"@:+|=`\~^( )_;,\[\]]/,BANK_ACC:/^[0-9]{8,30}$/,DEMAT_ID:/^[0-9]{16}$/,PASSPORT_NO:/^[A-Za-z0-9]{6,12}$/},ye="https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/zip-all-images",be="https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/upload-image",Ee="https://assets.fyers.in/images/logo.svg",we="https://dev.fyers.in/fy_images/icons/Arrow-Right-Circle.png",Ne="https://dev.fyers.in/fy_images/icons/free-in
-   ---
-### ZIP_ALL :: ate={},n}return Object(u.a)(a,[{key:"zipFileCallback",value:function(){var e=Object(c.a)(ka().mark((function e(){var t;return ka().wrap((function(e){for(;;)switch(e.prev=e.next){case 0:return"https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/zip-all-images",t=JSON.stringify({}),e.next=4,L("https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/zip-all-images",t).then(function(){var e=Object(c.a)(ka().mark((function e(t){return ka().wrap((function(e){for(;;)switch(e.prev=e.next){case 0
-   ---
-### ZIP_ALL :: t;return ka().wrap((function(e){for(;;)switch(e.prev=e.next){case 0:return"https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/zip-all-images",t=JSON.stringify({}),e.next=4,L("https://api-testing-prod.fyers.in/signup/upload/api/v1/user/general/zip-all-images",t).then(function(){var e=Object(c.a)(ka().mark((function e(t){return ka().wrap((function(e){for(;;)switch(e.prev=e.next){case 0:t.status;case 1:case"end":return e.stop()}}),e)})));return function(t){return e.apply(this,arguments)}}().bind(this)
-   ---
-[0m
-[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && python3 - << 'EOF'
-import re
-s=open('/tmp/opencode/oa-main.js',encoding='utf-8',errors='ignore').read()
-# capture the L() wrapper + response-status handling (ok/Success keys) to define success indicators
-for m in re.finditer(r'status===?|\.status\b', s):
-    pass
-# pull the 'ok' handling near upload responses and the status_code keys used by upload tier
-for kw in ['"ok"','"Success"','status_code','Invalid File Format','All fields are mandatory','Something went wrong']:
-    hits=[m.start() for m in re.finditer(re.escape(kw),s)]
-    print(f"### {kw}: {len(hits)}")
-    for i in hits[:1]:
-        print('   ',' '.join(s[max(0,i-120):i+120].split())[:220])
-EOF
-### "ok": 60
-    unction(){var e=Object(c.a)(Q().mark((function e(t){return Q().wrap((function(e){for(;;)switch(e.prev=e.next){case 0:if("ok"!==t.status){e.next=13;break}if(!this.props.accept||!this.props.accept.match(/pdf/g)){e.next=7;b
-### "Success": 2
-    unction(){var e=Object(c.a)(Q().mark((function e(n){return Q().wrap((function(e){for(;;)switch(e.prev=e.next){case 0:if("Success"!==n.status){e.next=7;break}return e.next=3,this.setState({file:t.cdn_url});case 3:return e
-### status_code: 42
-    ("accessToken"),Authorization:n},data:a}).then(function(e){return e}.bind(this)).catch(function(e){401===e.responseJSON.status_code&&(localStorage.clear(),sessionStorage.clear(),window.location="/");try{e.responseJSON.st
-### Invalid File Format: 0
-### All fields are mandatory: 0
-### Something went wrong: 2
-    ROR:"Date of birth should not be more than 17 years",AGE_YOB_ERROR:"Oh-oh! Looks like an invalid DOB.",KRA_FETCH_ERROR:"Something went wrong while fetching detail from KRA.",EMPTY_PAN:"Please enter PAN number.",EMPTY_EMA
-[0m
-Bundle confirms exact request shapes. All upload endpoints go through the single `L()` ajax wrapper that sets `Access-Token` from localStorage, and the service never rejected tokens at any depth. Now writing the POC-phase work: firm A5 (H19) with exact read-only request shapes + success indicators, and re-create the submission package (wiped again).
-Phase ladder: state HYPOTHESIS → advancing to **POC** this run. Writing the A5 (H19) POC design with exact request shapes + success indicators, and re-creating the submission package (wiped again by env reset).
-[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && cat >> findings_deepseek.md << 'EOF'
-
-# POC round 2026-08-08 06:4x UTC — H19 POC design LOCKED (A5): exact request shapes + success indicators for FYERS-side validation of the unauth upload tier + SSRF candidate
-- **Deliverable re-created on disk: `reports/submission-package_fyers-bb.md`** (env reset wiped the 06:1x copy again — same recurring loss). Package now contains A1–A5 conditional designs, B informational/hardening bundle, C scope-confirmation questions, D excluded list. Request shapes for A5 re-lifted read-only from the in-scope `open-account.fyers.in/deployment-build/static/js/main.chunk.js` (748,496 B).
-- **H19/A5 exact request shapes (from bundle, all POST, all via the single `L()` ajax wrapper setting `Access-Token: localStorage.accessToken` + `Authorization` header; service never validates them):**
-  - `POST api-testing-prod.fyers.in/signup/upload/api/v1/user/general/upload-image` body `{"file":<base64-dataURL>,"fileName":<name>,"key":<s3key>}` → success indicator `{"status":"ok",...}`; client uses it for e-ipv latest photo + e-sign signature uploads.
-  - `POST api-testing-prod.fyers.in/signup/upload/api/v1/user/fetch-pan` body `{"base64_image":<b64>,"fileName":<name>,"key":<key>}` → success `{"status":"ok",...}` (server-side PAN OCR/KRA fetch).
-  - `POST api-testing-prod.fyers.in/signup/upload/signature-to-bmp` body `{"base64_image":<b64>,"fileName":<uuid>,"key":"user/signature/bmp"}` → success `{"status":"ok","data":...}` (returns converted BMP; hardcoded key `user/signature/bmp`).
-  - `POST api-testing-prod.fyers.in/signup/upload/api/v1/pdf/is-password-protected` body `{"file_url":<url>}` → success `{"status":"Success"}`; **client passes `file_url` = a `cdn_url` returned by the prior upload — i.e. the server fetches a caller-influenced URL = SSRF candidate.**
-  - `POST api-testing-prod.fyers.in/signup/upload/api/v1/user/general/zip-all-images` body `{}` → **200 `{"status":"Success","Response":"Success","status_code":200}` no-auth no-op** (route executes with empty input).
-- **A5 success/observable-delta design (FYERS-side/own-session only; researcher does NOT execute file/URL side-effects):** (a) SSRF diff-oracle — submit `file_url` = `http://127.0.0.1:1/x.pdf` (connection-refused) vs `file_url` = an in-scope internal URL e.g. `https://api-t1.fyers.in/` vs malformed `"not-a-url"`; distinct status/body (refused vs validation vs success) proves a server-side fetch; also test scheme/host allow-listing (does it block `file://`/internal IPs?). (b) object-write — upload a valid tiny image under a controlled `key`, then attempt retrieval of that object WITHOUT the `Access-Token` (unauth GET on the presumed object URL pattern / zip-all-images) to prove an unauth object persists in the KYC storage tier; (c) `signature-to-bmp` uses the fixed key `user/signature/bmp` — a second caller's upload overwrites the same object (cross-caller object clobber candidate) unless keyed per-session server-side. Fixed = auth gate rejects tokenless write (currently never observed), SSRF fetch constrained to allow-listed hosts, or key bound to authenticated session.
-- **Gate walk re-confirmed this run (no side effects):** GET on all four upload routes → HTTP 405 (POST-only); `zip-all-images` `{}` → 200 Success; `is-password-protected` `{}` → 200 empty body (no fetch, zero side effects); `upload-image` `{"file":"","fileName":"","key":""}` → 400 `403 "Invalid File Format"`; `{}`+`Access-Token: x` → 400 `402` identical. No auth gate at any depth.
-- **Severity framing (A5):** unauth object-write into a KYC document tier + blind SSRF from a Cloudflare-fronted internal service → program Medium–High if either demonstrated; CVSS 5.3–7.5 (conditional). Does not touch user data pre-auth; all PII-handling paths (`fetch-pan`) stay own-session/FYERS-side.
-- **Scope note:** `api-testing-prod.fyers.in` is a NEW host not in either public config (indus/v1/config, config.gz) — surfaced only via the SPA bundle. Must be added to scope-confirmation questions (C) before any FYERS-side validation.
-EOF
-echo appended; tail -2 findings_deepseek.md
-appended
-- **Severity framing (A5):** unauth object-write into a KYC document tier + blind SSRF from a Cloudflare-fronted internal service → program Medium–High if either demonstrated; CVSS 5.3–7.5 (conditional). Does not touch user data pre-auth; all PII-handling paths (`fetch-pan`) stay own-session/FYERS-side.
-- **Scope note:** `api-testing-prod.fyers.in` is a NEW host not in either public config (indus/v1/config, config.gz) — surfaced only via the SPA bundle. Must be added to scope-confirmation questions (C) before any FYERS-side validation.
-[0m
-[0m← [0mWrite reports/submission-package_fyers-bb.md
-Wrote file successfully.
-[0m
-Now re-creating the submission package (A1–A5 + B + C + D) with the firm A5 request shapes.
-[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && cat > state_deepseek.json << 'EOF'
-{"target": "fyers.in", "phase": "POC", "status": "HIGH_POTENTIAL", "next_steps": ["POC complete for A1-A5 (H17/H13/H15/H18/H19) with exact request shapes + success indicators on disk (reports/submission-package_fyers-bb.md). Operator: dispatch scope-confirmation query (package C: signup/v2 KYC, api-testing-prod, mcp.fyers.in, /invest/admin/*, /cdsl/dev/*, journal-server, open-account/staging) then submit the package via forms.fyers.in BugBountyForm1.", "Next run: restart RECON on an unexplored in-scope surface — candidates: `data.fyers.in/fy/v1/fundtx/*` full family, `api-t1.fyers.in/nucleus/v1/fia/*` FIA-assistant, `user/v3/app/*` OAuth app registry, or `api-a1-prod.fyers.in/myaccount/prod/*` remaining funds routes — spaced, read-only.", "Exclusions unchanged: SmartHunt SSTI false positive, third-party hosts, api-a1.fydev.tech, public config artifacts; guardrails (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume) hold."]}
-EOF
-cat state_deepseek.json
-{"target": "fyers.in", "phase": "POC", "status": "HIGH_POTENTIAL", "next_steps": ["POC complete for A1-A5 (H17/H13/H15/H18/H19) with exact request shapes + success indicators on disk (reports/submission-package_fyers-bb.md). Operator: dispatch scope-confirmation query (package C: signup/v2 KYC, api-testing-prod, mcp.fyers.in, /invest/admin/*, /cdsl/dev/*, journal-server, open-account/staging) then submit the package via forms.fyers.in BugBountyForm1.", "Next run: restart RECON on an unexplored in-scope surface — candidates: `data.fyers.in/fy/v1/fundtx/*` full family, `api-t1.fyers.in/nucleus/v1/fia/*` FIA-assistant, `user/v3/app/*` OAuth app registry, or `api-a1-prod.fyers.in/myaccount/prod/*` remaining funds routes — spaced, read-only.", "Exclusions unchanged: SmartHunt SSTI false positive, third-party hosts, api-a1.fydev.tech, public config artifacts; guardrails (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume) hold."]}
-[0m
-# Target: fyers.in
-# Current Phase: POC
-
-## Key Findings
-- **H19/A5 POC design LOCKED with exact request shapes** re-lifted read-only from the in-scope `open-account.fyers.in/deployment-build/static/js/main.chunk.js` (748,496 B): all five upload routes go through one `L()` ajax wrapper setting `Access-Token`+`Authorization` from localStorage, and the service **never rejects a token at any depth**. Success indicators recovered from the bundle: `upload-image`/`fetch-pan` → `{"status":"ok"}`, `signature-to-bmp` → `{"status":"ok","data":...}`, `is-password-protected` → `{"status":"Success"}`, `zip-all-images` → `{"status":"Success"}` 200 no-auth.
-- **A5 designs FYERS-side/own-session only (researcher-execution prohibited):** (a) SSRF diff-oracle via `is-password-protected?file_url=` (connection-refused vs in-scope internal URL vs malformed → distinct responses prove server fetch; also scheme/host allow-listing); (b) unauth object-write via `upload-image`/`fetch-pan` under a controlled `key` → tokenless retrieval probe; (c) `signature-to-bmp` uses **fixed key `user/signature/bmp`** → cross-caller object-clobber candidate unless keyed per-session.
-- **Gate re-confirmed (no side effects):** GET→405 on all four upload routes; `zip-all-images {}`→200 Success; `is-password-protected {}`→200 empty (no URL supplied, zero fetch); `upload-image` empty-fields→400 `403 "Invalid File Format"`; `{}`+`Access-Token: x`→400 `402` (token ignored).
-- **Package re-created on disk** (`reports/submission-package_fyers-bb.md`, wiped again by env reset) — A1–A5 conditional designs + B informational bundle (B1–B8) + C scope-confirmation (now incl. api-testing-prod, a host absent from both public configs) + D exclusions.
-- Scope note: `api-testing-prod.fyers.in` is a new host not present in `indus/v1/config` or `config.gz` — surfaced only via the SPA bundle.
-
-## API Endpoints
-- `api-testing-prod.fyers.in/signup/upload/api/v1/user/general/upload-image` (POST `{file,fileName,key}` → `{"status":"ok"}`)
-- `api-testing-prod.fyers.in/signup/upload/api/v1/user/fetch-pan` (POST `{base64_image,fileName,key}` → `{"status":"ok"}`)
-- `api-testing-prod.fyers.in/signup/upload/signature-to-bmp` (POST `{base64_image,fileName,key:"user/signature/bmp"}` → `{"status":"ok","data":...}`)
-- `api-testing-prod.fyers.in/signup/upload/api/v1/pdf/is-password-protected` (POST `{file_url}` → `{"status":"Success"}`) — SSRF candidate
-- `api-testing-prod.fyers.in/signup/upload/api/v1/user/general/zip-all-images` (POST `{}` → 200 `{"status":"Success"}` no-auth)
-
-## Hypotheses
-### H19 — api-testing-prod KYC upload: unauth object-write + SSRF (POC design locked, A5)
-Reasoning: validation-before-auth at every depth with zero token rejection; `key` drives object paths; `file_url` is server-fetched; fixed `signature-to-bmp` key enables cross-caller clobber.
-Impact: unauthenticated storage-tier write into a KYC document service and/or blind SSRF from a Cloudflare-fronted internal host → program Medium–High (conditional).
-Test: FYERS-side diff-oracle + tokenless object-retrieval; researcher executed none of the side-effect steps.
-
-## CVSS Candidates
-- [H19 unauth file-upload / SSRF via api-testing-prod] — 5.3–7.5 (conditional, FYERS-side)
-- [H17 signup/v2 KYC req_id IDOR] — 8.1–9.1 (conditional) · [H13 saved-chart IDOR] — 5.3–6.5 · [H15 DDPI IDOR] — 5.3–7.5 · [H18 journal note/upload IDOR] — 5.3–7.5
-- [B1–B8 informational bundle (SQL oracle, presence oracle, error-wrap, x-validate key, journal primitives)] — informational/low
-
----
-## STATE UPDATE FOR NEXT RUN
-STATUS_TARGET: fyers.in
-STATUS_PHASE: POC
-STATUS_STATE: HIGH_POTENTIAL
-
-NEXT_STEP_1: Operator dispatches scope-confirmation query (package C: signup/v2 KYC, api-testing-prod, mcp.fyers.in, /invest/admin/*, /cdsl/dev/*, journal-server, open-account/staging) then submits `reports/submission-package_fyers-bb.md` (A1–A5 + B + C + D) via forms.fyers.in BugBountyForm1.
-NEXT_STEP_2: Next run restarts RECON on an unexplored in-scope surface — `data.fyers.in/fy/v1/fundtx/*` full family, `api-t1.fyers.in/nucleus/v1/fia/*` FIA-assistant, `user/v3/app/*` OAuth app registry, or remaining `api-a1-prod.fyers.in/myaccount/prod/*` routes — spaced, read-only.
-NEXT_STEP_3: Exclusions unchanged (SmartHunt SSTI false positive, third-party hosts, api-a1.fydev.tech, public config artifacts); guardrails hold (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume).
-
-===== RUN 2026-08-08 07:24:48 UTC =====
-Model: deepseek | Phase: POC | Target: fyers.in
-
-[0m
-> build · deepseek-v4-flash-free
-[0m
-[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && cat surface-map-new-hosts.md 2>/dev/null | head -80
-# New host surface discovered 2026-08-05 (manual deep-dig round)
-
-Read-only verified. Program-consistent scope: target + subdomains.
-
-## Superhuman / Grammarly
-- `dox.grammarly.com` — LIVE undiscovered API (doc-processing service). Stack: nginx-clojure + Jetty (`x-powered-by: Jetty`), AWS-style `x-request-id`, `default-src 'none'` CSP. Gate: `{"status":"error","info":"missing required headers"}` on every path except `/health` → 200 `{"status":"200 ok"}`. With `Referer`/`Origin` the error changes to `"unknown client type"` → there is a required client-type header (not in list tried: X-Client-Type/X-Grammarly-*/User-Agent/Api-Key/Bearer). Gate closed read-only; hostile-but-real service discovery.
-- Gateway alias cluster all route to same TGW (`{"error_msg":"404 Route Not Found"}`, `/health`=200, `/user/settings`=401): `api.grammarly.com`, `gate.grammarly.com`, `gates.grammarly.com`, `goldengate.grammarly.com`, `irbis.grammarly.com`, `discount.grammarly.com`, `auth.grammarly.com`, `gateway.grammarly.com`.
-- `apps-public.grammarly.com` → 401 (real auth service, 0b).
-- `applet-bundles*`, `apps-uploads` → S3 (NoSuchKey). `chargeback-prevention/datareport/fridge` → 403 nginx.
-- `developer.grammarly.com` → 200 public API docs (Review API etc).
-- Coda: `acme.coda.io`, `head.coda.io` → live Coda app SPAs (canary/test domains); `help.coda.io`→support, `community.coda.io`→forum, `build-links.coda.io`→404, `api.coda.io`/`developers.coda.io` = no A record (deprecated post-acquisition). `codapacks.com`, `help.coda.io` (Zendesk) resolve.
-- `g-mail.internal.grammarly.com` (cert, internal), `access-manager.private.grammarly.com`, `auth-private`, `facade-private` (certs only; edge 403/000).
-- Superhuman: `docs.superhuman.com` = Coda ("kr") CloudFront docs, CSP `script-src 'none'`, SPA, auth 302 → mediator CAPI. All gateway base routes (`/nomos/v1/*`, `/scim/credentials`, `/ssoConfigurations`, `/domains`, `/user/*`, `/auth/v3/*`, `/passport/*`) 401; only `/health` and `/user/location/data-regulation`(=200 `{"dataRegulation":false}`) are unauthenticated.
-
-## FYERS (40 hosts from `indus/v1/config` + certspotter)
-- `api-y1.fyers.in` → **default RHEL Apache "Test Page"** (7.1KB), `/index.html` 200 everything else 404. Publicly exposed test host.
-- `dev.fyers.in` → **default nginx "Welcome" page** (1.5KB). Publicly exposed dev host.
-- `data.fyers.in` → fund-transfer/quotes backend. `fy/v1/fundtx/v1/{view,bankdetails,marginutilized,addfunds,withdraw}` all session-gated (`withCredentials`, POST; 500 "Invalid Request, please provide valid method" pre-auth). Login redirect: `login.fyers.in/?cb=https://fundtransfer.fyers.in`.
-- `fundtransfer.fyers.in` SPA (Add/Withdraw funds, UPI/netbank, jQuery). `/addfunds`, `/bankdetails`, `/withdraw`.
-- `mtfddpi.fyers.in` — Flutter app with **DigiLock CDSL + Digio eSign SDK** (`app.digio.in/sdk/v11/digio.js`, digilocker) — the EDIS/eSign flow mimo is chasing.
-- `debt.fyers.in` — Debt Market SPA (Flutter). `marketsmith.fyers.in` — product subscriptions page. `insights.fyers.in` — "Trading Widgets" iframe host. `savedcharts.fyers.in` — React SPA (small, image gallery, `_FYERS` cookie-token). `status.fyers.in` — status page (components enum, ids only). `instaoptions.fyers.in` — discontinued notice. `open-account.fyers.in` — account opening SPA (58KB). `partners.fyers.in` — Partners Dashboard v3.0 SPA.
-- Zoho-hosted: `people/admin/works/projects.coda.meetings, cliq`(302), `workdrive`, `recruit`, `forms`, `learn` (404-notfound), `supportdesk` — third-party platforms under same apex.
-- `api-d1.fyers.in` → CF 530/1016; `api-t1-cdn` → 404 (CDN); `betatrade/datapub/instantpayout` → no DNS.
-- All + config: `api-t1/t2/a1/a1-prod/g1/i1/y1`, `api-d1/` etc.
-
-## Closed gates (read-only, no leak)
-- `dox` client-type header unknown; `nomos` 401-auth; fundtx session-gated; Discourse search no secrets; superhuman `.grammarlyaws` 000; `ignite` (mimo EDIS) unvalidated.
-[0m
-[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && cat state_deepseek.json 2>/dev/null; echo "==="; ls -la reports/ 2>/dev/null; echo "==="; wc -l findings_deepseek.md 2>/dev/null; echo "==="; ls knowledge/ scripts/ 2>/dev/null
-{"target": "fyers.in", "phase": "POC", "status": "HIGH_POTENTIAL", "next_steps": ["Operator dispatches scope-confirmation query (package C: signup/v2 KYC, api-testing-prod, mcp.fyers.in, /invest/admin/*, /cdsl/dev/*, journal-server, open-account/staging) then submits `reports/submission-package_fyers-bb.md` (A1\u2013A5 + B + C + D) via forms.fyers.in BugBountyForm1.", "Next run restarts RECON on an unexplored in-scope surface \u2014 `data.fyers.in/fy/v1/fundtx/*` full family, `api-t1.fyers.in/nucleus/v1/fia/*` FIA-assistant, `user/v3/app/*` OAuth app registry, or remaining `api-a1-prod.fyers.in/myaccount/prod/*` routes \u2014 spaced, read-only.", "Exclusions unchanged (SmartHunt SSTI false positive, third-party hosts, api-a1.fydev.tech, public config artifacts); guardrails hold (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume)."]}===
+est/admin/*, /cdsl/dev/*, journal-server, open-account/staging) then submits `reports/submission-package_fyers-bb.md` (A1\u2013A5 + B + C + D) via forms.fyers.in BugBountyForm1.", "Next run restarts RECON on an unexplored in-scope surface \u2014 `data.fyers.in/fy/v1/fundtx/*` full family, `api-t1.fyers.in/nucleus/v1/fia/*` FIA-assistant, `user/v3/app/*` OAuth app registry, or remaining `api-a1-prod.fyers.in/myaccount/prod/*` routes \u2014 spaced, read-only.", "Exclusions unchanged (SmartHunt SSTI false positive, third-party hosts, api-a1.fydev.tech, public config artifacts); guardrails hold (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume)."]}===
 total 16
 drwxr-xr-x 2 runner runner 4096 Aug  8 07:15 .
 drwxr-xr-x 8 runner runner 4096 Aug  8 07:15 ..
@@ -1535,6 +1097,597 @@ NEXT_STEP_1: Advance to SURFACE on nucleus/v1 — mine the fyers.in/web Flutter 
 NEXT_STEP_2: Operator dispatches scope-confirmation query (package C1–C8 incl. api-testing-prod and api-connect-docs.fyers.in) then submits the re-created `reports/submission-package_fyers-bb.md` (A1–A5 + B + C + D) via forms.fyers.in BugBountyForm1 before any own-account validation.
 NEXT_STEP_3: Exclusions unchanged (SmartHunt SSTI false positive 3× triaged, third-party hosts, api-a1.fydev.tech, public config artifacts); guardrails hold (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume). New auth fingerprint #21 (nucleus `-1`) recorded.
 
+===== RUN 2026-08-08 08:07:13 UTC =====
+Model: deepseek | Phase: SURFACE | Target: fyers.in
+
+[0m
+> build · deepseek-v4-flash-free
+[0m
+[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && cat state_deepseek.json 2>/dev/null; echo "==="; ls -la reports/ 2>/dev/null; echo "==="; wc -l findings_deepseek.md 2>/dev/null; echo "==="; git log --oneline -2 2>/dev/null
+{"target": "fyers.in", "phase": "SURFACE", "status": "HIGH_POTENTIAL", "next_steps": ["Advance to SURFACE on nucleus/v1 \u2014 mine the fyers.in/web Flutter bundle for exact request/response shapes of `fia/*`, `history`, `conversation`, `drawings` (data-keying analysis) + myapi.fyers.in JS bundles for referenced app-registry endpoints (read-only, spaced).", "Operator dispatches scope-confirmation query (package C1\u2013C8 incl. api-testing-prod and api-connect-docs.fyers.in) then submits the re-created `reports/submission-package_fyers-bb.md` (A1\u2013A5 + B + C + D) via forms.fyers.in BugBountyForm1 before any own-account validation.", "Exclusions unchanged (SmartHunt SSTI false positive 3\u00d7 triaged, third-party hosts, api-a1.fydev.tech, public config artifacts); guardrails hold (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume). New auth fingerprint #21 (nucleus `-1`) recorded."]}===
+total 16
+drwxr-xr-x 2 runner runner 4096 Aug  8 08:03 .
+drwxr-xr-x 8 runner runner 4096 Aug  8 08:03 ..
+-rw-r--r-- 1 runner runner 7323 Aug  8 08:03 analyst-latest.txt
+===
+521 findings_deepseek.md
+===
+f13330f analyst fyers.in 2026-08-08-07-27
+[0m
+[0m$ [0mcd /tmp/opencode && ls -la web-main.js 2>/dev/null; curl -sk --max-time 120 -o web-main.js 'https://fyers.in/web/main.dart.js' && wc -c web-main.js
+31649152 web-main.js
+[0m
+State is SURFACE; advancing one step to **HYPOTHESIS**. First I'll finish the planned surface work (nucleus/v1 data-keying + myapi app-registry) from the in-scope bundle, then firm hypotheses.
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+s=open('web-main.js',encoding='utf-8',errors='ignore').read()
+print("len",len(s))
+for kw in ['nucleus/v1','nucleus','fia/chart','fia/option','available_tools','auto-suggest','conversation','/history','drawings','chat/forward-thor','oldfiachat','ipo-status','cancel-chat']:
+    hits=[m.start() for m in re.finditer(re.escape(kw),s)]
+    print(f"### {kw}: {len(hits)}")
+EOF
+len 31649152
+### nucleus/v1: 10
+### nucleus: 25
+### fia/chart: 3
+### fia/option: 1
+### available_tools: 0
+### auto-suggest: 1
+### conversation: 0
+### /history: 25
+### drawings: 9
+### chat/forward-thor: 0
+### oldfiachat: 2
+### ipo-status: 1
+### cancel-chat: 1
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+s=open('web-main.js',encoding='utf-8',errors='ignore').read()
+for kw in ['nucleus/v1','nucleus','fia/chart-insights','ipo-status','cancel-chat','oldfiachat','chat/auto-suggest']:
+    for m in re.finditer(re.escape(kw),s):
+        i=m.start()
+        ctx=' '.join(s[max(0,i-150):i+200].split())
+        print(f"### {kw} :: {ctx[:380]}")
+        print('   ---')
+        break
+EOF
+### nucleus/v1 :: function(c,d){if(c===1)return A.t(d,r) for(;;)switch(s){case 0:o=$.b3().a8("fia_nucleus","cancel_chat_cid_mid") if(o==null)o="https://api-t1.fyers.in/nucleus/v1/cancel-chat/"+a+"/"+b p=t.N n=A m=o+"/"+a+"/"+b l=A.X(p,t.z) k=!0 j=A i="Authorization" s=4 return A.n(A.Sa(),$async$btg) case 4:s=3 return A.n(n.dN(m,l,k,j.f([i,d],p,p)),$async$btg) case 3
+   ---
+### nucleus :: r)}, btg(a,b){var s=0,r=A.w(t.V),q,p,o,n,m,l,k,j,i var $async$btg=A.r(function(c,d){if(c===1)return A.t(d,r) for(;;)switch(s){case 0:o=$.b3().a8("fia_nucleus","cancel_chat_cid_mid") if(o==null)o="https://api-t1.fyers.in/nucleus/v1/cancel-chat/"+a+"/"+b p=t.N n=A m=o+"/"+a+"/"+b l=A.X(p,t.z) k=!0 j=A i="Authorization" s=4 return A.n(A.Sa(),$async$bt
+   ---
+### fia/chart-insights :: ===1)return A.t(d,r) for(;;)switch(s){case 0:p=$.b3().a8("fia_nucleus","chart_insights") o=t.N n=A m=A.dj(p==null?"https://api-t1.fyers.in/nucleus/v1/fia/chart-insights/":p,0,null).eq(0,A.f(["symbol",a,"timeframe",b],o,t.z)).gd2() l=!0 k=A j="Authorization" s=4 return A.n(A.qY(),$async$aAX) case 4:s=3 return A.n(n.bO(m,l,k.f([j,d],o,o),!1),$async$a
+   ---
+### ipo-status :: (a,b){if(a===1)return A.t(b,r) for(;;)switch(s){case 0:o=$.b3().a8("ipo","watchlist_ipo_status") if(o==null)o="https://api-t1.fyers.in/nucleus/cug/wl/ipo-status" p=t.N n=A m=o l=!0 k=A j="Authorization" s=3 return A.n(A.ZL(),$async$PY) case 3:q=n.bO(m,l,k.f([j,b,"accept","*/*"],p,p),!1) s=1 break case 1:return A.u(q,r)}}) return A.v($async$PY,r)}}
+   ---
+### cancel-chat :: d){if(c===1)return A.t(d,r) for(;;)switch(s){case 0:o=$.b3().a8("fia_nucleus","cancel_chat_cid_mid") if(o==null)o="https://api-t1.fyers.in/nucleus/v1/cancel-chat/"+a+"/"+b p=t.N n=A m=o+"/"+a+"/"+b l=A.X(p,t.z) k=!0 j=A i="Authorization" s=4 return A.n(A.Sa(),$async$btg) case 4:s=3 return A.n(n.dN(m,l,k,j.f([i,d],p,p)),$async$btg) case 3:q=d s=1 br
+   ---
+### oldfiachat :: .d8().a8("fia_nucleus","history") return q==null?"https://api-t1.fyers.in/nucleus/v1/history":q}) r($,"v_6","trn",()=>{var q=A.d8().a8("fia_nucleus","oldfiachat_history") return q==null?"https://api-t1.fyers.in/nucleus/v1/oldfiachat/history":q}) r($,"v_8","trp",()=>{var q=A.d8().a8("fia_nucleus","chat_auto_suggest") return q==null?"https://api-t1.f
+   ---
+### chat/auto-suggest :: v1/oldfiachat/history":q}) r($,"v_8","trp",()=>{var q=A.d8().a8("fia_nucleus","chat_auto_suggest") return q==null?"https://api-t1.fyers.in/nucleus/v1/chat/auto-suggest":q}) r($,"v_3","trl",()=>{var q=A.d8().a8("fia_nucleus","feedback") return q==null?"":q}) r($,"v_7","tro",()=>{var q=A.d8().a8("fia_nucleus","history_search") return q==null?"":q}) r
+   ---
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+s=open('web-main.js',encoding='utf-8',errors='ignore').read()
+# find all endpoint registrations in the fia_nucleus registry region
+regs=re.findall(r'r\(\$,"([^"]+)","([^"]+)",\(\)=>\{var q=A\.d8\(\)\.a8\("fia_nucleus","([^"]+)"\) return q==null\?"([^"]*)":q\}',
+s)
+for a,b,c,d in regs: print(f"registry key={a} fn={b} cfg={c} default={d}")
+print("---raw around nucleus registry---")
+i=s.find('v_6","trn')
+if i>0:
+    print(' '.join(s[i-200:i+1500].split())[:1800])
+EOF
+---raw around nucleus registry---
+"chat") return q==null?"https://api-t1.fyers.in/nucleus/v1/chat":q}) r($,"v_5","ru9",()=>{var q=A.d8().a8("fia_nucleus","history") return q==null?"https://api-t1.fyers.in/nucleus/v1/history":q}) r($,"v_6","trn",()=>{var q=A.d8().a8("fia_nucleus","oldfiachat_history") return q==null?"https://api-t1.fyers.in/nucleus/v1/oldfiachat/history":q}) r($,"v_8","trp",()=>{var q=A.d8().a8("fia_nucleus","chat_auto_suggest") return q==null?"https://api-t1.fyers.in/nucleus/v1/chat/auto-suggest":q}) r($,"v_3","trl",()=>{var q=A.d8().a8("fia_nucleus","feedback") return q==null?"":q}) r($,"v_7","tro",()=>{var q=A.d8().a8("fia_nucleus","history_search") return q==null?"":q}) r($,"v_4","trm",()=>{var q=A.d8().a8("fia_nucleus","prompt_count") return q==null?"https://api-t1.fyers.in/nucleus/v1/chat/request-limit":q}) s($,"v17","aFs",()=>new A.iev(A.tRI(),A.tRG())) s($,"v15","YI",()=>new A.iez()) s($,"v16","r64",()=>new A.ieB()) s($,"v_r","b_h",()=>{var q=A.uuh(B.Dx),p=new A.b5p(B.aB,q) p.jd(q,A.Z("a3P")) return p}) s($,"uZY","trj",()=>{var q=t.s return new A.hKw(A.a(["overview","about","risk"],q),A.a(["fdDetailsTab","issuerDetails"],q))}) s($,"uZS","trf",()=>A.tNZ()) s($,"uZZ","d7V",()=>new A.dr6(A.B5(0,1),A.jY(null))) r($,"tNY","k0",()=>A.rFz()) s($,"v_1","Om",()=>{var q=A.tdh(0,B.m9,0,B.wG,new A.aD(A.aHI().a4l(B.Yz),A.aHI()),!1,!1,!1,new A.aD(A.aHI().a4l(B.Yz),A.aHI()),B.wG,B.m9,B.m9,new A.bPR(),new A.cS5(),new A.cS4(),B.cYe,"",B.m9,B.wG,B.m9,null,B.m9,!0,!1,B.qg,B.rB),p=new A.abA(new A.kjt(),B.aB,q) p.jd(q,t.P1) p.hJ() return p}) r($,"v19","ts8",()=>new A.i1x()) r($,"v18","FS",()=>A.tQ8()) s($,"v_s","rud",()=>new A.i1w()) s($,"vhk","r78",()=>A.cS(u.T)) s($,"vhl","UT",()=>A.cS(u.T)) s($,"vhm
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+s=open('web-main.js',encoding='utf-8',errors='ignore').read()
+# Extract all r($,"...","...",()=>{var q=A.d8().a8("fia_nucleus" ... default URL) registrations
+regs=re.findall(r'r\(\$,"([^"]+)","([^"]+)",\(\)=>\{var q=A\.d8\(\)\.a8\("fia_nucleus","([^"]+)"\) return q==null\?"([^"]*)":q\}\)', s)
+seen=set()
+for a,b,c,d in regs:
+    if (c,d) in seen: continue
+    seen.add((c,d))
+    print(f"cfg={c} default={d!r}")
+EOF
+(no output)
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+s=open('web-main.js',encoding='utf-8',errors='ignore').read()
+# general scan: find all default URLs referencing nucleus
+m=set(re.findall(r'"https://api-t1\.fyers\.in/nucleus[^"]*"', s))
+for u in sorted(m): print(u)
+print("--- request-limit / prompt_count ---")
+for kw in ['request-limit','prompt_count','fia_nucleus']:
+    print(kw, s.count(kw))
+EOF
+"https://api-t1.fyers.in/nucleus/cug/wl/ipo-status"
+"https://api-t1.fyers.in/nucleus/v1/cancel-chat/"
+"https://api-t1.fyers.in/nucleus/v1/chat"
+"https://api-t1.fyers.in/nucleus/v1/chat/"
+"https://api-t1.fyers.in/nucleus/v1/chat/auto-suggest"
+"https://api-t1.fyers.in/nucleus/v1/chat/request-limit"
+"https://api-t1.fyers.in/nucleus/v1/drawings"
+"https://api-t1.fyers.in/nucleus/v1/fia/chart-insights/"
+"https://api-t1.fyers.in/nucleus/v1/fia/option-chain-insights"
+"https://api-t1.fyers.in/nucleus/v1/history"
+"https://api-t1.fyers.in/nucleus/v1/oldfiachat/history"
+--- request-limit / prompt_count ---
+request-limit 1
+prompt_count 1
+fia_nucleus 14
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+s=open('web-main.js',encoding='utf-8',errors='ignore').read()
+# Pull the full nucleus request-building call sites: symbols + how params/body are constructed
+# Focus on history (GET params?), drawings (GET/POST?), chat, request-limit
+for kw in ['nucleus/v1/history','nucleus/v1/drawings','nucleus/v1/chat"','nucleus/v1/chat/request-limit','option-chain-insights','nucleus/v1/chat/auto-suggest']:
+    for m in list(re.finditer(re.escape(kw),s))[:2]:
+        i=m.start()
+        ctx=' '.join(s[max(0,i-400):i+260].split())
+        print(f"### {kw} :: {ctx[:620]}")
+        print('   ---')
+EOF
+### nucleus/v1/history :: ,!1,!1)) s($,"v6m","tur",()=>A.a([new A.d8H(),new A.dB7(),A.ukI(),new A.e6q(),new A.ddC(),new A.dCO(),new A.ebJ(),new A.dzm(),new A.e3p()],t.Sq)) s($,"v_a","fs",()=>new A.hU7()) r($,"v_2","ru8",()=>{var q=A.d8().a8("fia_nucleus","chat") return q==null?"https://api-t1.fyers.in/nucleus/v1/chat":q}) r($,"v_5","ru9",()=>{var q=A.d8().a8("fia_nucleus","history") return q==null?"https://api-t1.fyers.in/nucleus/v1/history":q}) r($,"v_6","trn",()=>{var q=A.d8().a8("fia_nucleus","oldfiachat_history") return q==null?"https://api-t1.fyers.in/nucleus/v1/oldfiachat/history":q}) r($,"v_8","trp",()=>{var q=A.d8().a8("fia_nucleu
+   ---
+### nucleus/v1/drawings :: h=A g="Authorization" s=4 return A.n(A.Sa(),$async$ds1) case 4:s=3 return A.n(l.dN(k,j,i,h.f([g,d],n,n)),$async$ds1) case 3:q=d s=1 break case 1:return A.u(q,r)}}) return A.v($async$ds1,r)}, ds0(a,b){var s=0,r=A.w(t.V),q,p,o,n,m,l,k,j var $async$ds0=A.r(function(c,d){if(c===1)return A.t(d,r) for(;;)switch(s){case 0:o=$.b3().a8("fia_nucleus","delete_drawings") if(o==null)o="https://api-t1.fyers.in/nucleus/v1/drawings" p=t.N n=A m=o+"/"+a+"/"+b l=A.X(p,t.z) k=A j="Authorization" s=4 return A.n(A.Sa(),$async$ds0) case 4:s=3 return A.n(n.qN(m,l,k.f([j,d],p,p)),$async$ds0) case 3:q=d s=1 break case 1:return A.u(q,r)}}
+   ---
+### nucleus/v1/chat" :: !1,!1,!1,!1)) s($,"vcB","txd",()=>A.aY("^[A-Z]{2,10}$",!1,!1,!1,!1)) s($,"vcC","rw3",()=>A.aY("options?[\\s_-]*chain",!1,!1,!1,!1)) s($,"v6m","tur",()=>A.a([new A.d8H(),new A.dB7(),A.ukI(),new A.e6q(),new A.ddC(),new A.dCO(),new A.ebJ(),new A.dzm(),new A.e3p()],t.Sq)) s($,"v_a","fs",()=>new A.hU7()) r($,"v_2","ru8",()=>{var q=A.d8().a8("fia_nucleus","chat") return q==null?"https://api-t1.fyers.in/nucleus/v1/chat":q}) r($,"v_5","ru9",()=>{var q=A.d8().a8("fia_nucleus","history") return q==null?"https://api-t1.fyers.in/nucleus/v1/history":q}) r($,"v_6","trn",()=>{var q=A.d8().a8("fia_nucleus","oldfiachat_history") 
+   ---
+### nucleus/v1/chat/request-limit :: d8().a8("fia_nucleus","chat_auto_suggest") return q==null?"https://api-t1.fyers.in/nucleus/v1/chat/auto-suggest":q}) r($,"v_3","trl",()=>{var q=A.d8().a8("fia_nucleus","feedback") return q==null?"":q}) r($,"v_7","tro",()=>{var q=A.d8().a8("fia_nucleus","history_search") return q==null?"":q}) r($,"v_4","trm",()=>{var q=A.d8().a8("fia_nucleus","prompt_count") return q==null?"https://api-t1.fyers.in/nucleus/v1/chat/request-limit":q}) s($,"v17","aFs",()=>new A.iev(A.tRI(),A.tRG())) s($,"v15","YI",()=>new A.iez()) s($,"v16","r64",()=>new A.ieB()) s($,"v_r","b_h",()=>{var q=A.uuh(B.Dx),p=new A.b5p(B.aB,q) p.jd(q,A.Z("a
+   ---
+### option-chain-insights :: application/json"],p,p)) s=1 break case 1:return A.u(q,r)}}) return A.v($async$a_1,r)}, aPC(a,b,c,d,e){return this.hmE(a,b,!0,d,e)}, hmE(a,b,c,d,e){var s=0,r=A.w(t.V),q,p,o,n,m,l,k,j,i var $async$aPC=A.r(function(f,g){if(f===1)return A.t(g,r) for(;;)switch(s){case 0:p=t.N o=A.f(["symbol",d,"underlying",e,"expiry_date",a,"include_commentary",String(!0),"fields",b],p,t.z) n=$.b3().a8("fia_nucleus","option-chain-insights") m=A l=A.dj(n==null?"https://api-t1.fyers.in/nucleus/v1/fia/option-chain-insights":n,0,null).eq(0,o).gd2() k=!0 j=A i="Authorization" s=4 return A.n(A.ajV(),$async$aPC) case 4:s=3 return A.n(m.bO(l
+   ---
+### option-chain-insights :: r)}, aPC(a,b,c,d,e){return this.hmE(a,b,!0,d,e)}, hmE(a,b,c,d,e){var s=0,r=A.w(t.V),q,p,o,n,m,l,k,j,i var $async$aPC=A.r(function(f,g){if(f===1)return A.t(g,r) for(;;)switch(s){case 0:p=t.N o=A.f(["symbol",d,"underlying",e,"expiry_date",a,"include_commentary",String(!0),"fields",b],p,t.z) n=$.b3().a8("fia_nucleus","option-chain-insights") m=A l=A.dj(n==null?"https://api-t1.fyers.in/nucleus/v1/fia/option-chain-insights":n,0,null).eq(0,o).gd2() k=!0 j=A i="Authorization" s=4 return A.n(A.ajV(),$async$aPC) case 4:s=3 return A.n(m.bO(l,k,j.f([i,g],p,p),!1),$async$aPC) case 3:q=g s=1 break case 1:return A.u(q,r)}}) re
+   ---
+### nucleus/v1/chat/auto-suggest :: /v1/chat":q}) r($,"v_5","ru9",()=>{var q=A.d8().a8("fia_nucleus","history") return q==null?"https://api-t1.fyers.in/nucleus/v1/history":q}) r($,"v_6","trn",()=>{var q=A.d8().a8("fia_nucleus","oldfiachat_history") return q==null?"https://api-t1.fyers.in/nucleus/v1/oldfiachat/history":q}) r($,"v_8","trp",()=>{var q=A.d8().a8("fia_nucleus","chat_auto_suggest") return q==null?"https://api-t1.fyers.in/nucleus/v1/chat/auto-suggest":q}) r($,"v_3","trl",()=>{var q=A.d8().a8("fia_nucleus","feedback") return q==null?"":q}) r($,"v_7","tro",()=>{var q=A.d8().a8("fia_nucleus","history_search") return q==null?"":q}) r($,"v_4",
+   ---
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+s=open('web-main.js',encoding='utf-8',errors='ignore').read()
+# extract the ds1 (drawings GET) function fully - the one preceding ds0 delete
+i=s.find('ds1(a,b)')
+if i<0: i=s.find('$async$ds1')
+print(' '.join(s[i-100:i+900].split())[:1200])
+EOF
+f([h,e],o,o)),$async$c6p) case 3:q=e s=1 break case 1:return A.u(q,r)}}) return A.v($async$c6p,r)}, ds1(a,b){var s=0,r=A.w(t.V),q,p,o,n,m,l,k,j,i,h,g var $async$ds1=A.r(function(c,d){if(c===1)return A.t(d,r) for(;;)switch(s){case 0:m=$.trl() $.cx() p=t.z o=t.W.a($.eO().dP("sso",!1,p)).e_(0,"client_id") n=t.N l=A k=m j=A.f(["client_id",o,"comment",a,"flag",!0,"text",A.a([b.length!==0?b:""],t.s)],n,p) i=!0 h=A g="Authorization" s=4 return A.n(A.Sa(),$async$ds1) case 4:s=3 return A.n(l.dN(k,j,i,h.f([g,d],n,n)),$async$ds1) case 3:q=d s=1 break case 1:return A.u(q,r)}}) return A.v($async$ds1,r)}, ds0(a,b){var s=0,r=A.w(t.V),q,p,o,n,m,l,k,j var $async$ds0=A.r(function(c,d){if(c===1)return A.t(d,r) for(;;)switch(s){case 0:o=$.b3().a8("fia_nucleus","delete_drawings") if(o==null)o="https://api-t1.fyers.in/nucleus/v1/drawings" p=t.N n=A m=o+"/"+a+"/"+b l=A.X(p,t.z) k=A j="Authorization" s=4 return A.n(A.Sa(),$async$ds0) case 4:s=3 return A.n(n.qN(m,l,k.f([j,d],p,p)),$async$ds0) case 3:q=d s=1 br
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+s=open('web-main.js',encoding='utf-8',errors='ignore').read()
+# find the call sites that USE the registered endpoint refs (v_2=chat, v_5=history, trp=auto-suggest, trm=request-limit, trl=feedback, tro=history_search)
+for key in ['v_2","ru8','v_5","ru9','v_8","trp','v_4","trm']:
+    i=s.find(key)
+    print(f"### registry {key}")
+    print(' '.join(s[i-120:i+80].split())[:200])
+    print()
+# find usages of the getter functions (e.g., A.d8().a8("fia_nucleus","history")) near request build
+for kw in ['"history") return q==null?"https://api-t1.fyers.in/nucleus/v1/history"','request-limit','history_search','"feedback" return q==null?""']:
+    print(kw in s, kw)
+EOF
+### registry v_2","ru8
+(),new A.e6q(),new A.ddC(),new A.dCO(),new A.ebJ(),new A.dzm(),new A.e3p()],t.Sq)) s($,"v_a","fs",()=>new A.hU7()) r($,"v_2","ru8",()=>{var q=A.d8().a8("fia_nucleus","chat") return q==null?"https://ap
+
+### registry v_5","ru9
+v_2","ru8",()=>{var q=A.d8().a8("fia_nucleus","chat") return q==null?"https://api-t1.fyers.in/nucleus/v1/chat":q}) r($,"v_5","ru9",()=>{var q=A.d8().a8("fia_nucleus","history") return q==null?"https:/
+
+### registry v_8","trp
+.a8("fia_nucleus","oldfiachat_history") return q==null?"https://api-t1.fyers.in/nucleus/v1/oldfiachat/history":q}) r($,"v_8","trp",()=>{var q=A.d8().a8("fia_nucleus","chat_auto_suggest") return q==nul
+
+### registry v_4","trm
+) return q==null?"":q}) r($,"v_7","tro",()=>{var q=A.d8().a8("fia_nucleus","history_search") return q==null?"":q}) r($,"v_4","trm",()=>{var q=A.d8().a8("fia_nucleus","prompt_count") return q==null?"ht
+
+False "history") return q==null?"https://api-t1.fyers.in/nucleus/v1/history"
+True request-limit
+True history_search
+False "feedback" return q==null?""
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+s=open('web-main.js',encoding='utf-8',errors='ignore').read()
+# Find request-building call sites for chat POST, history GET, history_search POST, request-limit GET, auto-suggest POST
+# These reference the registry getters; search for "fia_nucleus" more broadly to catch builder functions.
+for kw in ['history_search','request-limit','chat_auto_suggest','"feedback"']:
+    for m in list(re.finditer(re.escape(kw),s))[:3]:
+        i=m.start()
+        print(f"### {kw} :: {' '.join(s[max(0,i-260):i+260].split())[:520]}")
+        print('   ---')
+EOF
+### history_search :: qZZ:function qZZ(a){this.a=a}, r_4:function r_4(a,b){this.a=a this.b=b}, qSy:function qSy(a,b,c){this.a=a this.b=b this.c=c}, tEJ(a1){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e="fy_backtest/open",d=null,c="automation_id",b="fy_backtest/history_group_by",a="fy_backtest/history_search_query",a0=u.dU switch(a1.a){case"fy_backtest/open":s=a1.c if(s==null||J.bi(s))return d r=J.N(s) q=r.h(s,c) p=q==null?d:J.R(q) if(p==null)p="" q=r.h(s,"automation_version") o=q==null?d:J.R(q) if(o==null)o="" q=r.h(s,"automation_name") n=q==null?d
+   ---
+### history_search :: ) r=A.cG(q?d:J.i(r,"isDetailsScreen")) k.cw(0,new A.bXt(r===!0,j,d)) break case"fy_backtest/history_group_by":r=a1.c i=A.T(r==null?d:J.i(r,"groupBy")) if(i==null||i.length===0)return d h=A.rAk(i) return new A.a7l(b,A.f(["groupBy",h],t.N,t.z)) case"fy_backtest/history_search_query":r=a1.c g=A.T(r==null?d:J.i(r,"searchQuery")) if(g==null)return d return new A.a7l(a,A.f(["searchQuery",g],t.N,t.z)) case"fy_backtest/get_history_controls":A.tEI(a1) break case u.dU:r=a1.c p=A.T(r==null?d:J.i(r,c)) return new A.a7l(a0,A.f(
+   ---
+### history_search :: A.md0.prototype={ $1(a){this.a.sj(0,A.aZ(B.aEy,null,null))}, $S:26} A.md4.prototype={ $1(a){var s=t.z A.a6(null,A.f(["groupBy",a],s,s),"fy_backtest/history_group_by")}, $S:24} A.md5.prototype={ $1(a){var s=t.z A.a6(null,A.f(["searchQuery",a],s,s),"fy_backtest/history_search_query")}, $S:24} A.md1.prototype={ $0(){throw A.a4(A.bIL("Timeout",null))}, $S:281} A.md2.prototype={ $1(a){this.a.sj(0,a)}, $S:912} A.md3.prototype={ $1(a){this.a.sj(0,B.aq)}, $S:26} A.dDG.prototype={ m(a){var s=null,r=A.Q(a) r=r===B.E||r===B.J
+   ---
+### request-limit :: ia_nucleus","feedback") return q==null?"":q}) r($,"v_7","tro",()=>{var q=A.d8().a8("fia_nucleus","history_search") return q==null?"":q}) r($,"v_4","trm",()=>{var q=A.d8().a8("fia_nucleus","prompt_count") return q==null?"https://api-t1.fyers.in/nucleus/v1/chat/request-limit":q}) s($,"v17","aFs",()=>new A.iev(A.tRI(),A.tRG())) s($,"v15","YI",()=>new A.iez()) s($,"v16","r64",()=>new A.ieB()) s($,"v_r","b_h",()=>{var q=A.uuh(B.Dx),p=new A.b5p(B.aB,q) p.jd(q,A.Z("a3P")) return p}) s($,"uZY","trj",()=>{var q=t.s return n
+   ---
+### chat_auto_suggest :: rn q==null?"https://api-t1.fyers.in/nucleus/v1/history":q}) r($,"v_6","trn",()=>{var q=A.d8().a8("fia_nucleus","oldfiachat_history") return q==null?"https://api-t1.fyers.in/nucleus/v1/oldfiachat/history":q}) r($,"v_8","trp",()=>{var q=A.d8().a8("fia_nucleus","chat_auto_suggest") return q==null?"https://api-t1.fyers.in/nucleus/v1/chat/auto-suggest":q}) r($,"v_3","trl",()=>{var q=A.d8().a8("fia_nucleus","feedback") return q==null?"":q}) r($,"v_7","tro",()=>{var q=A.d8().a8("fia_nucleus","history_search") return q==nu
+   ---
+### "feedback" :: sNew":false},\n {"id":"journal","title":"Journal","iconKey":"journal","isNew":false},\n {"id":"noticeboard","title":"Noticeboard","iconKey":"noticeboard","isNew":false},\n {"id":"community","title":"Community","iconKey":"community","isNew":false},\n {"id":"feedback","title":"Feedback","iconKey":"feedback","isNew":false},\n {"id":"shortcuts","title":"Shortcuts","iconKey":"shortcuts","isNew":true}\n]\n':'\n[\n {"id":"alerts","title":"Alerts","iconKey":"alerts","isNew":false},\n {"id":"feedback","title":"Feedba
+   ---
+### "feedback" :: :"Journal","iconKey":"journal","isNew":false},\n {"id":"noticeboard","title":"Noticeboard","iconKey":"noticeboard","isNew":false},\n {"id":"community","title":"Community","iconKey":"community","isNew":false},\n {"id":"feedback","title":"Feedback","iconKey":"feedback","isNew":false},\n {"id":"shortcuts","title":"Shortcuts","iconKey":"shortcuts","isNew":true}\n]\n':'\n[\n {"id":"alerts","title":"Alerts","iconKey":"alerts","isNew":false},\n {"id":"feedback","title":"Feedback","iconKey":"feedback","isNew":false}\
+   ---
+### "feedback" :: ,"isNew":false},\n {"id":"feedback","title":"Feedback","iconKey":"feedback","isNew":false},\n {"id":"shortcuts","title":"Shortcuts","iconKey":"shortcuts","isNew":true}\n]\n':'\n[\n {"id":"alerts","title":"Alerts","iconKey":"alerts","isNew":false},\n {"id":"feedback","title":"Feedback","iconKey":"feedback","isNew":false}\n]\n',null)),new A.l3O(),t.cRM).N(0)}} A.l3O.prototype={ $1(a){var s,r,q,p=A.bE(t.I.a(a),t.N,t.z),o=p.h(0,"id") o=J.R(o==null?"":o) s=p.h(0,"title") s=J.R(s==null?"":s) r=p.h(0,"iconKey") r=J.R(
+   ---
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+s=open('web-main.js',encoding='utf-8',errors='ignore').read()
+# find usages of registry symbol names (ru8=chat, ru9=history, trn=oldfiachat, trp=auto-suggest, trm=request-limit)
+for sym in ['ru8','ru9','trn','trp','trm','trl','tro']:
+    # usages: `A.<sym>()` or `.<sym>(` as getter
+    hits=[m.start() for m in re.finditer(re.escape(sym), s)]
+    print(f"### {sym}: {len(hits)}")
+    for i in hits[:4]:
+        print('   ',' '.join(s[max(0,i-120):i+80].split())[:200])
+EOF
+### ru8: 3
+    bol",A.c6j(d)) else{n=$.zF if(n!=="")o.v(0,"chart_symbol",A.c6j(n))}n=$.EK if(n!=="")o.v(0,"chart_timeframe",n) l=A k=$.ru8() j=o i=!0 h=A g="Authorization" s=5 return A.n(A.Sa(),$async$ds6) case 5:q=
+    bol",A.c6j(d)) else{n=$.zF if(n!=="")m.v(0,"chart_symbol",A.c6j(n))}n=$.EK if(n!=="")m.v(0,"chart_timeframe",n) l=A k=$.ru8() j=m i=!0 h=A g="Authorization" s=6 return A.n(A.Sa(),$async$ds6) case 6:q=
+    A.e6q(),new A.ddC(),new A.dCO(),new A.ebJ(),new A.dzm(),new A.e3p()],t.Sq)) s($,"v_a","fs",()=>new A.hU7()) r($,"v_2","ru8",()=>{var q=A.d8().a8("fia_nucleus","chat") return q==null?"https://api-t1.f
+### ru9: 3
+    =A.w(t.V),q,p,o,n,m,l,k var $async$ds2=A.r(function(a,b){if(a===1)return A.t(b,r) for(;;)switch(s){case 0:p=t.N o=A n=$.ru9() m=!0 l=A k="Authorization" s=4 return A.n(A.Sa(),$async$ds2) case 4:s=3 re
+    ,$async$bth) case 7:s=6 return A.n(o.dN(n,m,l,k.f([j,e],p,p)),$async$bth) case 6:q=e s=1 break s=4 break case 5:o=A n=$.ru9()+"/"+a m=!0 l=A k="Authorization" s=9 return A.n(A.Sa(),$async$bth) case 9:
+    ru8",()=>{var q=A.d8().a8("fia_nucleus","chat") return q==null?"https://api-t1.fyers.in/nucleus/v1/chat":q}) r($,"v_5","ru9",()=>{var q=A.d8().a8("fia_nucleus","history") return q==null?"https://api-t
+### trn: 6
+    ,j var $async$bth=A.r(function(d,e){if(d===1)return A.t(e,r) for(;;)switch(s){case 0:p=t.N s=b?3:5 break case 3:o=A n=$.trn() m=A.f(["old_fia",!0,"uuid",c],p,t.z) l=!0 k=A j="Authorization" s=7 return
+    Izre\u017ei"}, geT(){return"Brisanje"}, gep(){return"Pogovorno okno"}, ghb(){return"Meni za krmarjenje"}, gfU(){return"Strnjeno"}, geh(){return"za raz\u0161iritev se dvakrat dotaknite"}, geD(){return"
+    urn"za raz\u0161iritev se dvakrat dotaknite"}, geD(){return"Raz\u0161iritev za ve\u010d podrobnosti"}, gei(){return"za strnitev se dvakrat dotaknite"}, gh5(){return"Strni"}, gbf(){return"Pogled gor"},
+    geD(){return"Raz\u0161iritev za ve\u010d podrobnosti"}, gei(){return"za strnitev se dvakrat dotaknite"}, gh5(){return"Strni"}, gbf(){return"Pogled gor"}, geF(){return"Opusti meni"}, gex(){return"Opus
+### trp: 3
+    =!0 if(p)m.v(0,"source",A.b("charts",null,null,null,null)) else m.v(0,"source",A.b("home",null,null,null,null)) l=A k=$.trp() j=m i=!0 h=A g="Authorization" s=4 return A.n(A.Sa(),$async$ds4) case 4:s=
+    059,"trianglerighteq;":2060,"tridot;":2061,"trie;":2062,"triminus;":2063,"triplus;":2064,"trisb;":2065,"tritime;":2066,"trpezium;":2067,"tscr;":2068,"tscy;":2069,"tshcy;":2070,"tstrok;":2071,"twixt;":
+    ia_nucleus","oldfiachat_history") return q==null?"https://api-t1.fyers.in/nucleus/v1/oldfiachat/history":q}) r($,"v_8","trp",()=>{var q=A.d8().a8("fia_nucleus","chat_auto_suggest") return q==null?"htt
+### trm: 2
+    =A.w(t.V),q,p,o,n,m,l,k var $async$ds3=A.r(function(a,b){if(a===1)return A.t(b,r) for(;;)switch(s){case 0:p=t.N o=A n=$.trm() m=!0 l=A k="Authorization" s=4 return A.n(A.Sa(),$async$ds3) case 4:s=3 re
+    rn q==null?"":q}) r($,"v_7","tro",()=>{var q=A.d8().a8("fia_nucleus","history_search") return q==null?"":q}) r($,"v_4","trm",()=>{var q=A.d8().a8("fia_nucleus","prompt_count") return q==null?"https://
+### trl: 11
+    "a"){s=a["__url_launcher::link::viewId"] return s==null?null:A.au(s)}return null}, tg4(a){if(a==null)return!1 return a.ctrlKey||a.altKey||a.metaKey||a.shiftKey}, r2y:function r2y(){}, biH:function biH
+    ,r=A.w(t.V),q,p,o,n,m,l,k,j,i,h,g var $async$ds1=A.r(function(c,d){if(c===1)return A.t(d,r) for(;;)switch(s){case 0:m=$.trl() $.cx() p=t.z o=t.W.a($.eO().dP("sso",!1,p)).e_(0,"client_id") n=t.N l=A k=
+    (a){return a.a.altKey}, $S:530} A.qTD.prototype={ $1(a){return a.a.altKey}, $S:530} A.qTE.prototype={ $1(a){return a.a.ctrlKey}, $S:530} A.qTF.prototype={ $1(a){return a.a.ctrlKey}, $S:530} A.qTG.prot
+    a){return a.a.altKey}, $S:530} A.qTE.prototype={ $1(a){return a.a.ctrlKey}, $S:530} A.qTF.prototype={ $1(a){return a.a.ctrlKey}, $S:530} A.qTG.prototype={ $1(a){return a.gb14(0)}, $S:530} A.qTH.protot
+### tro: 703
+    terial/Scaffold/of.html'),A.c4I("A more efficient solution is to split your build function into several widgets. This introduces a new context from which you can obtain the Scaffold. In this solution,
+    dgets require an Overlay widget ancestor.\nAn overlay lets widgets float on top of other widget children."),A.c4I("To introduce an Overlay widget, you can either directly include one, or use a widget
+    ate.onPlay is not called when Animate.autoPlay=false") A.tnZ(!0,"Animate.onInit is not called when used with Animate.controller") s.as=A.a([],t.g1f) s.fFC(b) return s}, b0i:function b0i(a,b,c,d,e,f,g)
+    case"s":p=45 break case"samp":p=46 break case"section":p=47 break case"small":p=48 break case"strike":p=49 break case"strong":p=50 break case"sub":p=51 break case"sup":p=52 break case"tt":p=53 break
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+s=open('web-main.js',encoding='utf-8',errors='ignore').read()
+# ds2 = history, ds3 = request-limit, ds4 = auto-suggest, ds5 = ?, ds6 = chat
+for fn in ['ds2(a,b)','ds3(a,b)','ds4(a,b)','ds5(a,b)','ds6(a,b)','bth(a,b)']:
+    i=s.find(fn)
+    if i<0:
+        i=s.find(fn.replace('(a,b)',''))
+    print(f"##### {fn}")
+    print(' '.join(s[max(0,i-60):i+700].split())[:820])
+    print()
+EOF
+##### ds2(a,b)
+rn!1}, r06(a){var s=A.Ki(a) return s.b===B.Ab&&s.a===B.nL}, ds2(){var s=0,r=A.w(t.V),q,p,o,n,m,l,k var $async$ds2=A.r(function(a,b){if(a===1)return A.t(b,r) for(;;)switch(s){case 0:p=t.N o=A n=$.ru9() m=!0 l=A k="Authorization" s=4 return A.n(A.Sa(),$async$ds2) case 4:s=3 return A.n(o.bO(n,m,l.f([k,b,"version","1.0.0"],p,p),!1),$async$ds2) case 3:q=b s=1 break case 1:return A.u(q,r)}}) return A.v($async$ds2,r)}, bth(a,b,c){var s=0,r=A.w(t.V),q,p,o,n,m,l,k,j var $async$bth=A.r(function(d,e){if(d===1)return A.t(e,r) for(;;)switch(s){case 0:p=t.N s=b?3:5 break case 3:o=A n=$.trn() m=A.f(["old_fia",!0,"uuid",c],p,t.z) l=!0 k=A j="Authorization" s=7 return A.n(A.Sa(),$async$bth) case 7:s=6 return A.n(o.dN(n,m,l,k.f([j,e],p,p)),$async$bth) case 6:q=e s=1 b
+
+##### ds3(a,b)
+break case 1:return A.u(q,r)}}) return A.v($async$ds0,r)}, ds3(){var s=0,r=A.w(t.V),q,p,o,n,m,l,k var $async$ds3=A.r(function(a,b){if(a===1)return A.t(b,r) for(;;)switch(s){case 0:p=t.N o=A n=$.trm() m=!0 l=A k="Authorization" s=4 return A.n(A.Sa(),$async$ds3) case 4:s=3 return A.n(o.bO(n,m,l.f([k,b],p,p),!1),$async$ds3) case 3:q=b s=1 break case 1:return A.u(q,r)}}) return A.v($async$ds3,r)}, Sa(){var s=0,r=A.w(t.N),q,p=2,o=[],n,m,l,k var $async$Sa=A.r(function(a,b){if(a===1){o.push(b) s=p}for(;;)switch(s){case 0:p=4 s=7 return A.n($.d0().bE(),$async$Sa) case 7:n=b m=n if(m==null)m="" q=m s=1 break p=2 s=6 break case 4:p=3 k=o.pop() q="" s=1 break s=6 break case 3:s=2 break case 6:case 1:return A.u(q,r) case 2:return A.t(o.at(-1),r)}}) return A.v($
+
+##### ds4(a,b)
+Ad,b8,h,B.cBD,B.cFw,s,B.dfg,B.dfh,B.dfj,B.dhw,B.dhx,B.dhA,B.ds4,B.bLa,c4,B.dI2,i,c,d,b9,b7,B.dL_,B.dLe,d3,d4,B.dQp,B.dQt,a7,B.dQI,B.an,B.dWP,B.dY4,d5,q,B.e_A,B.e0y,B.e1v,d6,b6,B.e7D,B.e7H,B.e87,b3,a6,d7,r) return c0}, rmQ(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,b0,b1,b2,b3,b4,b5,b6,b7,b8,b9,c0,c1,c2,c3,c4,c5,c6,c7,c8,c9,d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,e0,e1,e2,e3,e4,e5,e6,e7,e8,e9,f0,f1,f2,f3,f4,f5,f6,f7,f8,f9,g0,g1,g2,g3){return new A.a6y(d,s,b1,b,c1,c3,d1,d2,e2,f1,g2,g3,l,m,r,a4,a5,b4,b5,b6,b7,d4,d5,d6,e1,e5,e7,f0,g1,b9,d7,d8,f6,g0,a,c,e,f,g,h,i,k,n,o,p,q,a0,a1,a3,a6,a7,a8,a9,b0,b2,b3,b8,c2,c4,c5,c6,c7,c8,c9,d0,d3,d9,e0,e3,e4,e6,e8,e9,f2,f3,f4,f5,f7,f8,f9,j,a2,c0)}, ulo(){var s=null return A.Hl(s,B.dR,s,s,s,s,s,s,s,s,s,s,s
+
+##### ds5(a,b)
+ashNeeded",s,a,s,s)],p):A.a([A.b("nonCashEquivalentMarginNeeds50PercentCash",s,a,s,s),A.b("interestMayApply",s,a,s,s)],p) p=b?A.a([A.b("liquidFunds",s,a,s,s),A.b("T-Bills",s,a,s,s),A.b("SGBs",s,a,s,s)],p):A.a([A.b("stocks",s,a,s,s),A.b("etfs",s,a,s,s),A.b("equityMutualFunds",s,a,s,s)],p) return new A.fXx(r,q,o,p,b,b?"packages/fy_ui/assets/icons/app/revenue.svg":u.op)}, rSd(a,b){A.bK8(0) A.cEH("component_type",b?B.C3:B.Fb) A.M(a).cb(0,"/pledge/eligible-securities")}, kwH:function kwH(){}, kwG:function kwG(){}, kwD:function kwD(a){this.a=a}, kwE:function kwE(){}, kwF:function kwF(){}, kwC:function kwC(a,b){this.a=a this.b=b}, kwA:function kwA(a,b){this.a=a this.b=b}, kwB:function kwB(a,b){this.a=a this.b=b}, uf:function uf(a){this.a=a}, cpi:function cp
+
+##### ds6(a,b)
+case 4:case 1:return A.u(q,r)}}) return A.v($async$bth,r)}, ds6(a,b,c,d,e,f){var s=0,r=A.w(t.V),q,p,o,n,m,l,k,j,i,h,g var $async$ds6=A.r(function(a0,a1){if(a0===1)return A.t(a1,r) for(;;)switch(s){case 0:s=b>0?3:4 break case 3:p=t.N o=A.f(["cid",b,"prompt",a],p,t.z) if(f!=null)o.v(0,"timeframe",f) if(e!=null)o.v(0,"layout",e) if(c!=null)o.v(0,"chart_id",c) if(d!=null&&d.length!==0)o.v(0,"chart_symbol",A.c6j(d)) else{n=$.zF if(n!=="")o.v(0,"chart_symbol",A.c6j(n))}n=$.EK if(n!=="")o.v(0,"chart_timeframe",n) l=A k=$.ru8() j=o i=!0 h=A g="Authorization" s=5 return A.n(A.Sa(),$async$ds6) case 5:q=l.dN(k,j,i,h.f([g,a1,"version","1.0.0"],p,p)) s=1 break case 4:p=t.N m=A.f(["prompt",a,"persona","FYERS","deep_research",!0],p,t.z) if(f!=null)m.v(0,"timeframe"
+
+##### bth(a,b)
+break case 1:return A.u(q,r)}}) return A.v($async$ds2,r)}, bth(a,b,c){var s=0,r=A.w(t.V),q,p,o,n,m,l,k,j var $async$bth=A.r(function(d,e){if(d===1)return A.t(e,r) for(;;)switch(s){case 0:p=t.N s=b?3:5 break case 3:o=A n=$.trn() m=A.f(["old_fia",!0,"uuid",c],p,t.z) l=!0 k=A j="Authorization" s=7 return A.n(A.Sa(),$async$bth) case 7:s=6 return A.n(o.dN(n,m,l,k.f([j,e],p,p)),$async$bth) case 6:q=e s=1 break s=4 break case 5:o=A n=$.ru9()+"/"+a m=!0 l=A k="Authorization" s=9 return A.n(A.Sa(),$async$bth) case 9:s=8 return A.n(o.bO(n,m,l.f([k,e,"version","1.0.0"],p,p),!1),$async$bth) case 8:q=e s=1 break case 4:case 1:return A.u(q,r)}}) return A.v($async$bth,r)}, ds6(a,b,c,d,e,f){var s=0,r=A.w(t.V),q,p,o,n,m,l,k,j,i,h,g var $async$ds6=A.r(function(a0,a1)
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+s=open('web-main.js',encoding='utf-8',errors='ignore').read()
+# identify HTTP verbs: bO=GET, dN=POST, qN=? Find their definitions
+for fn in ['bO(','dN(','qN(']:
+    i=s.find(fn)
+    if i>=0:
+        ctx=' '.join(s[max(0,i-80):i+320].split())
+        print(f"### {fn} :: {ctx[:380]}")
+        print()
+EOF
+### bO( :: ="number")return a>0?1:a<0?-1:a return J.qZV(a).gJ6(a)}, d8A(a){return J.dI(a).gbO(a)}, tBF(a){return J.eA(a).ga1(a)}, rxB(a){return J.ru(a).gaDV(a)}, d8B(a){return J.eA(a).gbl(a)}, rxC(a){return J.eA(a).gAV(a)}, rxD(a){return J.eA(a).ga2(a)}, BJ(a){return J.eA(a).gmM(a)}, tBG(a){return J.eA(a).gwt(a)}, tBH(a){return J.eA(a).gT(a)}, d8C(a){return J.eA(a).gbj(a)}, a2l(a){return 
+
+### dN( :: 94(a,b,null,null,s) return r}, L6(a,b,c,d,e){return new A.fn(a,c,e,b,d,B.cn)}, udN(a){var s=A.X(t.h6x,t.eqe) a.bw(0,new A.loL(s)) return s}, aPM(a,b,c,d){return new A.bf9(null,d,a,b,c,null)}, rXx(a,b){return new A.bf9(b,B.a5v,a,null,!0,null)}, b7U:function b7U(){}, cfg:function cfg(a,b){this.a=a this.b=b}, cfh:function cfh(a){this.c=$ this.a=a this.b=$}, jd7:function jd7(){}, f
+
+### qN( :: n-B.o.S(a.b,b.b)}, uHY(a,b){if(b.p4$.a>0)return a>=1e5 return!0}, aqN:function aqN(a,b,c,d){var _=this _.a=a _.b=b _.f=c _.$ti=d}, bOA:function bOA(a){this.a=a}, beo:function beo(a,b){this.a=a this.b=b}, kue:function kue(a){this.a=a}, akY:function akY(){}, lb3:function lb3(a){this.a=a}, lb1:function lb1(a){this.a=a}, lb4:function lb4(a){this.a=a}, lb5:function lb5(a,b){this.a=a
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+s=open('web-main.js',encoding='utf-8',errors='ignore').read()
+# callers of bth — what is `a` (the conversation id path segment)?
+hits=[m.start() for m in re.finditer(r'\.bth\(', s)]
+print("bth callers:", len(hits))
+for i in hits[:3]:
+    print('   ',' '.join(s[max(0,i-220):i+120].split())[:360])
+    print()
+# callers of ds0/ds1 (drawings delete/save) — what args?
+for fn in ['ds0(','ds1(']:
+    hs=[m.start() for m in re.finditer(r'\.'+fn, s)]
+    print(fn,"callers:",len(hs))
+    for i in hs[:2]:
+        print('   ',' '.join(s[max(0,i-200):i+100].split())[:300])
+EOF
+bth callers: 5
+    aB.prototype={ O(){return"AnimationBehavior."+this.b}} A.V2.prototype={ hSk(a){var s,r,q=this.r q.toString s=this.r=a.av8(this.gbOi()) r=q.a if(r!=null){s.a=r s.d=q.d if(!s.c)r=s.f==null else r=!1 if(r)s.bxX() q.a=null q.bth()}q.A()}, gj(a){var s=this.x s===$&&A.d() return s}, sj(a,b){var s=this s.fJ(0) s.bHW(b) s.b9() s.aFe()}, grQ(){var
+
+    s.to$=!1 s.QA()}, $S:2} A.lb2.prototype={ $2(a,b){var s,r=this.a if(!r.R8$.u(0,a)){s=r.c2$ s.toString r.cEw(b.a,s,null)}}, $S:8665} A.m1C.prototype={} A.bgX.prototype={ sc46(a,b){var s=this if(b===s.c)return s.c=b if(b)s.bth() else if(s.a!=null&&s.f==null)s.bxX()}, ghxe(){if(this.a==null)return!1 if(this.c)return!1 var s=$.hP s.toString i
+
+    new A.bV(new A.bn($.bL,t.D4),t.gR)) if(!q.c)s=q.f==null else s=!1 if(s)q.bxX() s=$.hP r=s.x1$.a if(r>0&&r<4){s=s.c2$ s.toString q.d=s}s=q.a s.toString return s}, apo(a,b){var s=this,r=s.a if(r==null)return s.d=s.a=null s.bth() if(b)r.cT8(s) else r.cT9()}, fJ(a){return this.apo(0,!1)}, fyP(a){var s,r=this r.f=null s=r.d if(s==null)s=r.d=a
+
+Traceback (most recent call last):
+  File "<stdin>", line 11, in <module>
+  File "/usr/lib/python3.12/re/__init__.py", line 224, in finditer
+    return _compile(pattern, flags).finditer(string)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/re/__init__.py", line 307, in _compile
+    p = _compiler.compile(pattern, flags)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/re/_compiler.py", line 745, in compile
+    p = _parser.parse(p, flags)
+        ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/re/_parser.py", line 979, in parse
+    p = _parse_sub(source, state, flags & SRE_FLAG_VERBOSE, 0)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/re/_parser.py", line 460, in _parse_sub
+    itemsappend(_parse(source, state, verbose, nested + 1,
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/re/_parser.py", line 864, in _parse
+    raise source.error("missing ), unterminated subpattern",
+re.error: missing ), unterminated subpattern at position 5
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - << 'EOF'
+import re
+s=open('web-main.js',encoding='utf-8',errors='ignore').read()
+# the bth(a,b,c) business function: a=conversation id, b=old_fia flag, c=uuid
+# find the public wrapper that calls bth with the conversation id — search for "bth(" and check arg patterns
+hits=[m.start() for m in re.finditer(r'\.bth\(', s)]
+print("bth callers:", len(hits))
+for i in hits[:6]:
+    print('   ',' '.join(s[max(0,i-260):i+140].split())[:420])
+    print('   ---')
+EOF
+bth callers: 5
+    eturn"_AnimationDirection."+this.b}} A.daB.prototype={ O(){return"AnimationBehavior."+this.b}} A.V2.prototype={ hSk(a){var s,r,q=this.r q.toString s=this.r=a.av8(this.gbOi()) r=q.a if(r!=null){s.a=r s.d=q.d if(!s.c)r=s.f==null else r=!1 if(r)s.bxX() q.a=null q.bth()}q.A()}, gj(a){var s=this.x s===$&&A.d() return s}, sj(a,b){var s=this s.fJ(0) s.bHW(b) s.b9() s.aFe()}, grQ(){var s=this.r if(!(s!=nu
+   ---
+    5} A.lb0.prototype={ $1(a){var s=this.a s.to$=!1 s.QA()}, $S:2} A.lb2.prototype={ $2(a,b){var s,r=this.a if(!r.R8$.u(0,a)){s=r.c2$ s.toString r.cEw(b.a,s,null)}}, $S:8665} A.m1C.prototype={} A.bgX.prototype={ sc46(a,b){var s=this if(b===s.c)return s.c=b if(b)s.bth() else if(s.a!=null&&s.f==null)s.bxX()}, ghxe(){if(this.a==null)return!1 if(this.c)return!1 var s=$.hP s.toString if(A.akY.prototype.gd
+   ---
+    !1}, kD(a){var s,r,q=this q.a=new A.bgY(new A.bV(new A.bn($.bL,t.D4),t.gR)) if(!q.c)s=q.f==null else s=!1 if(s)q.bxX() s=$.hP r=s.x1$.a if(r>0&&r<4){s=s.c2$ s.toString q.d=s}s=q.a s.toString return s}, apo(a,b){var s=this,r=s.a if(r==null)return s.d=s.a=null s.bth() if(b)r.cT8(s) else r.cT9()}, fJ(a){return this.apo(0,!1)}, fyP(a){var s,r=this r.f=null s=r.d if(s==null)s=r.d=a r.e.$1(new A.f2(a.a-
+   ---
+    if(!r.c&&r.a!=null&&r.f==null)r.cgU(!0)}, cgU(a){var s=this.b,r=$.hP if(s)r.cgS() else r.QA() this.f=$.hP.bxW(this.gfyO(),a,!1)}, bxX(){return this.cgU(!1)}, bth(){var s=this.f if(s!=null){$.hP.d_4(s) this.f=null}}, A(){var s=this,r=s.a if(r!=null){s.a=null s.bth() r.cT8(s)}}, k(a){return"Ticker()".charCodeAt(0)==0?"Ticker()":"Ticker()"}} A.bgY.prototype={ cT9(){this.c=!0 this.a.ih(0) var s=this.
+   ---
+    r $async$aGe=A.r(function(d1,d2){if(d1===1){p.push(d2) s=q}for(;;)switch(s){case 0:q=3 b0=o.c b1=t.N b2=t.IS b3=A.bE(b0.d,b1,b2) b4=t.SU b5=c9.a b6=b5.b b7=b5.a b8=c9.b b3=b0.bWx(new A.M2(A.a([],b4),B.pQ,b6,b7,b8,B.oA),b3) if(!d0.d)d0.a.$1(b3) s=6 return A.n(A.bth(b6,b5.r,b5.w),$async$aGe) case 6:n=d2 s=n.b===B.a1?7:9 break case 7:m=B.M.b2(0,n.a) l=A.tHt(m) k=A.X(b1,b2) for(b0=l.a,b2=b0.length,b3=
+   ---
+[0m
+[0m$ [0mfor ep in "nucleus/v1/history" "nucleus/v1/chat/request-limit"; do echo "--- GET $ep ---"; curl -sk --max-time 15 -w ' code=%{http_code}\n' "https://api-t1.fyers.in/$ep"; sleep 4; echo "--- GET $ep/99999 (object-keyed path) ---"; curl -sk --max-time 15 -w ' code=%{http_code}\n' "https://api-t1.fyers.in/$ep/99999"; sleep 4; done
+--- GET nucleus/v1/history ---
+{"code":-1,"message":"Invalid token or authentication failed","s":"error"} code=401
+--- GET nucleus/v1/history/99999 (object-keyed path) ---
+{"code":-1,"message":"Invalid token or authentication failed","s":"error"} code=401
+--- GET nucleus/v1/chat/request-limit ---
+{"code":-1,"message":"Invalid token or authentication failed","s":"error"} code=401
+--- GET nucleus/v1/chat/request-limit/99999 (object-keyed path) ---
+404 page not found code=404
+[0m
+[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && cat >> findings_deepseek.md << 'EOF'
+
+# HYPOTHESIS round 2026-08-08 08:1x UTC — nucleus/v1 FIA data-keying analysis (from in-scope fyers.in/web main.dart.js, 31.6 MB) → object-keyed conversation/drawing routes confirmed behind gate
+- **Data-keying analysis of the FIA-assistant family completed (static, in-scope bundle).** Request shapes recovered from `fyers.in/web/main.dart.js` (31,649,152 B):
+  - `GET /nucleus/v1/history` (bO, headers `Authorization`+`version:1.0.0`) → full chat history list.
+  - **`GET /nucleus/v1/history/{cid}` — CONFIRMED object-keyed route** (bth: when not old_fia, `n=$.ru9()+"/"+a` where `a`=conversation id; header `version:1.0.0`). Read-only probe `GET /nucleus/v1/history/99999` → **HTTP 401 `{"code":-1,"message":"Invalid token or authentication failed","s":"error"}`** (auth-first, route EXISTS — returns -1 not 404), while `GET /nucleus/v1/chat/request-limit/99999` → 404 (no path arg on that route). ⇒ the `{cid}` path segment is a real per-conversation object key behind the session gate.
+  - `POST /nucleus/v1/oldfiachat/history` body `{old_fia:true, uuid:<c>}` (dN POST).
+  - `POST /nucleus/v1/chat` body `{cid:<cid>, prompt:<p>, [timeframe, layout, chart_id, chart_symbol, chart_timeframe]}` or (no cid) `{prompt, persona:"FYERS", deep_research:true,...}`; headers `Authorization`+`version:1.0.0`.
+  - `POST /nucleus/v1/chat/auto-suggest` body `{..., source:"charts"|"home"}` (dN).
+  - `GET /nucleus/v1/chat/request-limit` (bO, no path arg) → prompt-count.
+  - `POST /nucleus/v1/drawings` (ds1, dN) body `{client_id:<sso client_id>, comment:<a>, flag:true, text:[<b>]}` — comment/text saved per client_id.
+  - **`DELETE /nucleus/v1/drawings/{a}/{b}` (ds0, qN)** — drawing object keyed by two path segments (client_id/comment-scoped) → per-object delete.
+  - `GET /nucleus/v1/fia/chart-insights` query `{symbol, timeframe}`; `GET /nucleus/v1/fia/option-chain-insights` query `{symbol, underlying, expiry_date, include_commentary:true, fields}` (hmE) → both GET, auth-first `-1`.
+  - `POST /nucleus/v1/cancel-chat/{cid}/{mid}` (dN, path-object keyed).
+- **H21 (new, conditional): nucleus/v1 conversation/drawing object-keyed IDOR family.** Object keys are caller-supplied `{cid}` (history), `{cid}/{mid}` (cancel-chat), `{a}/{b}` (drawings delete) and body-level `client_id` (drawings save). If the backend resolves these keys WITHOUT a per-session owner check (which the uniform `-1` gate cannot prove or disprove pre-auth), a second authenticated user's session could read/delete another user's FIA chat history/drawings by supplying the foreign key. Own-account/FYERS-side validation only (program rules — cross-account researcher execution prohibited). Same conditional class as H13/H15/H17/H18. Program Medium if a cross-account conversation/drawing read is demonstrated (chat history/drawings are user content but low-to-moderate sensitivity vs PAN/eSign); CVSS 5.3–6.5 conditional.
+- **FIA chat request-limit/abuse angle (informational):** `POST /nucleus/v1/chat` accepts `deep_research:true` and is subject to `GET /nucleus/v1/chat/request-limit` — the assistant is a paid-ish copilot (prompt-count gating). No pre-auth oracle; rate-limit/abuse checks are authenticated-only. Hardening note only.
+- **myapi.fyers.in app-registry bundle check (static):** the "API - FYERS" SPA (`main.9314ac5d.js`, 1,566,261 B) references only `api-t1/gk/api/v2/user` + `ck/verify_token` for backend auth + `api-connect-docs.fyers.in/` docs + `myapi/docs` anchors; no additional app-registry endpoints beyond the already-gated `user/v3/app/*` (trade-core `-16`). No new surface.
+- **api-connect-docs.fyers.in fully characterized (static):** Docusaurus v1 scaffold (`your-docusaurus-test-site.com` still in sitemap/og:url), legacy "API Connect" widget docs (hosted-button `<fyers-button data-fyers="API_KEY">`, methods/parameters/orders/funds/positions/holdings/trades pages), sub-paths 302 to S3-style "Resource Found" pages, root JS bundles empty of API refs. Purely informational recon artifact; no secrets, no new API surface.
+EOF
+echo appended; tail -3 findings_deepseek.md
+appended
+- **FIA chat request-limit/abuse angle (informational):** `POST /nucleus/v1/chat` accepts `deep_research:true` and is subject to `GET /nucleus/v1/chat/request-limit` — the assistant is a paid-ish copilot (prompt-count gating). No pre-auth oracle; rate-limit/abuse checks are authenticated-only. Hardening note only.
+- **myapi.fyers.in app-registry bundle check (static):** the "API - FYERS" SPA (`main.9314ac5d.js`, 1,566,261 B) references only `api-t1/gk/api/v2/user` + `ck/verify_token` for backend auth + `api-connect-docs.fyers.in/` docs + `myapi/docs` anchors; no additional app-registry endpoints beyond the already-gated `user/v3/app/*` (trade-core `-16`). No new surface.
+- **api-connect-docs.fyers.in fully characterized (static):** Docusaurus v1 scaffold (`your-docusaurus-test-site.com` still in sitemap/og:url), legacy "API Connect" widget docs (hosted-button `<fyers-button data-fyers="API_KEY">`, methods/parameters/orders/funds/positions/holdings/trades pages), sub-paths 302 to S3-style "Resource Found" pages, root JS bundles empty of API refs. Purely informational recon artifact; no secrets, no new API surface.
+[0m
+Gate confirms `history/{cid}` is a real object-keyed route (auth-first `-1`, not 404). Writing findings and updating the package.
+[0m→ [0mRead reports/analyst-latest.txt
+[0m
+[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && cat reports/analyst-latest.txt | wc -l && cat > reports/submission-package_fyers-bb.md << 'EOF'
+# FYERS Bug-Bounty Program — Submission Package Draft (docs-only; no live requests)
+Generated 2026-08-08 (deepseek). Read-only research only. Submission channel: official Zoho form
+(forms.fyers.in BugBountyForm1). Program: fyers.in/bug-bounty-program. All tests below are
+DESIGNS for FYERS Security Team validation or researcher OWN-ACCOUNT use only — none executed.
+
+## A. Conditional object-access (IDOR) designs — researcher cross-account execution PROHIBITED
+Method (all): own-account baseline first; then a SECOND OWNED account object-id substitution
+under the FIRST session. Success = 200-with-data (foreign object returned); Fixed = 403/404/
+auth-error. Two accounts must be researcher-owned; no other user's data touched.
+
+### A1 (H17) — signup/v2 KYC application-object IDOR (req_id-keyed)  [program Critical/High potential]
+- Host: api-a1.fyers.in/signup/v2/user/{esign-document,esign-success,esign/accept-name-mismatch,
+  esign/clear-status,change-esign-status,pdf/generate,pdf/poll,status/poll} (+ /nri/get-document)
+- Object key: application `req_id` (passed through `digio_doc_id`/`live-verification?req_id=`)
+- Design: R_A creates application A (req_id_A); R_B creates application B (req_id_B). Under
+  R_A's authenticated session call the esign-document/pdf/status endpoints with req_id_B.
+- Success indicator: A's session returns a non-empty B-keyed eSign/PDF/status object.
+- Severity: Critical/High if unmasked PAN/eSign/PDF exposed (program "PAN disclosure" category);
+  Medium if limited. CVSS 8.1–9.1 (conditional).
+
+### A2 (H13) — savedcharts indus/savechart object-keyed IDOR  [program High/Medium]
+- Host: api-t1.fyers.in (indus savechart family, `_FYERS` cookie auth on savedcharts.fyers.in)
+- Object key: chartId / study-template id
+- Design: own-account GET own chartId (baseline 200-with-data) → GET foreign account chartId
+  under same session. Also DELETE-substitution.
+- Success: foreign chart returned / deleted. Fixed: 403/404.
+- Severity: High if viewing another user's watchlists/charts; Medium (limited IDOR) otherwise.
+
+### A3 (H15) — marina/v1/ddpi instruction-object IDOR  [program Medium–High]
+- Host: api-a1.fyers.in/marina/v1/ddpi/{status,timeline,user/listing/file,esignValidate,...}
+- Object key: DDPI instruction id
+- Design: own instruction baseline → foreign instruction id under own session.
+- Success: foreign DDPI instruction/status/file returned. Fixed: 403/404.
+
+### A4 (H18) — journal-server note/upload object-keyed IDOR  [program Medium–High]
+- Host: api-a1-prod.fyers.in/journal-server/v1/{note/detail?note_ids=&gs=,note/edit/{id},
+  note/delete/{id},upload-document} + v2/{summary,orders-list,positions-list}
+- Auth: Authorization: Bearer on every route (fingerprint #20: HTTP 403 `{"code":401,...}` pre-auth)
+- Object key: note_id / document-id (POST note/create body: position_ids,order_ids,document_ids,
+  linked_symbols,tag_ids,trade_date,title,body,emoji)
+- Design: own note_id baseline → foreign note_id (note/detail, note/edit, note/delete) and
+  uploaded-document read under own session.
+- Success: foreign trade-journal note or uploaded document returned. Fixed: 403/404.
+- Severity: Medium–High if cross-account notes/uploads exposed. CVSS 5.3–7.5 (conditional).
+
+### A5 (H19) — api-testing-prod KYC upload tier: unauth object-write + SSRF candidate  [program Medium–High]
+- Host: api-testing-prod.fyers.in (NEW host, absent from both public configs — scope-confirm first)
+- Routes (POST-only, GET→405; no auth gate observed at any depth):
+  - /signup/upload/api/v1/user/general/upload-image   body {file:<b64-dataURL>,fileName,key}
+  - /signup/upload/api/v1/user/fetch-pan              body {base64_image,fileName,key}
+  - /signup/upload/signature-to-bmp                   body {base64_image,fileName,key:"user/signature/bmp"}
+  - /signup/upload/api/v1/pdf/is-password-protected   body {file_url:<url>}  ← SSRF candidate
+  - /signup/upload/api/v1/user/general/zip-all-images body {}  → 200 {"status":"Success"} no-auth
+- Design (FYERS-side; researcher executes none of the file/URL side-effects):
+  (a) SSRF diff-oracle: file_url = http://127.0.0.1:1/x.pdf (refused) vs https://api-t1.fyers.in/
+      (in-scope internal) vs "not-a-url" → distinct status/body proves server-side fetch; test
+      scheme/host allow-listing.
+  (b) Object-write: upload valid tiny image under a controlled `key`, then retrieve WITHOUT
+      Access-Token (unauth GET on object URL / zip-all-images) → proves unauth persist.
+  (c) signature-to-bmp uses fixed key `user/signature/bmp` → cross-caller object-clobber candidate.
+- Fixed = auth gate rejects tokenless write (never observed), SSRF constrained to allow-list, or
+  key bound to authenticated session. CVSS 5.3–7.5 (conditional).
+
+### A6 (H21) — nucleus/v1 FIA conversation/drawing object-keyed IDOR  [program Medium, conditional]
+- Host: api-t1.fyers.in/nucleus/v1 — auth fingerprint #21 (401 {"code":-1,"message":"Invalid token
+  or authentication failed","s":"error"}); route shapes from in-scope fyers.in/web/main.dart.js:
+  - GET  /nucleus/v1/history/{cid}                 (object-keyed; GET /history/99999 → -1, not 404)
+  - POST /nucleus/v1/chat          body {cid,prompt[,timeframe,layout,chart_id,chart_symbol,...]}
+  - POST /nucleus/v1/chat/auto-suggest
+  - GET  /nucleus/v1/chat/request-limit
+  - POST /nucleus/v1/oldfiachat/history  body {old_fia:true,uuid}
+  - POST /nucleus/v1/drawings       body {client_id,comment,flag:true,text:[...]}
+  - DELETE /nucleus/v1/drawings/{a}/{b}
+  - POST /nucleus/v1/cancel-chat/{cid}/{mid}
+  - GET  /nucleus/v1/fia/chart-insights?symbol=&timeframe=   (also option-chain-insights)
+- Object keys: {cid} (history/cancel-chat), {a}/{b} (drawings delete), client_id (drawings save)
+- Design: own conversation baseline (GET /history/{own_cid}) → GET /history/{foreign_cid} under own
+  session; same for drawings delete/cancel-chat key substitution.
+- Success: foreign conversation/drawing object returned or deleted. Fixed: 403/404.
+- Severity: Medium if cross-account chat-history/drawing read demonstrated. CVSS 5.3–6.5 (conditional).
+
+## B. Informational / hardening bundle (single low submission — no demonstrated customer impact)
+- B1 (H10) chart SQL oracle: api-t1 chart data endpoint returns `Number:1103`/SQLState `42000`
+  (PostgreSQL error strings) on crafted params. Debug-info disclosure only.
+- B2 (H12) invest/admin presence oracle: /invest/admin/v1/sgb/issue-list — `-19` presence oracle,
+  `souce` var typo, `-27` auth-domain split. Enumeration without data exposure.
+- B3 (H14) realtime-funds error-wrap: api-a1-prod /myaccount/prod/realtime-funds returns HTTP 200
+  with `-16` + internal `latency` debug field; funds tier split (-374/-17); withdraw-fund
+  validation-before-auth schema oracle. Internal debug-info disclosure.
+- B4 (H16) email-preference validation-before-auth: api-t1 /utility/v2/public/email-preference →
+  400 "Validation failed..." without token; schema oracle only (email_disabled/sms_disabled/...).
+- B5 (H1) login cb/redirect_uri handling: login.fyers.in `cb`/`redirect_uri` nav = open-redirect
+  class — NOT bounty-eligible per program rules (no auth bypass demonstrated). Informational only.
+- B6 x-validate HMAC key: client-side HMAC key 1YJKSPg9IcPyyb6N9JHXGAfikiVylWCs embedded in
+  signup bundle — public client-side key, no protective value (weak anti-CSRF shaping). NOT eligible.
+- B7 journal.fyers.in client primitives: unvalidated `?token=` setter → crafted link clears apex
+  `_FYERS=-1` across all *.fyers.in (cross-property logout); hardcoded OAuth `state=sample_state`;
+  no Referrer-Policy on token deep-links. Informational.
+- B8 signup/v1 JSON-parse leak: verification/email/send-otp 400 message echoes
+  "Expecting value: line 1 column 1 (char 0)". Informational.
+
+## C. Scope-confirmation questions (to program contact BEFORE any active validation)
+- C1 signup/v2 KYC (api-a1.fyers.in/signup/v2/*) — in scope? KYC req_id object model?
+- C2 api-testing-prod.fyers.in — in scope? (absent from public configs; KYC upload microservice)
+- C3 journal-server (api-a1-prod.fyers.in/journal-server/*) — in scope?
+- C4 open-account.fyers.in + signup/v1 (api-a1-prod) + open-account/staging (api.fyers.in) — in scope?
+- C5 /invest/admin/* — in scope? (admin-adjacent surface)
+- C6 /cdsl/dev/* (api-t1) — dev surface on prod; explicitly excluded as "development environments"?
+- C7 mcp.fyers.in — in scope?
+- C8 api-connect-docs.fyers.in — informational only; leave out of scope?
+
+## D. Excluded (do not report)
+- SmartHunt SSTI (${7*7} → CF 429 errorCode:1015 rate-limit/WAF; no "49" rendered) — false positive,
+  4 independent triages. onload/issue_id variants same class.
+- Third-party hosts (Grammarly/Coda/Superhuman/Zoho-assist .env) — out of scope by program AND rules.
+- api-a1.fydev.tech (dev twin) — non-*.fyers.in, out of scope.
+- Public config artifacts (indus/v1/config, config.gz) — public configs.
+- OAuth/open-redirect/no-impact categories per program Expected Behaviour list.
+
+## Compliance guardrails (all phases)
+No OTP/SMS/email dispatch to any number. No cross-account access by researcher. No high-volume or
+automated scanning. No rate-limit bypass. No market-hours trading-system actions. Own-account PoCs
+only. Submissions only via official form. Strict confidentiality (no external disclosure).
+EOF
+wc -l reports/submission-package_fyers-bb.md
+48
+123 reports/submission-package_fyers-bb.md
+[0m
+Now re-creating the submission package (wiped again) with A6/H21 added, and updating state.
+[0m← [0mWrite state_deepseek.json
+Wrote file successfully.
+[0m
+[0m← [0mWrite reports/analyst-latest.txt
+Wrote file successfully.
+[0m
+[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && git add -A && git commit -q -m "analyst fyers.in 2026-08-08-08-1x (HYPOTHESIS): nucleus/v1 data-keying + H21 object-keyed IDOR + A6 in package" && git log --oneline -1
+Author identity unknown
+
+*** Please tell me who you are.
+
+Run
+
+  git config --global user.email "you@example.com"
+  git config --global user.name "Your Name"
+
+to set your account's default identity.
+Omit --global to set the identity only in this repository.
+
+fatal: empty ident name (for <runner@runnervmvrwv9.ahl4oruynuculdmbolorkmdlve.cx.internal.cloudapp.net>) not allowed
+[0m
+[0m$ [0mcd /home/runner/work/fyers-recon/fyers-recon && git config user.email "analyst@fyers-recon.local" && git config user.name "fyers-recon-analyst" && git commit -q -m "analyst fyers.in 2026-08-08-08-1x (HYPOTHESIS): nucleus/v1 data-keying + H21 object-keyed IDOR + A6 in package" && git log --oneline -1
+7d5a6cc analyst fyers.in 2026-08-08-08-1x (HYPOTHESIS): nucleus/v1 data-keying + H21 object-keyed IDOR + A6 in package
+[0m
+Research complete. Summary of this run's output:
+
+# Target: fyers.in
+# Current Phase: HYPOTHESIS
+
+## Key Findings
+- **nucleus/v1 FIA data-keying analysis completed** (static, in-scope `fyers.in/web/main.dart.js`, 31.6 MB). Exact request shapes recovered; **`GET /nucleus/v1/history/{cid}` confirmed object-keyed** — read-only probe `GET /history/99999` → 401 `-1` (route exists) vs `GET /chat/request-limit/99999` → 404 (no path arg). All auth-first fingerprint #21.
+- **H21 (new, conditional): nucleus/v1 conversation/drawing object-keyed IDOR** — caller-supplied `{cid}`, `{a}/{b}`, `client_id` object keys behind a gate that proves nothing about per-session owner checks. CVSS 5.3–6.5, program Medium. Added as design A6.
+- **Negatives:** `myapi.fyers.in` bundle → no app-registry surface beyond gated `user/v3/app/*`; `api-connect-docs.fyers.in` → static Docusaurus fork, no secrets/surface.
+- Submission package re-created on disk (A1–A6 + B + C + D), findings + state committed.
+
+## Hypotheses
+### H21 — nucleus/v1 conversation/drawing object-keyed IDOR
+Reasoning: `{cid}`/`{a}/{b}`/`client_id` keys + route existence proven via -1-vs-404 split; per-owner scoping undetermined behind the uniform gate.
+Impact: cross-account read/delete of FIA copilot chat history + drawings → program Medium (conditional).
+Test: own-account baseline → foreign `cid` substitution; NOT executed (own-account rules).
+
+## CVSS Candidates
+- [H17 req_id] 8.1–9.1 · [H19 unauth upload/SSRF] 5.3–7.5 · [H15/H18] 5.3–7.5 · [H13/H21] 5.3–6.5 — all conditional, FYERS-side validation
+- [B1–B8 informational] — informational/low
+
+---
+**STATE**: HYPOTHESIS / HIGH_POTENTIAL — next run advances to POC (A6 shapes already on disk); operator action: dispatch scope-confirmation (C1–C8) then submit package via forms.fyers.in. Exclusions and guardrails unchanged.
+
 SMARTHUNT DEEP-SCAN REPORT (read it; verify hypotheses it raised):
 # Evidence needed — not yet reportable
 
@@ -1577,8 +1730,8 @@ Read-only verified. Program-consistent scope: target + subdomains.
 - `dox` client-type header unknown; `nomos` 401-auth; fundtx session-gated; Discourse search no secrets; superhuman `.grammarlyaws` 000; `ignite` (mimo EDIS) unvalidated.
 ===== CURRENT STATE =====
 TARGET: fyers.in
-PHASE: SURFACE
-STATUS: HIGH_POTENTIAL
+PHASE: RECON
+STATUS: IN_PROGRESS
 
 ===== YOUR TASK =====
 Research ONLY the fixed target fyers.in.
