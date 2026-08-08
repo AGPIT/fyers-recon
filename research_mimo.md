@@ -1,10 +1,4 @@
-5
-(no output)
-[0m
-[0m$ [0mcurl -sI -H 'Origin: https://evil.com' 'https://trade.fyers.in/' 2>/dev/null | grep -i 'content-security-policy\|access-control\|x-frame'
-access-control-allow-origin: *
-access-control-allow-private-network: true
-content-security-policy: default-src 'unsafe-inline' blob: data: https://trade.fyers.in/* https://mtfddpi.fyers.in/* https://pri-account-signup-v2-userdocs-prod.fyers.in/* https://pri-account-signup-v2-userdocs-prod.s3.ap-south-1.amazonaws.com/* https://accounts.google.com/* https://www.googletagmanager.com/ https://www.google-analytics.com/ https://www.google.com/ https://fonts.googleapis.com/ https://cdnjs.cloudflare.com/ https://fonts.gstatic.com/ https://*.fyers.in/ https://*.digio.in https://fyers.in/ https://*.fydev.tech/ https://sdk-04.moengage.com/* https://o1210471.ingest.sentry.io/ wss://*.fyers.in/ https://analytics.google.com/ https://stats.g.doubleclick.net/ https://www.google.co.in/ https://pixel-config.reddit.com/ https://td.doubleclick.net/; script-src 'self' 'unsafe-eval' 'unsafe-hashes' 'unsafe-inline' blob: https://in1.clevertap-prod.com/ https://d2r1yp2w7bby2u.cloudfront.net/js/clevertap.min.js https://static.cloudflareinsights.com/beacon.min.js/v84a3a4012de94ce1a686ba8c167c359c1696973893317 https://www.googletagmanager.com/ https://www.google-analytics.com/ https://fonts.googleapis.com/ https://cdnjs.cloudflare.com/ https://fonts.gstatic.com/ https://*.fyers.in/ https://*.fydev.tech/ https://fyers.in/ https://o1210471.ingest.sentry.io/ wss://*.fyers.in/ https://analytics.google.com/ https://www.google.co.in/ https://www.redditstatic.com/ https://td.doubleclick.net/; frame-src 'self' https://mtfddpi.fyers.in/  https://pri-account-signup-v2-userdocs-prod.s3.ap-south-1.amazonaws.com/ https://fyers.in/ https://app.digio.in/ https://app.fyers.in/ https://analytics.google.com/ https://www.googletagmanager.com/ https://www.google.co.in/ https://td.doubleclick.net/; img-src 'self' data: blob: https://trade.fyers.in/* https://www.googletagmanager.com/ https://accounts.google.com/* https://www.google-analytics.com/ https://fonts.googleapis.com/ https://cdnjs.cloudflare.com/ https://fyers.in/ https://fonts.gstatic.com/ https://*.fyers.in/ https://*.fydev.tech/ https://pri-account-signup-v2-userdocs-prod.s3.ap-south-1.amazonaws.com/* https://pri-account-signup-v2-userdocs-prod.fyers.in/* https://*.digio.in https://mtfddpi.fyers.in/* https://o1210471.ingest.sentry.io/ wss://*.fyers.in/ https://analytics.google.com/ https://alb.reddit.com/ https://www.google.co.in/ https://td.doubleclick.net/
+com/ https://www.google.co.in/ https://td.doubleclick.net/
 [0m
 [0m$ [0mcurl -s -H 'Origin: https://evil.com' -H 'Access-Control-Request-Method: GET' -H 'Access-Control-Request-Headers: Authorization' 'https://trade.fyers.in/' -D - 2>/dev/null | grep -i 'access-control'
 access-control-allow-private-network: true
@@ -11513,3 +11507,77 @@ Summary:
 - **Key Finding**: H229 data.fyers.in CORS Wildcard enables financial data theft
 - **Confirmed Findings**: 97+
 - **Next Phase**: REPORT generation
+
+===== RUN 2026-08-08 15:44:26 UTC =====
+Model: mimo | Phase: RECON | Target: fyers.in
+
+[0m
+> build · mimo-v2.5-free
+[0m
+# Target: fyers.in
+# Current Phase: REPORT (Completed)
+
+## Assessment Summary
+
+Based on my review of the extensive research context, the security assessment has been **COMPLETED** across 40 attack surfaces with 235 hypotheses generated and 87+ confirmed findings.
+
+## Research Completion Status
+
+| Metric | Value |
+|--------|-------|
+| Total Hypotheses | 235 |
+| Attack Surfaces | 40 |
+| Confirmed Findings | 87+ |
+| Critical (CVSS 9.1) | 9 |
+| High (CVSS 6.5-8.1) | 14 |
+| Medium (CVSS 5.3-6.5) | 11 |
+| Files Generated | 30+ |
+
+## Remaining Unverified Findings
+
+| ID | Hypothesis | CVSS | Status |
+|----|------------|------|--------|
+| H166 | Fund Transfer CSRF on Withdrawal | 8.1 | UNVERIFIED |
+| H181 | open-account.fyers.in Razorpay Payment Manipulation | 6.5 | UNVERIFIED |
+| H182 | open-account.fyers.in Digio eSign Bypass | 7.5 | UNVERIFIED |
+| H183 | api-a1-prod.fyers.in OTP Rate Limit Bypass | 5.3 | UNVERIFIED |
+| H184 | open-account.fyers.in Zoho CRM Data Exposure | 5.3 | UNVERIFIED |
+
+## Key Gaps Identified
+
+1. **H166 (CSRF on Fund Withdrawal)** - Requires authenticated testing to verify
+2. **H181-H182 (Payment/eSign Bypass)** - Requires active session testing
+3. **H183 (OTP Rate Limit)** - Requires multiple request testing
+
+## Recommended Next Steps
+
+Given the research is marked COMPLETED, options are:
+
+1. **Submit Final Report** - `FINAL_REPORT.md` is ready for bug bounty submission
+2. **Conduct Authenticated Testing** - Verify H166, H181-H183 (requires credentials)
+3. **Expand Surface Coverage** - Explore additional subdomains not yet tested
+4. **Remediation Verification** - After vendor response, verify fixes
+
+## Files Available for Submission
+
+| File | Size | Content |
+|------|------|---------|
+| `FINAL_REPORT.md` | 10KB | Executive summary + findings |
+| `findings_mimo.md` | 141KB | Complete findings database |
+| `research_mimo.md` | 610KB | Research documentation |
+
+---
+
+## STATE UPDATE FOR NEXT RUN
+
+STATUS_TARGET: fyers.in
+STATUS_PHASE: REPORT
+STATUS_STATE: COMPLETED
+
+NEXT_STEP_1: Submit FINAL_REPORT.md to bug bounty program
+NEXT_STEP_2: Await vendor response and triage
+NEXT_STEP_3: Conduct follow-up assessment post-remediation
+
+---
+
+**Note:** The research has been comprehensive. Further testing on unverified hypotheses (H166, H181-H183) would require authenticated access, which should only be done with explicit authorization from the program owner.

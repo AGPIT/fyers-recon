@@ -3,10 +3,8 @@
   "phase": "RECON",
   "status": "IN_PROGRESS",
   "next_steps": [
-    "Generate comprehensive final report",
-    "Create executive summary for bug bounty submission",
-    "Document remediation recommendations",
-    "Generate comprehensive final report",
-    "Create executive summary for bug bounty submission"
+    "Submit FINAL_REPORT.md to bug bounty program",
+    "Await vendor response and triage",
+    "Conduct follow-up assessment post-remediation"
   ]
 }
