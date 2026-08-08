@@ -1,12 +1,9 @@
 {
   "target": "fyers.in",
   "phase": "RECON",
-  "status": "IN_PROGRESS",
+  "status": "HIGH_POTENTIAL",
   "next_steps": [
-    "Submit findings to bug bounty program",
-    "Monitor for remediation responses",
-    "Conduct follow-up assessment",
-    "Submit findings to bug bounty program",
-    "Monitor for remediation responses"
+    "Explore remaining unexplored subdomains (backoffice, calendar, reports)",
+    "Test authenticated fund transfer CSRF (H166)"
   ]
 }
