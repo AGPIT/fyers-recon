@@ -1,10 +1,1 @@
-{
-  "target": "fyers.in",
-  "phase": "RECON",
-  "status": "HIGH_POTENTIAL",
-  "next_steps": [
-    "Advance to SURFACE on nucleus/v1 \u2014 mine the fyers.in/web Flutter bundle for exact request/response shapes of `fia/*`, `history`, `conversation`, `drawings` (data-keying analysis) + myapi.fyers.in JS bundles for referenced app-registry endpoints (read-only, spaced).",
-    "Operator dispatches scope-confirmation query (package C1\u2013C8 incl. api-testing-prod and api-connect-docs.fyers.in) then submits the re-created `reports/submission-package_fyers-bb.md` (A1\u2013A5 + B + C + D) via forms.fyers.in BugBountyForm1 before any own-account validation.",
-    "Exclusions unchanged (SmartHunt SSTI false positive 3\u00d7 triaged, third-party hosts, api-a1.fydev.tech, public config artifacts); guardrails hold (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume). New auth fingerprint #21 (nucleus `-1`) recorded."
-  ]
-}
+{"target": "fyers.in", "phase": "SURFACE", "status": "HIGH_POTENTIAL", "next_steps": ["Advance to SURFACE on nucleus/v1 \u2014 mine the fyers.in/web Flutter bundle for exact request/response shapes of `fia/*`, `history`, `conversation`, `drawings` (data-keying analysis) + myapi.fyers.in JS bundles for referenced app-registry endpoints (read-only, spaced).", "Operator dispatches scope-confirmation query (package C1\u2013C8 incl. api-testing-prod and api-connect-docs.fyers.in) then submits the re-created `reports/submission-package_fyers-bb.md` (A1\u2013A5 + B + C + D) via forms.fyers.in BugBountyForm1 before any own-account validation.", "Exclusions unchanged (SmartHunt SSTI false positive 3\u00d7 triaged, third-party hosts, api-a1.fydev.tech, public config artifacts); guardrails hold (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume). New auth fingerprint #21 (nucleus `-1`) recorded."]}

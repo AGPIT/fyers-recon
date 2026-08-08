@@ -398,3 +398,53 @@ testability: PASSIVE
 [LEARN] ACCEPTED SSRF/unauth-routes class @ api-testing-prod.fyer.in: bundle-shape + gate-walk (700-byte main bundle, token never rejected at any stage, `zip-all-images {}` 200) jointly prove the tier has no global auth filter — first estate surface of this class.
 [LEARN] REJECTED data-exposure @ api.fyes.in/open-account/staging + signup/v1: 500 method-gate and 1051/1007 auth-first holds; no handler/user-data reachable, consistent with dev-env exclusion and prior OAuth/FR-class closures.
 [RISK] fyers: 65 — estate has a live unauth KYC-upload tier (SSRF + PAN-storage write + cross-caller signature-key clobber candidates) that touches the most sensitive data class and sits inside a production bug-bounty scope; validation-before-auth exists on OTP + withdraw-fund paths, and ≥3 fragmented auth contracts (Bearer/`Access-Token`/cookie) coder. Offset: no outbound fetch/storage write executed, impact unconfirmed, staging signup GLY li OOS, IDOR family still execution-prohibited, majority of corpus informational/no-bounty.
+
+===== ANALYST 2026-08-08 07:27:08 UTC =====
+[NEW] api-t1.fyers.in/nucleus/v1/* — FIA-copilot family (15 routes: fia/chart-insights, fia/option-chain-insights, chat, history, conversation, drawings, prompts, available_tools); gate mapped, auth fingerprint #21, ALL routes auth-first 401 `{"code":-1,"message":"Invalid token or authentication failed","s":"error"}`; GET-only → 404 on POST; no pre-auth oracle
+[NEW] api-t1.fyers.in/user/v3/app/* — OAuth app-registry (9 routes: all, create, delete, update, logout, get-common-apps, create/update-trading-app, updateAppStatus); gate mapped, standard trade-core `-16`, no oracle
+[NEW] api-connect-docs.fyers.in — stale Docusaurus "FYERS API Connect" widget-docs (sitemap still `your-docusaurus-test-site.com`); static, no interface, no secrets — recon artifact only
+[CHANGED] myapi.fyers.in re-characterized — "API - FYERS" app-registry SPA; only backend refs are api-t1/gk/api/v2/user + ck/verify_token; nothing new
+[NEW] assist.fyers.in (Zoho Assist remote-support platform) — `/app/.env` reachable via a third-party Zoho URL; file contains nothing sensitive (SmartHunt: "do not report yet")
+[CHANGED] Negative corroboration — config.gz re-fetched (151,599 B, 40 hosts) still does NOT contain api-testing-prod; screeners/direct(301)/alerts(301)/ofs/sgb/public all gate-mapped, no pre-auth data on any
+[PRIO] api-testing-prod.fyers.in KYC upload tier (H19) — 7.85 = attack 7, business 8, tech 8, gate 10, cloud 7, fresh 7
+[PRIO] api-t1.fyers.in/nucleus/v1 FIA family — 5.50 = attack 6, business 6, tech 7, gate 1, cloud 5, fresh 8
+[PRIO] api-t1.fyers.in/user/v3/app OAuth registry — 4.75 = attack 4, business 6, tech 6, gate 1, cloud 5, fresh 7
+[PRIO] api-connect-docs.fyers.in — 4.35 = attack 2, business 2, tech 3, gate 10, cloud 8, fresh 6 (static, nothing reachable)
+[HYP] H19 — Unauthenticated server-side URL fetch (SSRF) + object-write into the KYC upload tier
+class: SSRF
+asset: api-testing-prod.fyers.in/signup/upload/api/v1/{pdf/is-password-protected, user/general/upload-image, user/general/zip-all-images}
+confidence: 55
+reasoning: Bundle (`open-account.fyers.in/.../main.chunk.js`) shows `is-password-protected` POSTs a caller-supplied `file_url` for a server-side fetch and `upload-image` POSTs base64 + caller-chosen `key`; live gate walk showed no auth at any depth (`{}`→400 402 "All fields are mandatory", empty-fields + dummy `Access-Token`→400 403 "Invalid File Format", `zip-all-images {}`→HTTP 200 no-auth Success). Host absent from both public configs → scope confirmation (C) pending.
+evidence_needed: (a) `file_url` variants yield distinct status/body proving a server fetch; (b) fetch scheme/host allowlist (internal reach); (c) an object stored under a controlled `key` persists without the token.
+verify_steps: PASSIVE — branch oracle only, already-baselined: `POST .../pdf/is-password-protected` with `{"file_url":""}` vs `{"file_url":"not-a-url"}` vs `{"file_url":"http://127.0.0.1:1/x.pdf"}` — spaced ≥5s, no valid external URL, no OTP/file/URL side-effects; real fetch + object-write confirm = HUMAN (FYERS-side, prohibited to researcher).
+impact: blind SSRF from a Cloudflare-fronted KYC microservice and/or unauth write into the KYC document tier (incl. cross-caller `user/signature/bmp` clobber) → program Medium–High (conditional); CVSS 5.3–7.5.
+testability: PASSIVE → HUMAN
+[HYP] nucleus/v1 conversation/history/drawings object-keyed IDOR
+class: IDOR
+asset: api-t1.fyers.in/nucleus/v1/{conversation,history,drawings}
+confidence: 35
+reasoning: Per-user copilot chat history/drawings sit behind a uniform auth-first `-1` gate (fingerprint #21); same conditional object-keyed class as H13/H18; no request/response shape or object-key model analyzed yet.
+evidence_needed: own-account baseline object vs foreign object-id delta (200-with-data vs 403/404).
+verify_steps: AUTH_HELPED: two-account baseline + substitution on conversation/history/drawings (FYERS-side, own-account rules); none executed.
+impact: cross-account read of copilot chat/drawings → program Medium (conditional).
+testability: HUMAN_ONLY
+[HYP] user/v3/app OAuth app-registry app_id-keyed IDOR
+class: IDOR
+asset: api-t1.fyers.in/user/v3/app/{all,create,update,delete,updateAppStatus}
+confidence: 20
+reasoning: App-registry objects keyed by `app_id` behind the estate-standard trade-core `-16` gate; no pre-auth oracle observed; gate identical to estate norm; no shape analysis done.
+evidence_needed: foreign `app_id` read/update under one authenticated session (FYERS-side).
+verify_steps: AUTH_HELPED: own-account baseline then foreign app_id read/update delta (FYERS-side); none executed.
+impact: cross-account app-config read/modify → program Low–Medium (conditional).
+testability: HUMAN_ONLY
+[PARKED] nucleus/v1 IDOR — confidence 35 < 40; shape/object-key analysis not done; gate is cleanly auth-first, no oracle → needs shape analysis before it earns a slot.
+[PARKED] user/v3/app IDOR — confidence 20 < 40; trade-core `-16` gate identical to estate norm, no distinguishing evidence.
+[PARKED] assist.fyers.in `.env` — third-party Zoho Assist platform (REJECTED third-party class) AND file verified empty of sensitive content → SmartHunt already marked "not yet reportable"; no impact.
+[PARKED] api-connect-docs.fyers.in — static Docusaurus docs, no interface, nothing reachable; recon artifact only.
+[FINAL] survivors re-ranked: H19 (55, SSRF/unauth-upload, PASSIVE branch oracle) — only survivor this run; the carried IDOR family (H17 45, H13 42, H18 40, H15 40) remains HUMAN_ONLY/FYERS-side pending authorization and is unchanged. No new vulnerability was introduced or proven this run (pure gate-mapping round).
+[NEXT] HUMAN: dispatch the scope-confirmation query (package C1–C8: signup/v2 KYC, api-testing-prod, journal-server, open-account/staging, /invest/admin/*, /cdsl/dev/*, mcp.fyers.in, api-connect-docs) to the program contact and obtain authorization before any auth/OTP/KYC/cross-account validation; then submit the re-created `reports/submission-package_fyers-bb.md` (A1–A5 + B + C + D) via forms.fyers.in BugBountyForm1.
+[LEARN] REJECTED info-disclosure/misconfig @ api-connect-docs.fyers.in — static Docusaurus fork, no interface reachable; dead surface.
+[LEARN] REJECTED third-party-host class @ assist.fyers.in — Zoho Assist platform under apex; `/app/.env` reachable but empty; third-party OOS per rules.
+[LEARN] ACCEPTED auth-first-gate class @ api-t1.fyers.in/nucleus/v1 — uniform `-1` fingerprint #21, no pre-auth oracle; conditional IDOR on per-session objects carried but unproven.
+[LEARN] REJECTED pre-auth-oracle class @ api-t1.fyers.in/user/v3/app — trade-core `-16`, no schema/field leak pre-auth.
+[RISK] fyers: 65 — estate now ≥42 hosts / ≥21 auth domains with 5 conditional object-keyed IDOR candidates (H17 req_id incl. PAN/PDF/eSign, H13 chartId, H15 DDPI, H18 journal note/upload, nucleus conversation) plus the first unauth upload/URL-fetch primitive (api-testing-prod, H19) touching KYC/PAN document storage; this run added no confirmed exposure — all new surfaces are auth-first with no oracle. Offset: zero exploits proven, researcher execution of every high-value path is prohibited/pending authorization, SSTI/OATH/third-party classes rejected, SmartHunt `.env` is empty and third-party.
