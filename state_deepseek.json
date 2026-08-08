@@ -1,1 +1,10 @@
-{"target":"fyers.in","phase":"POC","status":"HIGH_POTENTIAL","next_steps":["Firm POC complete: package carries exact request-shape appendix E1-E6 for all conditional designs (H17/H13/H15/H18/H19/H21). No Q: locked gates re-confirmed live (journal #20 403/unauthorized, nucleus #21 401/-1, signup/v2 esign-document 401/1050 session-gated). Next: if operator/security team clears scope, execute only OWN-SESSION baselines; every cross-object substitution step is FYERS-side parameterized, never researcher-executed.","If blocked on scope confirmation, restart RECON on an unexplored in-scope surface: drop key candidates are api.fyers.in/api/v2/* OAuth2 generate-authcode param parsing, myaccount.fyers.in SPAs, automate-chn.fyers.in backtest family, ipo.fyers.in bundles - spaced, read-only.","Exclusions unchanged (SmartHunt SSTI false positive 4x, third-party hosts, api-a.fydev.tech, public config artifacts); guardrails hold (no OTP dispatch, no cross-account, no file/URL side effects, no high volume). Hand off package C1-C8 scope-confirmation to operator before any active validation."]}
+{
+  "target": "fyers.in",
+  "phase": "POC",
+  "status": "EXHAUSTED",
+  "next_steps": [
+    "Operator dispatches scope-confirmation query (package C1\u2013C8) then submits `reports/submission-package_fyers-bb.md` (A1\u2013A6 + B + C + D + E1\u2013E6) via forms.fyers.in BugBountyForm1; no cross-account/OTP/SSRF execution by researcher.",
+    "If blocked on scope, restart RECON on unexplored in-scope surface \u2014 api.fyers.in/api/v2/* OAuth2 generate-authcode param validation, myaccount.fyers.in SPAs, automate-chn.fyers.in backtest family, ipo.fyers.in bundles \u2014 spaced, read-only.",
+    "Exclusions unchanged (SmartHunt SSTI false positive 4\u00d7, third-party hosts, api-a1.fydev.tech, public config artifacts); guardrails hold."
+  ]
+}
