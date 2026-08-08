@@ -1,1 +1,10 @@
-{"target": "fyers.in", "phase": "POC", "status": "HIGH_POTENTIAL", "next_steps": ["H18 design \u2014 own-account notes-list baseline, then cross-account `note/edit/{id}` + `note/delete/{id}` + `upload-document` file-access delta (FYERS-side/own-account only); append to submission package as 4th conditional IDOR.", "Add H18 client primitives (apex `_FYERS=-1` cross-property logout, hardcoded OAuth `state=sample_state`, missing Referrer-Policy) to the informational/hardening bundle.", "Extend scope-confirmation query to include journal.fyers.in journal-server; then submit package. Excluded: SSTI false positive; third-party hosts; trade2.fyers.in (dead)."]}
+{
+  "target": "fyers.in",
+  "phase": "POC",
+  "status": "HIGH_POTENTIAL",
+  "next_steps": [
+    "Operator dispatches scope-confirmation query (signup/v2 KYC, mcp.fyers.in, /invest/admin/*, /cdsl/dev/*, journal.fyers.in) then submits `reports/submission-package_fyers-bb.md` via forms.fyers.in BugBountyForm1.",
+    "Advance to RECON on `open-account.fyers.in` (account-opening SPA) and/or `nucleus/v1/fia/*` FIA-assistant family on api-t1 for new endpoints/fingerprints (spaced, read-only).",
+    "IDOR family = own-account/FYERS-side validation only; keep excluding SmartHunt SSTI, third-party hosts, public config artifacts."
+  ]
+}
