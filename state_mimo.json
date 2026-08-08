@@ -1,12 +1,12 @@
 {
   "target": "fyers.in",
-  "phase": "RECON",
+  "phase": "POC",
   "status": "HIGH_POTENTIAL",
   "next_steps": [
-    "Generate final comprehensive report",
+    "Generate comprehensive final report",
     "Submit findings to bug bounty program",
     "Monitor for remediation responses",
-    "Generate final comprehensive report",
+    "Generate comprehensive final report",
     "Submit findings to bug bounty program"
   ]
 }
