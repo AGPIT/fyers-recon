@@ -38,11 +38,24 @@ jobs:
 
       - name: Install OpenCode
         run: |
-          curl -fsSL https://opencode.ai/install | bash
+          export PATH="$HOME/.opencode/bin:$HOME/.local/bin:$HOME/.npm-global/bin:$PATH"
+          if command -v opencode >/dev/null 2>&1; then
+            exit 0
+          fi
+          npm install -g opencode-ai 2>/dev/null || npm install -g --prefix "$HOME/.npm-global" opencode-ai 2>/dev/null || true
+          if ! command -v opencode >/dev/null 2>&1; then
+            for i in 1 2 3; do
+              curl -fsSL https://opencode.ai/install | bash && break
+              echo "opencode.ai installer attempt $i failed, retrying in 15s..."
+              sleep 15
+            done
+          fi
+          export PATH="$HOME/.opencode/bin:$HOME/.local/bin:$HOME/.npm-global/bin:$PATH"
+          opencode --version
 
       - name: Verify OpenCode
         run: |
-          export PATH="$HOME/.opencode/bin:$HOME/.local/bin:$PATH"
+          export PATH="$HOME/.opencode/bin:$HOME/.local/bin:$HOME/.npm-global/bin:$PATH"
           opencode --version
           opencode models opencode | grep -E "deepseek-v4-flash-free|mimo-v2.5-free" || true
 
@@ -231,7 +244,7 @@ jobs:
 
       - name: Run OpenCode Research
         run: |
-          export PATH="$HOME/.opencode/bin:$HOME/.local/bin:$PATH"
+          export PATH="$HOME/.opencode/bin:$HOME/.local/bin:$HOME/.npm-global/bin:$PATH"
           echo "Model=$MODEL_ID Phase=$CURRENT_PHASE Target=$CURRENT_TARGET"
           # Prompt is streamed via stdin (not a shell arg) so it can exceed the
           # 128KB MAX_ARG_STRLEN limit that broke runs once research grew large.
