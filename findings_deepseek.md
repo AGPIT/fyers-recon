@@ -536,3 +536,15 @@ Review research_deepseek.md for details
 - **FIA chat request-limit/abuse angle (informational):** `POST /nucleus/v1/chat` accepts `deep_research:true` and is subject to `GET /nucleus/v1/chat/request-limit` — the assistant is a paid-ish copilot (prompt-count gating). No pre-auth oracle; rate-limit/abuse checks are authenticated-only. Hardening note only.
 - **myapi.fyers.in app-registry bundle check (static):** the "API - FYERS" SPA (`main.9314ac5d.js`, 1,566,261 B) references only `api-t1/gk/api/v2/user` + `ck/verify_token` for backend auth + `api-connect-docs.fyers.in/` docs + `myapi/docs` anchors; no additional app-registry endpoints beyond the already-gated `user/v3/app/*` (trade-core `-16`). No new surface.
 - **api-connect-docs.fyers.in fully characterized (static):** Docusaurus v1 scaffold (`your-docusaurus-test-site.com` still in sitemap/og:url), legacy "API Connect" widget docs (hosted-button `<fyers-button data-fyers="API_KEY">`, methods/parameters/orders/funds/positions/holdings/trades pages), sub-paths 302 to S3-style "Resource Found" pages, root JS bundles empty of API refs. Purely informational recon artifact; no secrets, no new API surface.
+
+# 4 items on 2026-08-08 08:07:13 UTC
+- **nucleus/v1 FIA data-keying analysis completed** (static, in-scope `fyers.in/web/main.dart.js`, 31.6 MB). Exact request shapes recovered; **`GET /nucleus/v1/history/{cid}` confirmed object-keyed** — read-only probe `GET /history/99999` → 401 `-1` (route exists) vs `GET /chat/request-limit/99999` → 404 (no path arg). All auth-first fingerprint #21.
+- **H21 (new, conditional): nucleus/v1 conversation/drawing object-keyed IDOR** — caller-supplied `{cid}`, `{a}/{b}`, `client_id` object keys behind a gate that proves nothing about per-session owner checks. CVSS 5.3–6.5, program Medium. Added as design A6.
+- **Negatives:** `myapi.fyers.in` bundle → no app-registry surface beyond gated `user/v3/app/*`; `api-connect-docs.fyers.in` → static Docusaurus fork, no secrets/surface.
+- Submission package re-created on disk (A1–A6 + B + C + D), findings + state committed.
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: deepseek)
+Review research_deepseek.md for details
+- **H21 (new, conditional): nucleus/v1 conversation/drawing object-keyed IDOR family.** Object keys are caller-supplied `{cid}` (history), `{cid}/{mid}` (cancel-chat), `{a}/{b}` (drawings delete) and body-level `client_id` (drawings save). If the backend resolves these keys WITHOUT a per-session owner check (which the uniform `-1` gate cannot prove or disprove pre-auth), a second authenticated user's session could read/delete another user's FIA chat history/drawings by supplying the foreign key. Own-account/FYERS-side validation only (program rules — cross-account researcher execution prohibited). Same conditional class as H13/H15/H17/H18. Program Medium if a cross-account conversation/drawing read is demonstrated (chat history/drawings are user content but low-to-moderate sensitivity vs PAN/eSign); CVSS 5.3–6.5 conditional.
+  Medium if limited. CVSS 8.1–9.1 (conditional).
+- Severity: Medium–High if cross-account notes/uploads exposed. CVSS 5.3–7.5 (conditional).
