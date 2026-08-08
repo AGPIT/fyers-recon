@@ -644,3 +644,5 @@ testability: AUTH_HELPED (skip, no long-term)
 [LEARN] ACCEPTED 401-in-HTTP-200 wrap class @ api-i1.fyers.inv/invest/.../investors-details — authog error wrapped HTTP 200, mirrors realtime-funds.
 [LEARN] REJECTED data-disclosure/MISCONFIG @ api/issue-list|issue-details oracle — "IssueId is required" returns  default validation only.
 [RISK] fyers: 67 — estate now ~42 hosts / ≥22 auth-fingerprint domains with seven conditional object-keyed IDOR candidates (H13/H15/H17/H18/H21/H22; top severity H17 8.1–9.1 if unmasked PAN/eSign) plus the I only error-缺 tier (api-testing-prod H19 SSRF+KYC write 5.3–7.5) and a new live eIPO order surface (api-i1). Everything so far: zero proven exploits; all high-value object paths are researcher-execution-prohibited pending authorization; all live gates re-confirmed auth-first/validation-only (new -100/-80/-441, #19/#20/#21), jhelum feed public-with-no-leak, third-party/method-gate/SSTI classes rejected.
+
+===== ANALYST 2026-08-08 14:08:45 UTC =====
