@@ -3,7 +3,6 @@ https://fyers.in/automate
 https://api-connect-docs.fyers.in/
 https://api-dashboard.fyers.in/
 https://myapi.fyers.in/
-https://api-t1-cdn.fyers.in/
 https://api-t1.fyers.in/
 https://api.fyers.in/
 https://fyers.in/web/
