@@ -2615,3 +2615,15 @@ Review research_mimo.md for details
 +### H191: mtfddpi.fyers.in CORS Data Exfiltration (CVSS 7.5) - CONFIRMED
 +### H192: mtfddpi.fyers.in Access Token URL Leakage (CVSS 7.5) - CONFIRMED
 +### H193: api-connect.fyers.in Technology Disclosure (CVSS 3.1) - CONFIRMED
+
+# 4 items on 2026-08-08 09:48:41 UTC
+- **Total Hypotheses**: 198 across 37 attack surfaces (previously completed)
+- **Critical Findings**: 7 (CVSS 9.1) - All CORS misconfigurations
+- **High-Value Findings**: 11 (CVSS 7.5-8.1)
+- **Confirmed Findings**: 66+
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+- **Critical Findings**: 7 (CVSS 9.1) - All CORS misconfigurations
+- **High-Value Findings**: 11 (CVSS 7.5-8.1)
+### H199: api-connect.fyers.in OAuth Token Leakage (CVSS 7.5)

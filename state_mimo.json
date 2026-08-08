@@ -1,12 +1,10 @@
 {
   "target": "fyers.in",
-  "phase": "POC",
-  "status": "HIGH_POTENTIAL",
+  "phase": "SURFACE",
+  "status": "IN_PROGRESS",
   "next_steps": [
-    "Generate comprehensive final report",
-    "Submit findings to bug bounty program",
-    "Monitor for remediation responses",
-    "Generate comprehensive final report",
-    "Submit findings to bug bounty program"
+    "Complete SURFACE analysis for developer portal",
+    "Generate HYPOTHESIS for OAuth and API key findings",
+    "Design POC for high-value findings"
   ]
 }
