@@ -1,10 +1,12 @@
 {
   "target": "fyers.in",
-  "phase": "HYPOTHESIS",
+  "phase": "RECON",
   "status": "HIGH_POTENTIAL",
   "next_steps": [
-    "Generate final submission-ready report",
-    "Verify if CORS patches applied",
-    "Test authenticated endpoints (GTT, Fund Transfer)"
+    "Generate final comprehensive report",
+    "Submit findings to bug bounty program",
+    "Monitor for remediation responses",
+    "Generate final comprehensive report",
+    "Submit findings to bug bounty program"
   ]
 }
