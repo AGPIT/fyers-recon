@@ -791,3 +791,45 @@ testability: HUMAN_ONLY (authorization-gated)
 [LEARN] ACCEPTED owner-check-not-enforceable pre-auth class @ api-i1 — tapi/eipo auth-first vs /invest hasn't demonstrated per-session object owner; the IDOR question is genuinely open, not noise.
 [LEARN] REJECTED SSRF/oracle false-positive noise @ open-account/api-connect-docs — static docs hosts reconfirmed no surface this cycle (artifact only).
 [RISK] fyers: 68 — estate ~42 hosts / ≥22 auth-fingerprint domains with seven conditional object-keyed IDOR candidates (H13/H15/H17/H18/H21/H22; top H17 8.1–9.1 if masked PAN/eSign) plus the estate's only fully-unauthenticated tier (api-testing-prod H19 SSRF + KYC object-write, 5.3–7.5), now reinforced by a new live eIPO order surface with a fully enumerated 14-field schema and a state-modifying cancel candidate (api-i1). Offsets: zero exploits executed or proven; every high-value path is researcher-execution-prohibited pending authorization; all live gates re-verified auth-first (tapi `-100` invariance with body, `-441`, #19/#20/#21); jhelum feed public-with-no-leak; report-mode / api-∫ scope items informational; SSTI/third-party/default-page/method-gate classes re-rejected. Exposure stable- a notch up on schema-leak scale, still not elevated.
+
+===== ANALYST 2026-08-08 17:40:34 UTC =====
+[HYP] Unauthenticated server-side URL fetch (SSRF) + object-write into KYC upload tier
+class: SSRF
+asset: api-testing-prod.fyers.in/signup/upload/api/v1/{pdf/is-password-protected, user/general/upload-image, user/fetch-pan, signature-to-bmp, user/general/zip-all-images}
+confidence: 55
+reasoning: single `L()` ajax wrapper sends Access-Token/Authorization yet service rejects no token at any depth (`zip-all-images {}`→200 no-auth; empty-fields+dummy-token→400 code 402 reaches format-parse). `is-password-protected` POSTs caller-supplied `file_url` for a server-side fetch; `signature-to-bmp` uses fixed cross-caller key `user/signature/bmp`; host absent from both public configs (scope-confirm C).
+evidence_needed: distinct status/body across a `file_url` validation branch oracle (empty vs malformed); tokenless retrieval of an object stored under a caller-chosen `key`; fetch host/scheme allow-list.
+verify_steps: PASSIVE — read-only branch oracle on already-baselined route, only after authorization re-confirmed: `POST https://api-testing-prod.fyers.in/signup/upload/api/v1/pdf/is-password-protected` body `{"file_url":""}` then, spaced ≥4s, `{"file_url":"not-a-url"}`. NO valid/external URL, no outbound fetch, no upload/zip/URL side effects; real-fetch/storage confirm = FYERS-side only.
+impact: blind SSRF from Cloudflare-fronted KYC microservice + unauth object-write/clobber in a KYC document tier → program Medium–High (conditional); CVSS 5.3–7.5.
+testability: PASSIVE (branch oracle) → AUTH_HELPED/HUMAN
+[HYP] eIPO order/application object-keyed IDOR (read + state-modifying cancel) via caller-chosen weak keys
+class: IDOR
+asset: api-i1.fyers.in — POST /invest/v1/ipo/order-book (14-field), DELETE /investment/tapi/v1/eipo/cancel-order?order_id=&offer_id=, POST /investment/tapi/v1/eipo/order-book
+confidence: 52
+reasoning: keys `OrderId`/`order_id`/`IssueId`/`FormFromId`/`FormToId`/`IssueSeries`/`offer_id` all caller-controlled, none demonstrably session-bound; `IssueId` confirmed a small integer space (weak/predictable); backend knows the session owner (investors-details returns client_id) so an owner check is feasible; uniform auth gates cannot prove per-key owner enforcement pre-auth.
+evidence_needed: own-session order-book returns own order; same session with foreign keys → 200-with-data (read) or state change on a foreign order via cancel-order (write).
+verify_steps: AUTH_HELPED — own-account baseline `POST /invest/v1/ipo/order-book` (14-field, own keys) → foreign delta on OrderId/order_id/FormFromId/FormToId/IssueSeries; `DELETE /tapi/v1/eipo/cancel-order?order_id=<FOREIGN>&offer_id=<FOREIGN>`; NEVER send a valid pre-auth place-order payload; cross-account execution prohibited — FYERS-side two-account validation (package A7/E7).
+impact: cross-account eIPO order/application read (Medium) and cross-account CANCEL (state-modifying, Medium–High) on a new live order surface; CVSS 5.3–7.5 conditional.
+testability: AUTH_HELPED (HUMAN for cross-account)
+[HYP] signup/v2 KYC application-object IDOR (req_id-keyed eSign/PDF/status/get-document)
+class: IDOR
+asset: api-a1.fyers.in/signup/v2/user/{esign-document, pdf/generate, pdf/poll, status/poll, nri/get-document} (req_id via digio_doc_id/live-verification)
+confidence: 45
+reasoning: gate #19 (401 `{code:1050 "session expired"}`) requires only a signup session yet is silent on per-request object ownership; `req_id` flows straight from the client (E1 shapes); `esign-document {}` → 401/1050, no pre-auth reach.
+evidence_needed: applicant A's authenticated session returns non-empty B-keyed eSign/PDF/status/get-document; fixed if 403/404/session-expired on foreign req_id.
+verify_steps: AUTH_HELPED — two own test applicants; under A substitute B's `req_id` on the E1 endpoints; own-accounts only, no OTP, no real e-sign; NOT executed by researcher (authorization required).
+impact: cross-account unmasked PAN/eSign/PDF → program Critical/High; CVSS 8.1–9.1 (conditional).
+testability: HUMAN_ONLY (authorization-gated)
+[PARKED] H21 nucleus FIA history/drawings IDOR — survives criteria (conf 45, A6/E6) but below top-3; carried unchanged.
+[PARKED] api-i1 report-generation mode (`EncryptReportResponse`/`ResponseType`) — no verify steps without a full auth session; informational B9 note only.
+[PARKED] jhelum offer_list/offer_details — public-by-design live IPO feed; invalid offer_id → `-99` empty (no leak); informational B9.
+[PARKED] api-i1.fyers.co.in / api-i1.fydev.tech twins — OUT OF SCOPE (non-`*.fyers.in`); never test.
+[PARKED] `validate-authcode -441` / `issue-list "IssueId required"` / GET-on-DELETE-only method gates — pure gate responses, fingerprint notes only.
+[FINAL] Survivors re-ranked: H19 (55, SSRF/unauth-write — sole PASSIVE-probeable after authorization) ≥ H22 (52, eIPO read+cancel, weak integer key) ≥ H17 (45, req_id→PAN/eSign, highest CVSS 8.1–9.1, auth-gated). All conditional; every cross-object/write step stays FYERS-side. No new vulnerability proven this run.
+[NEXT] HUMAN: Dispatch the authorization + scope-confirmation query to the FYERS security contact via the official form (package C1–C9: api-testing-prod H19 upload/SSRF tier, signup/v2 KYC req_id, api-i1 /invest+/eipo 14-field order-book surface, journal-server, nucleus FIA) BEFORE any further auth/KYC/upload/SSRF-fetch validation; reference `reports/submission-package_fyers-bb.md` (A1–A7 + B + C + D + E1–E7 + F). No PROBE steps against auth-bearing flows until affirmation arrives — the H19 `file_url` branch oracle is the queued first probe once confirmed.
+[LEARN] REJECTED pre-auth order-placement primitive class @ api-i1.fyers.in/invest/v1/ipo — auth gate runs AFTER schema but still rejects tokenless full payloads (401 "Authorization header is missing"); no primitive.
+[LEARN] REJECTED pre-auth data-disclosure class @ api-i1.fyers.in/tapi/eipo — `-100` auth-first invariant with both full 36-field and 14-field bodies; no oracle, no primitive.
+[LEARN] REJECTED method-gate/noise class @ api-i1.fyers.in/tapi — GET on DELETE-only `cancel-order` → 404; transient CF 502/403 `__cf_bm` not reproducible; not app behavior.
+[LEARN] ACCEPTED validation-before-auth schema-oracle class @ api-i1.fyers.in/invest/v1/ipo — 14/31-field field-required oracle enumerable pre-auth, schema-only.
+[LEARN] ACCEPTED weak-integer-key class @ api-i1.fyers.in/invest/v1/ipo — `IssueId` integer space (not UUID); read surface idle (no live IPO).
+[RISK] fyers: 68 — estate ~42 hosts / ≥22 auth-fingerprint domains; seven conditional object-keyed IDOR candidates (H13/H15/H17/H18/H21/H22; top H17 8.1–9.1 if unmasked PAN/eSign), one fully-unauthenticated KYC tier (api-testing-prod H19 SSRF + object-write, 5.3–7.5), and a new live eIPO order surface with weak integer IssueId + fully enumerated 14-field schema + state-modifying cancel (H22). Offsets: zero exploits executed or proven; every high-value path researcher-execution-prohibited pending authorization; all live gates re-verified auth-first or validation-only (`-100`/`-441`/`-16`/`-1`, #19/#20/#21); jhelum feed public-with-no-leak; SSTI/third-party/method-gate/default-page classes re-rejected. Exposure stable, not elevated.
