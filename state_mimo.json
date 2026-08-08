@@ -1,10 +1,12 @@
 {
   "target": "fyers.in",
   "phase": "RECON",
-  "status": "EXHAUSTED",
+  "status": "IN_PROGRESS",
   "next_steps": [
-    "Submit COMPREHENSIVE_REPORT.md to bug bounty program",
+    "Submit findings to bug bounty program",
     "Monitor for remediation responses",
-    "Conduct authenticated testing if credentials available"
+    "Conduct follow-up assessment",
+    "Submit findings to bug bounty program",
+    "Monitor for remediation responses"
   ]
 }
