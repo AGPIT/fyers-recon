@@ -2506,3 +2506,9 @@ Review research_mimo.md for details
 +### H176: api-a1-prod.fyers.in Signup CORS Credential Leakage (CVSS 9.1) - CONFIRMED
 +### H177: api-a1-prod.fyers.in Token Details Exfiltration (CVSS 8.1) - CONFIRMED
 +### H178: open-account.fyers.in Token URL Leakage (CVSS 7.5) - CONFIRMED
+
+HIGH-IMPACT HYPOTHESIS IDENTIFIED (model: mimo)
+Review research_mimo.md for details
+| Critical (CVSS 9.1) | 7 |
+| High (CVSS 7.5-8.1) | 11 |
+| Medium (CVSS 5.3-6.5) | 11 |

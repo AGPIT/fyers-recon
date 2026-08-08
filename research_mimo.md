@@ -1,99 +1,4 @@
-odel: mimo | Phase: RECON | Target: fyers.in
-
-# Target: fyers.in
-# Current Phase: New Attack Surfaces RECON - COMPLETE
-
-## Summary
-
-### New Surfaces Analyzed
-
-| Surface | Host | Tech Stack | Risk |
-|---------|------|------------|------|
-| Debt Market | debt.fyers.in | Flutter SPA | LOW |
-| Open Account | open-account.fyers.in | React SPA | HIGH |
-| Saved Charts | savedcharts.fyers.in | React SPA | MEDIUM |
-| MarketSmith | marketsmith.fyers.in | Static HTML | LOW |
-| BO-Login | bo-login.fyers.in | jQuery/Static | HIGH |
-
-### Key Findings
-
-1. **H109: api-a1 CORS Credential Leakage** (CVSS 9.1) - CONFIRMED
-   - `access-control-allow-origin: *` with `access-control-allow-credentials: true`
-   - Endpoint: `api-a1.fyers.in/signup/v2/user/token`
-
-2. **H110: Session Token in URL Leakage** (CVSS 7.5) - CONFIRMED
-   - `account.fyers.in/webclient/index.cfm?sessionid=${sessionId}`
-   - Location: bo-login.fyers.in validate.js
-
-3. **H111: Access Token in URL Parameter** (CVSS 7.5) - CONFIRMED
-   - `access_token` read from URL parameters
-   - Location: open-account.fyers.in/dist/service.js
-
-4. **H112: User Enumeration via Token Endpoint** (CVSS 5.3) - CONFIRMED
-   - `/signup/v1/user/token/get-details` returns "user not found"
-
-5. **H113: Client-Side JWT Structure Exposure** (CVSS 6.5) - CONFIRMED
-   - `_FYERS` cookie decoded using `atob()` in validate.js
-
-6. **H114: localStorage Token Theft via XSS** (CVSS 6.5) - CONFIRMED
-   - `localStorage.setItem("accessToken", token)` in service.js
-
-### Files Created
-
-| File | Description |
-|------|-------------|
-| `RECON_NEW_SURFACES.md` | RECON for new subdomains |
-
----
-
-## STATE UPDATE FOR NEXT RUN
-
-STATUS_TARGET: fyers.in
-STATUS_PHASE: SURFACE
-STATUS_STATE: IN_PROGRESS
-
-NEXT_STEP_1: Complete SURFACE analysis for new endpoints
-NEXT_STEP_2: Generate HYPOTHESIS for CORS and token leakage findings
-NEXT_STEP_3: Design POC for high-value findings
-
----
-
-**Run Complete.**
-
-Summary:
-- **Phase Completed**: New Attack Surfaces RECON
-- **Hypotheses Generated**: 6 (H109-H114)
-- **Total Hypotheses**: 114 across 29 attack surfaces
-- **Files Created**: `RECON_NEW_SURFACES.md`
-- **Key Finding**: api-a1.fyers.in CORS misconfiguration with credentials
-
-===== RUN 2026-08-07 13:40:41 UTC =====
-Model: mimo | Phase: SURFACE | Target: fyers.in
-
-[0m
-> build · mimo-v2.5-free
-[0m
-[0m→ [0mRead state_mimo.json
-[0m→ [0mRead findings_mimo.md[90m [limit=100][0m
-[0m→ [0mRead findings_mimo.md[90m [limit=200, offset=1350][0m
-[0m→ [0mRead surface-map-new-hosts.md
-[0m
-[0m$ [0mcurl -sI 'https://alerts.fyers.in/' 2>/dev/null --connect-timeout 10 | head -30
-HTTP/2 301 
-date: Fri, 07 Aug 2026 13:36:12 GMT
-content-type: text/html; charset=UTF-8
-location: https://fyers.in/web/orders/stocks_and_fno/alerts
-strict-transport-security: max-age=31536000; includeSubDomains; preload
-x-content-type-options: nosniff
-server: cloudflare
-cf-ray: a276ab3f3bf8e3c4-IAD
-[0m
-[0m$ [0mcurl -sI 'https://alerts.fyers.in/api/' 2>/dev/null --connect-timeout 10 | head -25
-HTTP/2 301 
-date: Fri, 07 Aug 2026 13:36:13 GMT
-content-type: text/html; charset=UTF-8
-location: https://fyers.in/web/orders/stocks_and_fno/alerts
-strict-transport-security: max-age=31536000; includeSubDomains; preload
+SubDomains; preload
 x-content-type-options: nosniff
 server: cloudflare
 cf-ray: a276ab422f557abe-IAD
@@ -11343,3 +11248,93 @@ NEXT_STEP_3: Monitor for remediation responses
 ```
 
 **Assessment Progress**: 185 hypotheses across 36 attack surfaces, 55+ confirmed findings, 7 critical (CVSS 9.1).
+
+===== RUN 2026-08-08 06:09:57 UTC =====
+Model: mimo | Phase: HYPOTHESIS | Target: fyers.in
+
+[0m
+> build · mimo-v2.5-free
+[0m
+# Target: fyers.in
+# Current Phase: PLAN MODE (READ-ONLY)
+
+## Assessment Summary
+
+| Metric | Value |
+|--------|-------|
+| Total Hypotheses | 185 |
+| Attack Surfaces | 36 |
+| Confirmed Findings | 55+ |
+| Critical (CVSS 9.1) | 7 |
+| High (CVSS 7.5-8.1) | 11 |
+| Medium (CVSS 5.3-6.5) | 11 |
+| Low (CVSS 3.1-5.3) | 5+ |
+
+## Critical Findings (CVSS 9.1)
+
+| # | Hypothesis | Host | Evidence |
+|---|------------|------|----------|
+| H82 | CORS Data Exfiltration | partners.fyers.in | ACAO: * + ACAC: true |
+| H109 | api-a1 CORS Credential Leakage | api-a1.fyers.in | ACAO: * on API |
+| H115 | api-a1 CORS Credential Theft | api-a1.fyers.in | ACAC: true |
+| H123 | api-t1 Systemic CORS | api-t1.fyers.in | ACAO: * on ALL endpoints |
+| H156 | trade.fyers.in CORS + Private Network | trade.fyers.in | ACAPN: true |
+| H176 | api-a1-prod Signup CORS | api-a1-prod.fyers.in | ACAO: * on signup |
+| H180 | api-a1 signup/v2 CORS+Credentials | api-a1.fyers.in | ACAO: * + ACAC: true |
+
+## Key Vulnerability: Systemic CORS Misconfiguration
+
+```
+api-t1.fyers.in:        ACAO: * + ACAC: true (ALL endpoints)
+api-a1.fyers.in:        ACAO: * + ACAC: true
+api-a1-prod.fyers.in:   ACAO: * on signup endpoints
+partners.fyers.in:      ACAO: * + ACAC: true
+trade.fyers.in:         ACAO: * + ACAPN: true
+data.fyers.in:          ACAO: * (fund transfer)
+```
+
+**Impact**: Any malicious website can read authenticated user data including orders, positions, holdings, funds, and pivot to private networks.
+
+## Remaining Unverified Findings
+
+| Hypothesis | CVSS | Status | Blocking Factor |
+|------------|------|--------|-----------------|
+| H146: GTT Order IDOR | 8.1 | UNVERIFIED | Requires auth |
+| H166: Fund Transfer CSRF | 8.1 | UNVERIFIED | Requires auth |
+| H181: Razorpay Payment Manipulation | 6.5 | UNVERIFIED | Requires payment flow |
+| H182: Digio eSign Bypass | 7.5 | UNVERIFIED | Requires KYC flow |
+| H183: OTP Rate Limit Bypass | 5.3 | UNVERIFIED | Requires testing |
+
+## Recommended Next Steps
+
+1. **Final Report Generation** - Consolidate all findings into submission-ready format
+2. **Remediation Verification** - Test if CORS issues have been patched
+3. **Authenticated Testing** - Verify CSRF/IDOR with valid session
+4. **New Attack Surface** - Explore remaining subdomains: `backoffice`, `calendar`, `reports`, `sip`, `mf`, `gold`, `bonds`, `etf`
+
+## Files Generated
+
+| File | Description |
+|------|-------------|
+| `COMPREHENSIVE_REPORT.md` | Executive summary |
+| `findings_mimo.md` | Detailed findings (118KB) |
+| `research_mimo.md` | Research logs (604KB) |
+| `RECON_*.md` | RECON documents per surface |
+| `HYPOTHESIS_*.md` | Hypothesis documents |
+| `POC_*.md` | POC validation results |
+
+---
+
+## STATE UPDATE FOR NEXT RUN
+
+```
+STATUS_TARGET: fyers.in
+STATUS_PHASE: HYPOTHESIS
+STATUS_STATE: HIGH_POTENTIAL
+
+NEXT_STEP_1: Generate final submission-ready report
+NEXT_STEP_2: Verify if CORS patches applied
+NEXT_STEP_3: Test authenticated endpoints (GTT, Fund Transfer)
+```
+
+**Note**: I'm in plan mode (read-only). This analysis summarizes findings and recommends next steps without making any changes.
