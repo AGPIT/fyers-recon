@@ -1,10 +1,10 @@
 {
   "target": "fyers.in",
-  "phase": "HYPOTHESIS",
+  "phase": "POC",
   "status": "HIGH_POTENTIAL",
   "next_steps": [
-    "Advance to POC \u2014 firm A5 (H19) with exact read-only request shapes for FYERS-side validation of the SSRF diff-oracle and unauth object-write tier, gated on scope confirmation of api-testing-prod.fyers.in.",
-    "Operator dispatches scope-confirmation query (package C) then submits the re-created `reports/submission-package_fyers-bb.md` (A1\u2013A5 + B + C + D) via forms.fyers.in BugBountyForm1.",
+    "Operator dispatches scope-confirmation query (package C: signup/v2 KYC, api-testing-prod, mcp.fyers.in, /invest/admin/*, /cdsl/dev/*, journal-server, open-account/staging) then submits `reports/submission-package_fyers-bb.md` (A1\u2013A5 + B + C + D) via forms.fyers.in BugBountyForm1.",
+    "Next run restarts RECON on an unexplored in-scope surface \u2014 `data.fyers.in/fy/v1/fundtx/*` full family, `api-t1.fyers.in/nucleus/v1/fia/*` FIA-assistant, `user/v3/app/*` OAuth app registry, or remaining `api-a1-prod.fyers.in/myaccount/prod/*` routes \u2014 spaced, read-only.",
     "Exclusions unchanged (SmartHunt SSTI false positive, third-party hosts, api-a1.fydev.tech, public config artifacts); guardrails hold (no OTP dispatch, no cross-account, no file/URL side-effects, no high volume)."
   ]
 }
